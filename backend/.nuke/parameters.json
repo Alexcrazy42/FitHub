@@ -1,0 +1,10 @@
+{
+  "$schema": "./build.schema.json",
+  "Solution": "FitHub.sln",
+  "DockerRepositoriesUrl": "https://fake.docker.registry",
+  "DockerRepositoryName": "some-docker-repo-name",
+  "Branch": "some-dev-branch",
+  "BuildCounter": "0",
+  "NuGetUrl": "http://fake.nuget.repo",
+  "NuGetApiKey": "some-nuget-key"
+}

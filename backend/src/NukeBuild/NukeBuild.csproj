@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>$(CompanyName).Common.$(MSBuildProjectName)</AssemblyName>
+    <RootNamespace>$(CompanyName).Common.$(MSBuildProjectName)</RootNamespace>
+    <IsPackable>true</IsPackable>
+    <IncludeJetBrainsAnnotations>false</IncludeJetBrainsAnnotations>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Flurl" />
+    <PackageReference Include="Nuke.Common" />
+    <PackageReference Include="Scriban" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Docker\Template.Dockerfile" />
+    <EmbeddedResource Include="Docker\Template.Dockerfile">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,136 @@
+﻿using FitHub.Common.NukeBuild.BuildComponents;
+using FitHub.Common.NukeBuild.Docker;
+using Nuke.Common;
+using Nuke.Common.IO;
+using Nuke.Common.Tooling;
+using Nuke.Common.Tools.Docker;
+using Serilog;
+using static Nuke.Common.Tools.Docker.DockerTasks;
+
+namespace FitHub.Common.NukeBuild.Extensions;
+
+internal static class DockerBuildExtensions
+{
+    public static void BuildDockerfile(
+        this IDockerBuild build,
+        IDockerImageInfo dockerImageInfo)
+    {
+        switch (dockerImageInfo)
+        {
+            case DockerImageInfo fileDockerImageInfo:
+                build.BuildDockerfile(fileDockerImageInfo);
+                break;
+            case GeneratedDockerImageInfo generatedDockerImageInfo:
+                build.BuildDockerfile(generatedDockerImageInfo);
+                break;
+            default:
+                throw new NotSupportedException($"Docker image info type {dockerImageInfo.GetType()} is not supported");
+        }
+    }
+
+    public static string CreateDockerContainer(this IDockerBuild build, string dockerImageName)
+    {
+        Log.Information("Creating Docker container for {DockerImageName}", dockerImageName);
+        var createResult =
+            DockerContainerCreate(settings => settings.SetImage(build.GetDockerImageTag(dockerImageName)));
+
+        Assert.Count(createResult, 1);
+        Assert.True(createResult.Single().Type == OutputType.Std);
+        var containerId = createResult.Single().Text;
+        containerId.NotNullOrWhiteSpace();
+
+        return containerId;
+    }
+
+    public static void CopyArtifactsFromContainer(this IDockerBuild build, string containerId)
+    {
+        Log.Information("Copying items from Docker container {ContainerId}", containerId);
+
+        var source = $"{IDockerBuild.DockerContainerArtifactsPath}/.";
+        var destination = build.ArtifactsPath;
+
+        var containerSource = $"{containerId}:{source}";
+        DockerTasks.Docker($"container cp {containerSource} {destination}");
+    }
+
+    public static void RemoveDockerContainer(this IDockerBuild build, string containerId)
+    {
+        Log.Information("Removing Docker container {ContainerId}", containerId);
+
+        var removeResult = DockerContainerRm(settings => settings
+            .SetContainers(containerId)
+            .EnableForce());
+
+        Log.Information("Removing unused docker data");
+
+        var pruneResult = DockerSystemPrune(settings => settings.SetForce(true));
+
+        Assert.Count(removeResult, 1);
+        Assert.True(String.Equals(removeResult.Single().Text, containerId, StringComparison.OrdinalIgnoreCase));
+
+        Assert.True(pruneResult.Count > 0);
+    }
+
+    private static void BuildDockerfile(
+        this IDockerBuild build,
+        DockerImageInfo dockerImageInfo)
+    {
+        Log.Information("Building Docker image {DockerImageName} ({DockerfileName})",
+            dockerImageInfo.DockerImageName, dockerImageInfo.DockerfileName);
+
+        var dockerfilePath = build.BuildPath / dockerImageInfo.DockerfileName;
+
+        RunDockerBuild(build, dockerImageInfo, dockerfilePath);
+    }
+
+    private static void BuildDockerfile(
+        this IDockerBuild build,
+        GeneratedDockerImageInfo dockerImageInfo)
+    {
+        Log.Information("Building Docker image {DockerImageName} from generated Dockerfile",
+            dockerImageInfo.DockerImageName);
+
+        var project = build.Solution.AllProjects
+                          .SingleOrDefault(x =>
+                              String.Equals(x.Name, dockerImageInfo.ProjectName, StringComparison.Ordinal))
+                      ?? throw new InvalidOperationException($"Project {dockerImageInfo.ProjectName} not found");
+
+        var dockerfilePath = DockerfileGenerator.GenerateDockerfile(project, dockerImageInfo);
+        Log.Information("Dockerfile ({DockerfilePath}) was generated", dockerfilePath);
+
+        try
+        {
+            RunDockerBuild(build, dockerImageInfo, dockerfilePath);
+        }
+        finally
+        {
+            dockerfilePath.DeleteFile();
+            Log.Information("Dockerfile ({DockerfilePath}) was deleted", dockerfilePath);
+        }
+    }
+
+    private static void RunDockerBuild(
+        IDockerBuild build,
+        IDockerImageInfo dockerImageInfo,
+        AbsolutePath dockerfilePath)
+    {
+        DockerBuild(settings =>
+        {
+            var dockerBuildSettings = settings
+                .SetPath(build.RootDirectory)
+                .SetFile(dockerfilePath)
+                .SetTag(build.GetDockerImageTag(dockerImageInfo.DockerImageName))
+                .EnablePull()
+                .SetProgress(DockerProgressType.plain)
+                .SetTarget("final")
+                .SetBuildArg(
+                    $"Version={build.Version.FullVersion}",
+                    $"AssemblyVersion={build.Version.AssemblyVersion}",
+                    $"FileVersion={build.Version.FileVersion}",
+                    $"InformationalVersion={build.Version.InformationalVersion}",
+                    $"TestFilter={build.TestFilter}");
+
+            return dockerBuildSettings;
+        });
+    }
+}

@@ -1,0 +1,65 @@
+<Project>
+  <PropertyGroup>
+    <!--
+      Включение централизованного управления пакетами,
+      see https://docs.microsoft.com/en-us/nuget/consume-packages/central-package-management#enabling-central-package-management
+      -->
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <!--
+      Включение возможности явного указания версий транзитивных зависимостей,
+      see https://docs.microsoft.com/en-us/nuget/consume-packages/central-package-management#transitive-pinning
+      -->
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+    <!--
+      Явное включение возможности переопределять версии пакетов
+      see https://learn.microsoft.com/en-us/nuget/consume-packages/central-package-management#overriding-package-versions
+      -->
+    <EnablePackageVersionOverride>true</EnablePackageVersionOverride>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="AutoFixture" Version="4.18.1" />
+    <PackageVersion Include="AutoFixture.AutoMoq" Version="4.18.1" />
+    <PackageVersion Include="EFCore.NamingConventions" Version="9.0.0" />
+    <PackageVersion Include="Flurl" Version="4.0.0" />
+    <PackageVersion Include="Microsoft.AspNetCore" Version="2.3.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Diagnostics" Version="2.3.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.15" />
+    <PackageVersion Include="Microsoft.AspNetCore.Hosting" Version="2.3.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc" Version="2.3.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.4" />
+    <PackageVersion Include="Microsoft.CodeAnalysis" Version="4.8.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.8.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="9.0.4" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.4" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.4" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="9.0.4" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.4" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.4" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="9.0.4" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="9.0.4" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.4" />
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.4" />
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+    <PackageVersion Include="Scriban" Version="6.2.1" />
+    <PackageVersion Include="Serilog" Version="4.2.0" />
+    <PackageVersion Include="Serilog.AspNetCore" Version="9.0.0" />
+    <PackageVersion Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+    <PackageVersion Include="Serilog.Extensions.Hosting" Version="9.0.0" />
+    <PackageVersion Include="Serilog.Settings.Configuration" Version="9.0.0" />
+    <PackageVersion Include="Serilog.Sinks.Async" Version="2.1.0" />
+    <PackageVersion Include="Serilog.Sinks.Http" Version="9.1.1" />
+    <PackageVersion Include="Nuke.Common" Version="9.0.4" />
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="8.1.1" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="8.0.15" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+    <PackageVersion Include="Swashbuckle.AspNetCore.Swagger" Version="9.0.3" />
+    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.4.0" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.0" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="Moq" Version="4.20.72" />
+    <PackageVersion Include="Shouldly" Version="4.3.0" />
+    <PackageVersion Include="JetBrains.Annotations" Version="2024.3.0" />
+  </ItemGroup>
+</Project>
