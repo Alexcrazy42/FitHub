@@ -20,6 +20,12 @@ public static class ServiceRegistry
         var databaseOptions = configuration.GetRequiredOptions<ConnectionOptions>();
         services.AddDataContext<DataContext>(databaseOptions);
         services.AddUnitOfWork<DataContext>(databaseOptions);
+
+        services.AddRepositories();
     }
 
+    private static IServiceCollection AddRepositories(this IServiceCollection services)
+    {
+        return services;
+    }
 }
