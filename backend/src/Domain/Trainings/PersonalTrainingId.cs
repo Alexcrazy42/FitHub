@@ -8,6 +8,6 @@ public class PersonalTrainingId : GuidIdentifier<PersonalTrainingId>, IIdentifie
     {
     }
 
-    public static string EntityTypeName => "Тренировка";
-    public static string Prefix => "training";
+    public static string EntityTypeName => "Персональная тренировка";
+    public static string Prefix => "personal-training";
 }
