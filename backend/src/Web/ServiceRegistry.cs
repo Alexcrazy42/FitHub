@@ -6,7 +6,6 @@ public static class ServiceRegistry
 {
     public static void AddWeb(this IServiceCollection services)
     {
-
         services
             .AddMvcCore()
             .AddApiExplorer()

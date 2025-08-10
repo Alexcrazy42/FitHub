@@ -3,9 +3,9 @@
 /// <summary>
 /// Исключение из нашей логики (либовской или бизнес)
 /// </summary>
-public abstract class CommonException : Exception
+public class CommonException : Exception
 {
-    protected CommonException(string? message, Exception? innerException)
+    public CommonException(string? message, Exception? innerException = null)
         : base(message, innerException)
     {
     }

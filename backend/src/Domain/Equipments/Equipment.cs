@@ -6,6 +6,7 @@ namespace FitHub.Domain.Equipments;
 public class Equipment : IEntity<EquipmentId>
 {
     private readonly List<MuscleGroup> muscleGroups = [];
+    private readonly List<EquipmentInstruction> instructions = [];
 
     public Equipment(EquipmentId id, string imageUrl, List<MuscleGroup> muscleGroups)
     {
@@ -21,16 +22,13 @@ public class Equipment : IEntity<EquipmentId>
     /// </summary>
     public string ImageUrl { get; private set; }
 
-
     public BrandId? BrandId { get; private set; }
 
     public Brand? Brand { get; set; }
 
     public DateOnly? InstructionAddBefore { get; private set; }
 
-    public EquipmentInstructionId? InstructionId { get; private set; }
-
-    public EquipmentInstruction? Instruction { get; set; }
+    public IReadOnlyList<EquipmentInstruction> Instructions => instructions;
 
     /// <summary>
     /// Группы мышц
@@ -43,10 +41,9 @@ public class Equipment : IEntity<EquipmentId>
         Brand = newBrand;
     }
 
-    public void SetInstruction(EquipmentInstruction newInstruction)
+    public void AddInstructions(IReadOnlyList<EquipmentInstruction> newInstructions)
     {
-        Instruction = newInstruction;
-        InstructionId = newInstruction.Id;
+        instructions.AddRange(newInstructions);
         InstructionAddBefore = null;
     }
 
