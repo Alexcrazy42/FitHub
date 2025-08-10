@@ -1,10 +1,10 @@
 ﻿using System.Linq.Expressions;
-using FitHub.Entities;
-using FitHub.Entities.Identity;
-using FitHub.Entities.Storage;
+using FitHub.Common.Entities;
+using FitHub.Common.Entities.Identity;
+using FitHub.Common.Entities.Storage;
 using Microsoft.EntityFrameworkCore;
 
-namespace FitHub.EntityFramework;
+namespace FitHub.Common.EntityFramework;
 
 public abstract class DefaultPendingRepository<TEntity, TEntityId, TContext> : IPendingRepository<TEntity, TEntityId>
     where TEntity : class, IEntity<TEntityId>

@@ -1,7 +1,7 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
 
-namespace FitHub.Utilities.System;
+namespace FitHub.Common.Utilities.System;
 
 /// <summary>
 /// Активатор на скомпилированных <see cref="Expression"/>, быстрее обычного <see cref="Activator"/>

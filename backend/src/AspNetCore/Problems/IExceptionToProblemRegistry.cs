@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace FitHub.AspNetCore.Problems;
+namespace FitHub.Common.AspNetCore.Problems;
 
 /// <summary>
 /// Регистр исключений, которые необходимо обработать как <see cref="Microsoft.AspNetCore.Mvc.ProblemDetails"/>

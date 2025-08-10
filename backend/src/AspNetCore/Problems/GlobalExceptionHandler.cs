@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace FitHub.AspNetCore.Problems;
+namespace FitHub.Common.AspNetCore.Problems;
 
 internal sealed class GlobalExceptionHandler : IExceptionHandler
 {

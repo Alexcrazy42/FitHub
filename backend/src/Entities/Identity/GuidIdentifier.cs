@@ -1,9 +1,9 @@
 ﻿using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using FitHub.Utilities.System;
+using FitHub.Common.Utilities.System;
 
-namespace FitHub.Entities.Identity;
+namespace FitHub.Common.Entities.Identity;
 
 /// <summary>
 /// Базовый класс типизированного идентификатора

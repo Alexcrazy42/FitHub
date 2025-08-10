@@ -1,4 +1,4 @@
-﻿namespace FitHub.Entities.Identity;
+﻿namespace FitHub.Common.Entities.Identity;
 
 /// <summary>
 /// Описание идентификатора

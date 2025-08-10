@@ -1,6 +1,6 @@
-﻿using FitHub.Entities.Identity;
+﻿using FitHub.Common.Entities.Identity;
 
-namespace FitHub.Entities;
+namespace FitHub.Common.Entities;
 
 /// <summary>
 /// Доменная сущность

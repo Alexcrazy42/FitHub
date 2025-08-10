@@ -1,8 +1,8 @@
-﻿using FitHub.AspNetCore.Problems;
+﻿using FitHub.Common.AspNetCore.Problems;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace FitHub.AspNetCore;
+namespace FitHub.Common.AspNetCore;
 
 public static class ServiceRegistry
 {

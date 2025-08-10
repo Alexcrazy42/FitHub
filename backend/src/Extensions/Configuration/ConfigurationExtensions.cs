@@ -1,9 +1,9 @@
-﻿using FitHub.Utilities.System;
+﻿using FitHub.Common.Utilities.System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace FitHub.Extensions.Configuration;
+namespace FitHub.Common.Extensions.Configuration;
 
 public static class ConfigurationExtensions
 {

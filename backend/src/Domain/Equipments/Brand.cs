@@ -1,5 +1,5 @@
-﻿using FitHub.Entities;
-using FitHub.Entities.Identity;
+﻿using FitHub.Common.Entities;
+using FitHub.Common.Entities.Identity;
 
 namespace FitHub.Domain.Equipments;
 

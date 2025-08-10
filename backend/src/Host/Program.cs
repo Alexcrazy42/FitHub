@@ -1,5 +1,5 @@
 ﻿using FitHub.Data;
-using FitHub.Logging;
+using FitHub.Common.Logging;
 using Serilog;
 
 namespace FitHub.Host;

@@ -1,4 +1,4 @@
-﻿using FitHub.EntityFramework;
+﻿using FitHub.Common.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 

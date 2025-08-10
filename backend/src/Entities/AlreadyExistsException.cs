@@ -1,4 +1,4 @@
-﻿namespace FitHub.Entities;
+﻿namespace FitHub.Common.Entities;
 
 /// <summary>
 /// Сушность уже существует

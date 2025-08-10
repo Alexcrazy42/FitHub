@@ -1,9 +1,9 @@
-﻿using FitHub.Entities;
-using FitHub.Entities.Storage;
+﻿using FitHub.Common.Entities;
+using FitHub.Common.Entities.Storage;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
-namespace FitHub.EntityFramework;
+namespace FitHub.Common.EntityFramework;
 
 internal sealed class PostgresUnitOfWork<TContext> : IUnitOfWork
     where TContext : DbContext

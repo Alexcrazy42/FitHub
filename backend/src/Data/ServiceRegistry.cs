@@ -1,5 +1,5 @@
-﻿using FitHub.EntityFramework;
-using FitHub.Extensions.Configuration;
+﻿using FitHub.Common.EntityFramework;
+using FitHub.Common.Extensions.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

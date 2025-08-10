@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Net.Http.Headers;
 
-namespace FitHub.AspNetCore;
+namespace FitHub.Common.AspNetCore;
 
 public static class HttpResponseExtensions
 {

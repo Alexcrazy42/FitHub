@@ -2,7 +2,7 @@
 using Serilog.Formatting;
 using Serilog.Formatting.Json;
 
-namespace FitHub.Logging;
+namespace FitHub.Common.Logging;
 
 /// <summary>
 /// Выводит JSON с полями:

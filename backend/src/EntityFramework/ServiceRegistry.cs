@@ -1,9 +1,9 @@
-﻿using FitHub.Entities;
-using FitHub.Entities.Storage;
+﻿using FitHub.Common.Entities;
+using FitHub.Common.Entities.Storage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace FitHub.EntityFramework;
+namespace FitHub.Common.EntityFramework;
 
 public static class ServiceRegistry
 {
@@ -28,7 +28,7 @@ public static class ServiceRegistry
     public static IServiceCollection AddDataContext<TContext>(this IServiceCollection services, IDatabaseOptions options)
         where TContext : DbContext
     {
-        services.AddDbContext<TContext>((provider, builder) =>
+        services.AddDbContextPool<TContext>((provider, builder) =>
         {
             builder = options.RequiredDatabaseProvider switch
             {

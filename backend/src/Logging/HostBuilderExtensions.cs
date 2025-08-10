@@ -1,10 +1,10 @@
-﻿using FitHub.Extensions.Configuration;
+﻿using FitHub.Common.Extensions.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Sinks.Http.BatchFormatters;
 
-namespace FitHub.Logging;
+namespace FitHub.Common.Logging;
 
 public static class HostBuilderExtensions
 {

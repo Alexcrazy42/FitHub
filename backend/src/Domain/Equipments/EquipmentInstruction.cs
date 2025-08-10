@@ -1,4 +1,4 @@
-﻿using FitHub.Entities;
+﻿using FitHub.Common.Entities;
 
 namespace FitHub.Domain.Equipments;
 

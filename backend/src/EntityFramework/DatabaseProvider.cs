@@ -1,4 +1,4 @@
-﻿namespace FitHub.EntityFramework;
+﻿namespace FitHub.Common.EntityFramework;
 
 /// <summary>
 /// Выбор базы данных, используемой в проекте

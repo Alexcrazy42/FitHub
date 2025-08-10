@@ -1,4 +1,4 @@
-﻿namespace FitHub.Entities;
+﻿namespace FitHub.Common.Entities;
 
 /// <summary>
 /// Исключение из нашей логики (либовской или бизнес)

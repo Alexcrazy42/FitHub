@@ -1,7 +1,7 @@
 ﻿using FitHub.Application;
-using FitHub.AspNetCore;
-using FitHub.Extensions.Configuration;
-using FitHub.Logging;
+using FitHub.Common.AspNetCore;
+using FitHub.Common.Extensions.Configuration;
+using FitHub.Common.Logging;
 using FitHub.Web;
 
 namespace FitHub.Host;

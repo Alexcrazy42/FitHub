@@ -1,5 +1,5 @@
 ﻿using FitHub.Clients.Employees;
-using FitHub.Extensions.Configuration;
+using FitHub.Common.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FitHub.Clients;

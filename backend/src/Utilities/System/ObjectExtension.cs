@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-namespace FitHub.Utilities.System;
+namespace FitHub.Common.Utilities.System;
 
 public static class ObjectExtension
 {

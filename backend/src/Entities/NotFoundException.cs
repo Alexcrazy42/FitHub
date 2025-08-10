@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-namespace FitHub.Entities;
+namespace FitHub.Common.Entities;
 
 /// <summary>
 /// Объект не найден

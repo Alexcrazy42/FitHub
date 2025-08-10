@@ -1,7 +1,7 @@
 ﻿using System.Net;
-using FitHub.Entities;
+using FitHub.Common.Entities;
 
-namespace FitHub.AspNetCore.Problems;
+namespace FitHub.Common.AspNetCore.Problems;
 
 internal sealed class CommonExceptionToProblemRegistry : IExceptionToProblemRegistry
 {

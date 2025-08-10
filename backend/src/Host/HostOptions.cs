@@ -1,4 +1,4 @@
-﻿using FitHub.Extensions.Configuration;
+﻿using FitHub.Common.Extensions.Configuration;
 
 namespace FitHub.Host;
 
