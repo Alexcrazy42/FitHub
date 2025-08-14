@@ -1,0 +1,12 @@
+﻿namespace FitHub.Common.AspNetCore.Accounting;
+
+/// <summary>
+/// Поставщик идентификатора текущего пользователя
+/// </summary>
+internal interface ICurrentIdentityUserIdProvider
+{
+    /// <summary>
+    /// Получить текущего пользователя
+    /// </summary>
+    public IdentityUserId? GetCurrentUserIdOrDefault();
+}

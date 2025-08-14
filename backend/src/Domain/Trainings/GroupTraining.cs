@@ -45,4 +45,9 @@ public class GroupTraining : IEntity<GroupTrainingId>, IBaseTrainingWithSchedule
         StartTime = startTime;
         EndTime = endTime;
     }
+
+    public void AddParticipant(Visitor participant)
+    {
+        participants.Add(participant);
+    }
 }

@@ -2,6 +2,7 @@
 using FitHub.Common.AspNetCore;
 using FitHub.Common.Extensions.Configuration;
 using FitHub.Common.Logging;
+using FitHub.Data;
 using FitHub.Web;
 
 namespace FitHub.Host;
@@ -18,9 +19,9 @@ public sealed class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddBindedOptions<HostOptions>();
-        //services.AddData(configuration);
+        services.AddData(configuration);
         services.AddApplication();
-        services.AddWeb();
+        services.AddWeb(configuration);
 
         services.AddExceptionAsProblemDetails();
 

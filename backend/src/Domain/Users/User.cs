@@ -1,24 +1,17 @@
-﻿using FitHub.Common.Entities;
+﻿using FitHub.Common.AspNetCore.Accounting;
+using FitHub.Common.Entities;
 using FitHub.Common.Entities.Identity;
 
 namespace FitHub.Domain.Users;
 
-public class User : IEntity<UserId>, IAuditableEntity
+public class User : IdentityUser, IAuditableEntity
 {
-    private List<UserRefreshToken> refreshTokens = [];
 
-    private User(UserId id, string email, string surname, string name, string passwordHash)
+    private User(IdentityUserId id, string surname, string email, string name, string passwordHash) : base(id, name, email)
     {
-        Id = id;
-        Email = email;
         Surname = surname;
-        Name = name;
         PasswordHash = passwordHash;
     }
-
-    public UserId Id { get; }
-
-    public string Email { get; private set; }
 
     public string PasswordHash { get; private set; }
 
@@ -26,15 +19,11 @@ public class User : IEntity<UserId>, IAuditableEntity
 
     public string Surname { get; private set; }
 
-    public string Name { get; private set; }
-
     public bool IsVerified { get; private set; }
 
     public DateTimeOffset LastSeenAt { get; private set; }
 
     public bool IsOnline { get; private set; }
-
-    public IReadOnlyList<UserRefreshToken> RefreshTokens => refreshTokens;
 
     public DateTimeOffset CreatedAt { get; private set; }
 
@@ -68,10 +57,5 @@ public class User : IEntity<UserId>, IAuditableEntity
     public void SetIsOnline(bool isOnline)
     {
         IsOnline = isOnline;
-    }
-
-    public void AddRefreshToken(UserRefreshToken refreshToken)
-    {
-        refreshTokens.Add(refreshToken);
     }
 }

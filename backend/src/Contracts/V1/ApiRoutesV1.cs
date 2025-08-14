@@ -4,6 +4,8 @@ public class ApiRoutesV1
 {
     public const string Root = "api/v1";
 
+    public const string Login = Root + "/login";
+
     public const string Organizations = Root + "/organizations";
 
     public const string Organization = Organizations + "/{organizationId}";
