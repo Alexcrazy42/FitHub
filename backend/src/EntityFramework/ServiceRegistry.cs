@@ -19,7 +19,7 @@ public static class ServiceRegistry
                 services.AddScoped<IUnitOfWork, MsSqlUnitOfWork<TContext>>();
                 break;
             default:
-                throw new ArgumentOutOfRangeException(nameof(options.DatabaseProvider), options.RequiredDatabaseProvider, null);
+                throw new ArgumentOutOfRangeException(nameof(options.RequiredDatabaseProvider), options.RequiredDatabaseProvider, null);
         }
 
         return services;

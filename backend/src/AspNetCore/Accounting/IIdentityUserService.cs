@@ -8,7 +8,7 @@ public interface IIdentityUserService
     /// <summary>
     /// Получить пользователя по его имени
     /// </summary>
-    Task<IdentityUser> GetByEmailAsync(string email, CancellationToken cancellationToken);
+    Task<IdentityUser?> GetByEmailAsync(string email, CancellationToken cancellationToken);
 
     /// <summary>
     /// Получить пользователя по его id

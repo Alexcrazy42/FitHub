@@ -32,7 +32,7 @@ public static class ModelBuilderExtensions
         // https://learn.microsoft.com/en-us/ef/core/modeling/value-conversions?tabs=fluent-api#built-in-converters
         modelBuilder.UseStrictDeleteBehaviorConvention();
         modelBuilder.UsePrimaryKeyConvention();
-        modelBuilder.UseEnumConvention();
+        //modelBuilder.UseEnumConvention();
         modelBuilder.UseDateTimeOffsetToUtcConvention();
     }
 

@@ -11,5 +11,5 @@ public interface IAuthenticationService
     /// <summary>
     /// Попытаться залогинить пользователя по паролю
     /// </summary>
-    Task<IdentityUser?> LoginAsync(string username, string password, CancellationToken cancellationToken);
+    Task<IdentityUser?> LoginAsync(string login, string password, CancellationToken cancellationToken);
 }

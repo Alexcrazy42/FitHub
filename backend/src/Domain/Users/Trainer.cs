@@ -1,4 +1,5 @@
-﻿using FitHub.Common.Entities;
+﻿using FitHub.Common.AspNetCore.Accounting;
+using FitHub.Common.Entities;
 
 namespace FitHub.Domain.Users;
 
@@ -6,7 +7,7 @@ public class Trainer : IEntity<TrainerId>
 {
     private User? user;
 
-    public Trainer(TrainerId id, UserId userId)
+    public Trainer(TrainerId id, IdentityUserId userId)
     {
         Id = id;
         UserId = userId;
@@ -14,7 +15,7 @@ public class Trainer : IEntity<TrainerId>
 
     public TrainerId Id { get; }
 
-    public UserId UserId { get; private set; }
+    public IdentityUserId UserId { get; private set; }
 
     public User User
     {

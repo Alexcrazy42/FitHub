@@ -1,5 +1,4 @@
 ﻿using FitHub.Common.AspNetCore.Accounting;
-using FitHub.Common.Entities;
 using FitHub.Common.Entities.Identity;
 
 namespace FitHub.Domain.Users;
@@ -7,17 +6,22 @@ namespace FitHub.Domain.Users;
 public class User : IdentityUser, IAuditableEntity
 {
 
-    private User(IdentityUserId id, string surname, string email, string name, string passwordHash) : base(id, name, email)
+    private User(IdentityUserId id, string surname, string name, string email, string nickname, string passwordHash) : base(id, nickname, email, passwordHash)
     {
+        Id = id;
         Surname = surname;
+        Name = name;
+        Email = email;
+        Nickname = nickname;
         PasswordHash = passwordHash;
+        LastSeenAt = DateTimeOffset.Now;
     }
-
-    public string PasswordHash { get; private set; }
 
     public UserType Type { get; private set; }
 
     public string Surname { get; private set; }
+
+    public string Name { get; private set; }
 
     public bool IsVerified { get; private set; }
 

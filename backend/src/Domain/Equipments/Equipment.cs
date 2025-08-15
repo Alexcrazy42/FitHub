@@ -7,6 +7,7 @@ public class Equipment : IEntity<EquipmentId>
 {
     private readonly List<MuscleGroup> muscleGroups = [];
     private readonly List<EquipmentInstruction> instructions = [];
+    private readonly List<Gym> gyms = [];
 
     public Equipment(EquipmentId id, string imageUrl, List<MuscleGroup> muscleGroups)
     {
@@ -34,6 +35,8 @@ public class Equipment : IEntity<EquipmentId>
     /// Группы мышц
     /// </summary>
     public IReadOnlyList<MuscleGroup> MuscleGroups => muscleGroups;
+
+    public IReadOnlyList<Gym> Gyms => gyms;
 
     public void SetBrand(Brand newBrand)
     {

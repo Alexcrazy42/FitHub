@@ -1,0 +1,50 @@
+﻿using FitHub.Common.AspNetCore.Accounting;
+using FitHub.Common.AspNetCore.Auth;
+using FitHub.Common.Entities.Storage;
+using FitHub.Domain.Users;
+
+namespace FitHub.Application.Users;
+
+public class IdentityUserService : IIdentityUserService, IUserService, IAuthenticationService
+{
+    private readonly IPendingRepository<User, IdentityUserId> userRepository;
+    private readonly IPendingRepository<GymAdmin, GymAdminId> gymAdminRepository;
+    private readonly IUnitOfWork unitOfWork;
+
+    public IdentityUserService(IPendingRepository<User, IdentityUserId> userRepository,
+        IPendingRepository<GymAdmin, GymAdminId> gymAdminRepository,
+        IUnitOfWork unitOfWork)
+    {
+        this.userRepository = userRepository;
+        this.gymAdminRepository = gymAdminRepository;
+        this.unitOfWork = unitOfWork;
+    }
+
+    public async Task<IdentityUser?> GetByEmailAsync(string email, CancellationToken cancellationToken)
+    {
+        return await userRepository.GetFirstOrDefaultAsync(x => x.Email == email, cancellationToken);
+    }
+
+    public async Task<IdentityUser?> GetOrDefaultAsync(IdentityUserId id, CancellationToken cancellationToken)
+    {
+        return await userRepository.GetFirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+    }
+
+    public Task<User> RegisterAdminAsync(CancellationToken ct = default)
+    {
+        var passwordHash = BCrypt.Net.BCrypt.HashPassword("password");
+        throw new NotImplementedException();
+    }
+
+    public async Task<IdentityUser?> LoginAsync(string login, string password, CancellationToken cancellationToken)
+    {
+        var user = await userRepository.GetFirstOrDefaultAsync(x => x.Email == login || x.Nickname == login, cancellationToken);
+
+        if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+        {
+            return null;
+        }
+
+        return user;
+    }
+}
