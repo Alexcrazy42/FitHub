@@ -1,5 +1,5 @@
-﻿using FitHub.Domain.Trainings;
-using FitHub.Common.Entities;
+﻿using FitHub.Common.Entities;
+using FitHub.Domain.Trainings;
 
 namespace FitHub.Domain.Equipments;
 

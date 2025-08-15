@@ -29,6 +29,6 @@ public class EquipmentInstruction : IEntity<EquipmentInstructionId>
 
     public void SetEquipment(Equipment newEquipment)
     {
-        this.equipment = newEquipment;
+        equipment = newEquipment;
     }
 }

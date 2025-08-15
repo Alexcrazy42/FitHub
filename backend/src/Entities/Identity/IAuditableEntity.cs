@@ -4,7 +4,7 @@ public interface IAuditableEntity
 {
     public DateTimeOffset CreatedAt { get; }
 
-    public DateTimeOffset UpdatedAt { get;  }
+    public DateTimeOffset UpdatedAt { get; }
 
     public void SetCreatedAt(DateTimeOffset date);
 

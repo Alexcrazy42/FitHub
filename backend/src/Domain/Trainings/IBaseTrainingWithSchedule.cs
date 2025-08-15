@@ -2,7 +2,7 @@
 
 public interface IBaseTrainingWithSchedule
 {
-    public DateTimeOffset StartTime { get;  }
+    public DateTimeOffset StartTime { get; }
 
     public DateTimeOffset EndTime { get; }
 
