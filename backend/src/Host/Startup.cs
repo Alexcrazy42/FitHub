@@ -35,12 +35,20 @@ public sealed class Startup
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
-        app.UseStatusCodePages();
-
         app.UseCommonRequestLogging();
 
-        var isProduction = env.IsProduction();
-        if (!isProduction)
+        app.UseStatusCodePages();
+
+
+        var isDev = env.IsDevelopment();
+        app.UseExceptionAsProblemDetails(isDev);
+
+        app.UseHttpsRedirection();
+        app.UseRouting();
+
+        app.UseWeb(configuration);
+
+        if (isDev)
         {
             app.UseSwagger(options =>
             {
@@ -48,12 +56,5 @@ public sealed class Startup
             });
             app.UseSwaggerUI();
         }
-
-        app.UseExceptionAsProblemDetails(!isProduction);
-
-        app.UseHttpsRedirection();
-
-        app.UseRouting();
-        app.UseEndpoints(opt => opt.MapControllers());
     }
 }

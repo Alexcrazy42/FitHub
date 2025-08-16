@@ -4,6 +4,40 @@ public class ApiRoutesV1
 {
     public const string Root = "api/v1";
 
+
+    #region Gym
+
+    public const string Gyms = Root + "/gyms";
+
+    public const string GymById = Gyms + "/{id:guid}";
+
+    #endregion
+
+
+    #region MuscleGroups
+
+    public const string MuscleGroups = Root + "/muscle-groups";
+
+    public const string MuscleGroupById = MuscleGroups + "/{id:guid}";
+
+    #endregion
+
+    #region Equipment
+
+    public const string Equipments = Root + "/equipments";
+
+    public const string EquipmentById = Equipments + "/{id:guid}";
+
+    #endregion
+
+    #region EquipmentInstructions
+
+    public const string EquipmentsInstructions = Root + "/equipments-instructions";
+
+    public const string EquipmentInstructionById = EquipmentsInstructions + "/{id:guid}";
+
+    #endregion
+
     public const string Login = Root + "/login";
 
     public const string Organizations = Root + "/organizations";
