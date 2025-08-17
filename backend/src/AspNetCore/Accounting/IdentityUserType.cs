@@ -1,11 +1,11 @@
-﻿namespace FitHub.Domain.Users;
+﻿namespace FitHub.Common.AspNetCore.Accounting;
 
 [Flags]
-public enum UserType
+public enum IdentityUserType
 {
     GymVisitor = 1,
     Trainer = 2,
-    Admin = 4,
+    GymAdmin = 4,
     CmsAdmin = 8
 }
 
@@ -14,11 +14,11 @@ public static class UserTypeExtensions
     /// <summary>
     /// Возвращает массив строковых названий ролей для заданного значения UserType.
     /// </summary>
-    public static List<string> ToRoleNames(this UserType userType)
+    public static List<string> ToRoleNames(this IdentityUserType userType)
     {
         var roles = new List<string>();
 
-        foreach (UserType role in Enum.GetValues<UserType>())
+        foreach (IdentityUserType role in Enum.GetValues<IdentityUserType>())
         {
             if (role == 0)
             {
@@ -37,7 +37,7 @@ public static class UserTypeExtensions
     /// <summary>
     /// Проверяет, содержит ли UserType указанную роль.
     /// </summary>
-    public static bool HasRole(this UserType userType, UserType role)
+    public static bool HasRole(this IdentityUserType userType, IdentityUserType role)
     {
         return userType.HasFlag(role);
     }

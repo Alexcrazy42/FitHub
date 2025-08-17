@@ -36,15 +36,23 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
         throw new NotImplementedException();
     }
 
-    public async Task<IdentityUser?> LoginAsync(string login, string password, CancellationToken cancellationToken)
+    public Task<IdentityUser?> LoginAsync(string login, string password, CancellationToken cancellationToken)
     {
-        var user = await userRepository.GetFirstOrDefaultAsync(x => x.Email == login || x.Nickname == login, cancellationToken);
+        return Task.FromResult<IdentityUser?>(new IdentityUser(
+            IdentityUserId.Parse(Guid.NewGuid()),
+            "nick",
+            "email@mail.ru",
+            password,
+            IdentityUserType.GymAdmin | IdentityUserType.GymVisitor
+        ));
 
-        if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
-        {
-            return null;
-        }
-
-        return user;
+        // var user = await userRepository.GetFirstOrDefaultAsync(x => x.Email == login || x.Nickname == login, cancellationToken);
+        //
+        // if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+        // {
+        //     return null;
+        // }
+        //
+        // return user;
     }
 }

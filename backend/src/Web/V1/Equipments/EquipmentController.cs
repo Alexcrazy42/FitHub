@@ -1,14 +1,17 @@
 ﻿using FitHub.Application.Equipments;
+using FitHub.Common.AspNetCore.Auth;
 using FitHub.Common.Entities;
 using FitHub.Contracts;
 using FitHub.Contracts.V1;
 using FitHub.Contracts.V1.Equipments;
 using FitHub.Domain.Equipments;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FitHub.Web.V1.Equipments;
 
 [ApiController]
+[Authorize(Policy = AuthorizationPolicies.CmsAdminOnly)]
 public class EquipmentController : ControllerBase
 {
     private readonly IEquipmentService service;

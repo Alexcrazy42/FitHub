@@ -1,14 +1,17 @@
 ﻿using FitHub.Application.Trainings.BaseGroupTrainings;
+using FitHub.Common.AspNetCore.Auth;
 using FitHub.Common.Entities;
 using FitHub.Contracts;
 using FitHub.Contracts.V1;
 using FitHub.Contracts.V1.Trainings.BaseGroupTrainings;
 using FitHub.Domain.Trainings;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FitHub.Web.V1.Trainings;
 
 [ApiController]
+[Authorize(Policy = AuthorizationPolicies.GymAdminOnly)]
 public class BaseGroupTrainingController : ControllerBase
 {
     private readonly IBaseGroupTrainingService service;

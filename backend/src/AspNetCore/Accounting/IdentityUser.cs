@@ -4,12 +4,13 @@ namespace FitHub.Common.AspNetCore.Accounting;
 
 public class IdentityUser : IEntity<IdentityUserId>
 {
-    public IdentityUser(IdentityUserId id, string nickname, string email, string passwordHash)
+    public IdentityUser(IdentityUserId id, string nickname, string email, string passwordHash, IdentityUserType userType)
     {
         Id = id;
         Nickname = nickname;
         Email = email;
         PasswordHash = passwordHash;
+        UserType = userType;
     }
 
     public IdentityUserId Id { get; protected set; }
@@ -28,4 +29,6 @@ public class IdentityUser : IEntity<IdentityUserId>
     /// Пароль
     /// </summary>
     public string PasswordHash { get; protected set; }
+
+    public IdentityUserType UserType { get; protected set;  }
 }

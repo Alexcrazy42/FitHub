@@ -27,7 +27,7 @@ public static class ServiceRegistry
     public static void UseWeb(this IApplicationBuilder app, IConfiguration configuration)
     {
         var authOptions = configuration.GetRequiredOptions<AuthOptions>();
-        app.UseAuthentificationAndAuthorization(authOptions);
+        app.UseAuthenticationAndAuthorization(authOptions);
 
 
         app.UseEndpoints(configure =>

@@ -1,4 +1,5 @@
-﻿using FitHub.Common.AspNetCore.Accounting;
+﻿using System.Security.Claims;
+using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.AspNetCore.Auth;
 using FitHub.Common.AspNetCore.Problems;
 using FitHub.Common.AspNetCore.Tokens;
@@ -57,7 +58,20 @@ public static class ServiceRegistry
             .AddApplicationPart(typeof(ServiceRegistry).Assembly)
             .AddControllersAsServices();
 
-        services.AddAuthorization();
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy(AuthorizationPolicies.CmsAdminOnly, policy =>
+                policy.RequireAssertion(context => context.User.HasUserType(IdentityUserType.CmsAdmin)));
+
+            options.AddPolicy(AuthorizationPolicies.TrainerOnly, policy =>
+                policy.RequireAssertion(context => context.User.HasUserType(IdentityUserType.Trainer)));
+
+            options.AddPolicy(AuthorizationPolicies.GymAdminOnly, policy =>
+                policy.RequireAssertion(context => context.User.HasUserType(IdentityUserType.GymAdmin)));
+
+            options.AddPolicy(AuthorizationPolicies.GymVisitorOnly, policy =>
+                policy.RequireAssertion(context => context.User.HasUserType(IdentityUserType.GymVisitor)));
+        });
 
         services.AddTransient<ITokenService, TokenService>();
 
@@ -69,7 +83,6 @@ public static class ServiceRegistry
                     authOptions.RequiredIssuer,
                     signingKey: SigningKey.GetSymmetricSecurityKey(authOptions.RequiredSecretKey));
 
-                // Add this to read the token from the cookie
                 options.Events = new JwtBearerEvents
                 {
                     OnMessageReceived = context =>
@@ -83,7 +96,7 @@ public static class ServiceRegistry
             });
     }
 
-    public static void UseAuthentificationAndAuthorization(
+    public static void UseAuthenticationAndAuthorization(
         this IApplicationBuilder app,
         IAuthOptions authOptions)
     {
@@ -114,7 +127,7 @@ public static class ServiceRegistry
                         .Add(authOptions.RequiredCookieExpiration)
                         .DateTime;
 
-                    var claims = ITokenService.CreateCommonClaims(identityUser.Id.ToString());
+                    var claims = ITokenService.CreateCommonClaims(identityUser.Id.ToString(), identityUser.UserType);
 
                     var tokenString = tokenService.Create(claims);
 
@@ -131,7 +144,8 @@ public static class ServiceRegistry
                         Login = identityUser.Email,
                         Name = identityUser.Nickname,
                         UserId = identityUser.Id.Value.ToString(),
-                        LoginExpirationAt = expiresAt
+                        LoginExpirationAt = expiresAt,
+                        RoleNames = identityUser.UserType.ToRoleNames()
                     };
                     return Results.Ok(response);
                 })

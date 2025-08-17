@@ -1,9 +1,11 @@
 ﻿using FitHub.Application.Trainings.MuscleGroups;
+using FitHub.Common.AspNetCore.Auth;
 using FitHub.Common.Entities;
 using FitHub.Contracts;
 using FitHub.Contracts.V1;
 using FitHub.Contracts.V1.Equipments.MuscleGroups;
 using FitHub.Domain.Trainings;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FitHub.Web.V1.Trainings;

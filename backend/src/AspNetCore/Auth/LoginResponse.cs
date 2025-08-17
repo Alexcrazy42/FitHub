@@ -9,4 +9,6 @@ public sealed class LoginResponse
     public string? Name { get; set; }
 
     public DateTimeOffset? LoginExpirationAt { get; set; }
+
+    public IReadOnlyList<string> RoleNames { get; set; } = [];
 }

@@ -6,7 +6,8 @@ namespace FitHub.Domain.Users;
 public class User : IdentityUser, IAuditableEntity
 {
 
-    private User(IdentityUserId id, string surname, string name, string email, string nickname, string passwordHash) : base(id, nickname, email, passwordHash)
+    private User(IdentityUserId id, string surname, string name, string email, string nickname, string passwordHash, IdentityUserType userType)
+        : base(id, nickname, email, passwordHash, userType)
     {
         Id = id;
         Surname = surname;
@@ -15,9 +16,8 @@ public class User : IdentityUser, IAuditableEntity
         Nickname = nickname;
         PasswordHash = passwordHash;
         LastSeenAt = DateTimeOffset.Now;
+        UserType = userType;
     }
-
-    public UserType Type { get; private set; }
 
     public string Surname { get; private set; }
 
@@ -32,11 +32,6 @@ public class User : IdentityUser, IAuditableEntity
     public DateTimeOffset CreatedAt { get; private set; }
 
     public DateTimeOffset UpdatedAt { get; private set; }
-
-    public void SetType(UserType type)
-    {
-        Type = type;
-    }
 
     public void SetCreatedAt(DateTimeOffset date)
     {
