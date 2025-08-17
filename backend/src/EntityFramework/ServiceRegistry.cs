@@ -1,6 +1,7 @@
 ﻿using FitHub.Common.Entities;
 using FitHub.Common.Entities.Storage;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FitHub.Common.EntityFramework;
@@ -30,20 +31,26 @@ public static class ServiceRegistry
     {
         services.AddDbContextPool<TContext>((provider, builder) =>
         {
+            var interceptors = provider.GetServices<IInterceptor>();
+
             builder = options.RequiredDatabaseProvider switch
             {
-                DatabaseProvider.PostgreSql => builder.UseNpgsql(options.RequiredConnectionString, optionsBuilder =>
+                DatabaseProvider.PostgreSql => builder.UseNpgsql(
+                    options.RequiredConnectionString, optionsBuilder =>
                 {
                     optionsBuilder.EnableRetryOnFailure();
+
                 }),
-                DatabaseProvider.MsSql => builder.UseSqlServer(options.RequiredConnectionString, optionsBuilder =>
+                DatabaseProvider.MsSql => builder.UseSqlServer(
+                    options.RequiredConnectionString, optionsBuilder =>
                 {
                     optionsBuilder.EnableRetryOnFailure();
                 }),
                 _ => throw new UnexpectedException($"Провайдер БД не поддерживается {options.RequiredDatabaseProvider}"),
             };
 
-            builder.UseSnakeCaseNamingConvention();
+            builder.UseSnakeCaseNamingConvention()
+                .AddInterceptors(interceptors);
         });
         return services;
     }

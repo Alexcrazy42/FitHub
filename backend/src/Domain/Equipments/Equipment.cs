@@ -9,11 +9,10 @@ public class Equipment : IEntity<EquipmentId>
     private readonly List<EquipmentInstruction> instructions = [];
     private readonly List<Gym> gyms = [];
 
-    public Equipment(EquipmentId id, string name, string imageUrl, List<MuscleGroup> muscleGroups)
+    public Equipment(EquipmentId id, string name, string imageUrl)
     {
         Id = id;
         Name = name;
-        this.muscleGroups = muscleGroups;
         ImageUrl = imageUrl;
     }
 

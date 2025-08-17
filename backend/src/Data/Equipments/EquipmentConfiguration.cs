@@ -8,7 +8,7 @@ public class EquipmentConfiguration : IEntityTypeConfiguration<Equipment>
 {
     public void Configure(EntityTypeBuilder<Equipment> builder)
     {
-        builder.HasOne(x => x.MuscleGroups)
-            .WithMany();
+        builder.HasMany(x => x.MuscleGroups)
+            .WithMany(x => x.Equipments);
     }
 }

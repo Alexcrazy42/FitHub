@@ -8,12 +8,12 @@ public class PersonalTraining : IEntity<PersonalTrainingId>, IBaseTrainingWithSc
     private Visitor? visitor;
     private Trainer? trainer;
 
-    public PersonalTraining(PersonalTrainingId id, DateTimeOffset startDate, DateTimeOffset endDate, VisitorId visitor, TrainerId trainerId)
+    public PersonalTraining(PersonalTrainingId id, DateTimeOffset startTime, DateTimeOffset endTime, VisitorId visitorId, TrainerId trainerId)
     {
         Id = id;
-        StartTime = startDate;
-        EndTime = endDate;
-        VisitorId = visitor;
+        StartTime = startTime;
+        EndTime = endTime;
+        VisitorId = visitorId;
         TrainerId = trainerId;
     }
 

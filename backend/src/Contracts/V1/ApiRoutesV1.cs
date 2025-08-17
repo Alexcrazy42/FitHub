@@ -38,6 +38,32 @@ public class ApiRoutesV1
 
     #endregion
 
+    #region VideoTrainings
+
+    public const string VideoTrainings = Root + "/video-trainings";
+
+    public const string VideoTrainingsById = VideoTrainings + "/{id:guid}";
+
+    #endregion
+
+    #region BaseGroupTrainings
+
+    public const string BaseGroupTrainings = Root + "/base-group-trainings";
+
+    public const string BaseGroupTrainingsById = BaseGroupTrainings + "/{id:guid}";
+
+    #endregion
+
+    #region TrainingTypes
+
+    public const string TrainingTypes = Root + "/training-types";
+
+    public const string TrainingTypeById = TrainingTypes + "/{id:guid}";
+
+    #endregion
+
+
+
     public const string Login = Root + "/login";
 
     public const string Organizations = Root + "/organizations";

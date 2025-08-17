@@ -8,13 +8,16 @@ public class VideoTraining : IEntity<VideoTrainingId>
     private const int MaxComplexityValue = 3;
 
     private TrainingType? trainingType;
+    private readonly List<MuscleGroup> muscleGroups = [];
 
-    public VideoTraining(VideoTrainingId id, string name, string description, int complexity, TrainingTypeId trainingTypeId)
+    public VideoTraining(VideoTrainingId id, string name, string description, int complexity, int durationInMinutes, TrainingTypeId trainingTypeId)
     {
         Id = id;
         Name = name;
         Description = description;
         TrainingTypeId = trainingTypeId;
+        Complexity = complexity;
+        DurationInMinutes = durationInMinutes;
     }
 
     public VideoTrainingId Id { get; }
@@ -25,9 +28,13 @@ public class VideoTraining : IEntity<VideoTrainingId>
 
     public int Complexity { get; private set; }
 
+    public int DurationInMinutes { get; private set; }
+
     public string? VideoUrl { get; private set; }
 
     public TrainingTypeId TrainingTypeId { get; private set; }
+
+    public IReadOnlyList<MuscleGroup> MuscleGroups => muscleGroups;
 
     public TrainingType TrainingType
     {

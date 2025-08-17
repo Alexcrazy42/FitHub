@@ -33,6 +33,7 @@ public static class ModelBuilderExtensions
         modelBuilder.UseStrictDeleteBehaviorConvention();
         modelBuilder.UsePrimaryKeyConvention();
         //modelBuilder.UseEnumConvention();
+        modelBuilder.UseIdentifierConvention();
         modelBuilder.UseDateTimeOffsetToUtcConvention();
     }
 

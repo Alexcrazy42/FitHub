@@ -1,9 +1,12 @@
 ﻿using FitHub.Common.Entities;
+using FitHub.Domain.Equipments;
 
 namespace FitHub.Domain.Trainings;
 
 public class MuscleGroup : IEntity<MuscleGroupId>
 {
+    private IReadOnlyList<Equipment> equipments = [];
+
     private MuscleGroup(MuscleGroupId id, string name, string imageUrl)
     {
         Id = id;
@@ -20,6 +23,8 @@ public class MuscleGroup : IEntity<MuscleGroupId>
     public MuscleGroupId? ParentId { get; private set; }
 
     public MuscleGroup? Parent { get; private set; }
+
+    public IReadOnlyList<Equipment> Equipments => equipments;
 
     public void SetImageUrl(string imageUrl)
     {

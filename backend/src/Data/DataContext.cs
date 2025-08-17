@@ -1,4 +1,5 @@
 ﻿using FitHub.Common.EntityFramework;
+using FitHub.Domain.Trainings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
@@ -6,18 +7,16 @@ namespace FitHub.Data;
 
 public sealed class DataContext : DbContext
 {
-    private readonly IReadOnlyList<IInterceptor> interceptors;
 
     public DataContext(
-        DbContextOptions<DataContext> options,
-        IEnumerable<IInterceptor> interceptors)
+        DbContextOptions<DataContext> options)
         : base(options)
     {
-        this.interceptors = interceptors.ToList();
     }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.AddInterceptors(interceptors);
+    public DbSet<VideoTraining> VideoTrainings => Set<VideoTraining>();
+
+    public DbSet<BaseGroupTraining> BaseGroupTrainings => Set<BaseGroupTraining>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

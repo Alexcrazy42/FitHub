@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using FitHub.Application.Users;
+using FitHub.Common.AspNetCore.Accounting;
+using FitHub.Common.AspNetCore.Auth;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace FitHub.Application;
 
@@ -22,6 +25,9 @@ public static class ServiceRegistry
                 services.AddTransient(interfaceType, implementation);
             }
         }
+
+        services.AddTransient<IIdentityUserService, IdentityUserService>();
+        services.AddTransient<IAuthenticationService, IdentityUserService>();
 
         return services;
     }

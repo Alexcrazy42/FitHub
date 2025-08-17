@@ -22,13 +22,13 @@ public class BaseGroupTraining : IEntity<BaseGroupTrainingId>
 
     public string Description { get; private set; }
 
-    public TrainingTypeId? TypeId { get; private set; }
-
-    public TrainingType? Type { get; }
-
     public int DurationInMinutes { get; private set; }
 
     public int Complexity { get; private set; }
+
+    public TrainingTypeId? TypeId { get; private set; }
+
+    public TrainingType? Type { get; }
 
 
     public void SetComplexity(int complexity)

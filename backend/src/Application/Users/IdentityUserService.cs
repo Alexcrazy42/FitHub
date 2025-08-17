@@ -7,12 +7,12 @@ namespace FitHub.Application.Users;
 
 public class IdentityUserService : IIdentityUserService, IUserService, IAuthenticationService
 {
-    private readonly IPendingRepository<User, IdentityUserId> userRepository;
-    private readonly IPendingRepository<GymAdmin, GymAdminId> gymAdminRepository;
+    private readonly IUserRepository userRepository;
+    private readonly IGymAdminRepository gymAdminRepository;
     private readonly IUnitOfWork unitOfWork;
 
-    public IdentityUserService(IPendingRepository<User, IdentityUserId> userRepository,
-        IPendingRepository<GymAdmin, GymAdminId> gymAdminRepository,
+    public IdentityUserService(IUserRepository userRepository,
+        IGymAdminRepository gymAdminRepository,
         IUnitOfWork unitOfWork)
     {
         this.userRepository = userRepository;

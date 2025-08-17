@@ -5,5 +5,5 @@ namespace FitHub.Application.Trainings.BaseGroupTrainings;
 
 public interface IBaseGroupTrainingRepository : IPendingRepository<BaseGroupTraining, BaseGroupTrainingId>
 {
-
+    Task<BaseGroupTraining?> GetOrDefaultAsync(BaseGroupTrainingId id, CancellationToken ct = default);
 }

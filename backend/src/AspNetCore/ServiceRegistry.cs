@@ -4,10 +4,10 @@ using FitHub.Common.AspNetCore.Problems;
 using FitHub.Common.AspNetCore.Tokens;
 using FitHub.Common.Entities;
 using FitHub.Common.Extensions.Configuration;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using IAuthenticationService = FitHub.Common.AspNetCore.Auth.IAuthenticationService;
 
@@ -94,10 +94,11 @@ public static class ServiceRegistry
         {
             endpoints.MapPost(authOptions.LoginRoute,
                 async Task<IResult> (
-                    IAuthenticationService authenticationService,
-                    ITokenService tokenService,
+                    [FromServices] IAuthenticationService authenticationService,
+                    [FromServices] ITokenService tokenService,
                     HttpContext context,
-                    LoginRequest request, CancellationToken cancellationToken) =>
+                    [FromBody] LoginRequest request,
+                    CancellationToken cancellationToken) =>
                 {
                     ValidationException.ThrowIfNull(request.Username);
                     ValidationException.ThrowIfNull(request.Password);
