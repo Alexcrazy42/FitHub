@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{0C215478-F164-4DFB-B18B-B7F6863BE114}"
+	ProjectSection(SolutionItems) = preProject
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		README.md = README.md
+		Dockerfile = Dockerfile
+		docker-compose.yml = docker-compose.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A8E336BD-38E8-497B-B361-A1B4E50390DC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileStorageApi", "src\FileStorageApi\FileStorageApi.csproj", "{79533252-25A6-4BB8-9783-789A66B345BF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{79533252-25A6-4BB8-9783-789A66B345BF} = {A8E336BD-38E8-497B-B361-A1B4E50390DC}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{79533252-25A6-4BB8-9783-789A66B345BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79533252-25A6-4BB8-9783-789A66B345BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79533252-25A6-4BB8-9783-789A66B345BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79533252-25A6-4BB8-9783-789A66B345BF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
