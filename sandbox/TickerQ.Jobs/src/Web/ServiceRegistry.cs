@@ -1,0 +1,23 @@
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using TickerQ.Utilities;
+
+namespace TickerQ.Jobs.Web;
+
+public static class ServiceRegistry
+{
+    public static void AddWeb<TTickerDataContext>(
+        this IServiceCollection services,
+        HostType hostType,
+        Action<TickerOptionsBuilder>? configure = null)
+        where TTickerDataContext : DbContext
+    {
+        services.AddTickerQHost<TTickerDataContext>(hostType, configure);
+    }
+
+    public static void UseWeb(this IApplicationBuilder app, HostType hostType)
+    {
+        app.UseHostTickerQ(hostType);
+    }
+}
