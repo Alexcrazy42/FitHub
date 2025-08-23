@@ -14,7 +14,7 @@ public class Program
 
         var scope = host.Services.CreateScope();
         await using var dataContext = scope.ServiceProvider.GetRequiredService<TickerDataContext>();
-        await dataContext.MigrateAsync();
+        //await dataContext.MigrateAsync();
 
         await host.RunAsync();
     }

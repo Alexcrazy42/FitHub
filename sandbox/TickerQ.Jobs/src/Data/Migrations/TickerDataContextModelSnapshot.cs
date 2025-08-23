@@ -85,6 +85,7 @@ namespace TickerQ.Jobs.Data.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("LockHolder")
+                        .IsConcurrencyToken()
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("LockedAt")

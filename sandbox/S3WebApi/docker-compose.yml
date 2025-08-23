@@ -24,6 +24,7 @@ services:
       - "5206:80"
     environment:
       - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_ENVIRONMENT=Development
       - AWS__AccessKey=minio
       - AWS__SecretKey=minio123
       - AWS__Region=us-east-1

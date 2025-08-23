@@ -24,6 +24,7 @@ public sealed class Startup
             var instanceIdentifier = Guid.NewGuid().ToString();
             Console.WriteLine(instanceIdentifier);
             configureTicker.SetInstanceIdentifier(instanceIdentifier);
+            KeepAliveJobs.InstanceIdentifier = instanceIdentifier;
         });
     }
 

@@ -1,4 +1,5 @@
-﻿using FileStorageApi.Services;
+﻿using System.Net;
+using FileStorageApi.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FileStorageApi.Controllers;
@@ -15,7 +16,7 @@ public class FilesController : ControllerBase
     }
 
     [HttpPost("upload")]
-    public async Task<IActionResult> Upload([FromForm] IFormFile? file)
+    public async Task<IActionResult> Upload(IFormFile file)
     {
         if (file == null || file.Length == 0)
             return BadRequest("No file uploaded.");
@@ -39,9 +40,21 @@ public class FilesController : ControllerBase
     {
         try
         {
-            var stream = await _fileService.DownloadFileAsync(key);
-            var contentType = "application/octet-stream";
-            return File(stream, contentType, key);
+            if (string.IsNullOrEmpty(key))
+                return BadRequest("File name is required.");
+
+            var fileStream = await _fileService.DownloadFileAsync(key);
+
+            // Определяем Content-Type по расширению
+            var contentType = GetContentType(key);
+            var fileNameSafe = WebUtility.UrlEncode(key); // для кириллицы
+
+            return File(
+                fileStream,
+                contentType,
+                // Уберите имя файла → браузер не будет считать, что это "скачивание"
+                fileDownloadName: null // или null, чтобы не добавлять Content-Disposition
+            );
         }
         catch (FileNotFoundException)
         {
@@ -71,7 +84,7 @@ public class FilesController : ControllerBase
     }
 
     [HttpPut("replace/{key}")]
-    public async Task<IActionResult> Replace(string key, [FromForm] IFormFile? file)
+    public async Task<IActionResult> Replace(string key, IFormFile? file)
     {
         if (file == null || file.Length == 0)
             return BadRequest("No file provided.");
@@ -97,5 +110,23 @@ public class FilesController : ControllerBase
     {
         var exists = await _fileService.FileExistsAsync(key);
         return Ok(new { key, exists });
+    }
+    
+    private string GetContentType(string fileName)
+    {
+        var extensions = new Dictionary<string, string>
+        {
+            { ".jpg", "image/jpeg" },
+            { ".jpeg", "image/jpeg" },
+            { ".png", "image/png" },
+            { ".gif", "image/gif" },
+            { ".pdf", "application/pdf" },
+            { ".txt", "text/plain" },
+            { ".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document" },
+            { ".xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
+        };
+
+        var ext = Path.GetExtension(fileName).ToLowerInvariant();
+        return extensions.TryGetValue(ext, out var type) ? type : "application/octet-stream";
     }
 }

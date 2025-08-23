@@ -12,7 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{0C215478-F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A8E336BD-38E8-497B-B361-A1B4E50390DC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileStorageApi", "src\FileStorageApi\FileStorageApi.csproj", "{79533252-25A6-4BB8-9783-789A66B345BF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaApi", "src\KafkaApi\KafkaApi.csproj", "{79533252-25A6-4BB8-9783-789A66B345BF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

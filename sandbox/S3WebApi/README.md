@@ -1,113 +1,79 @@
-# S3 WebApi
+# S3 Web Api
+
+MinIO, AWS S3, Yandex Object Storage, Google Cloud Storage.
+
+1. Bucket (бакет) - виртуальный контейнер
+Бакет - это корневая папка для хранения файлов
+Имя бакета глобально уникально в AWS (например, my-photos-2025), но локально в MinIO можно использовать любые имена.
+
+Ограничения:
+    Имя должно быть уникальным (в AWS)
+    Нельзя вкладывать бакеты друг в друга
+    В одном аккаунте может быть много бакетов
+
+
+2. Object (объект) — то, что ты хранишь
+Что это? Объект — это файл + метаданные
+
+Key — путь к файлу (например, photos/vacation.jpg)
+Value — само содержимое (тело файла)
+Metadata — дополнительная информация (тип, дата, кастомные теги)
+Access Control — права доступа (через ACL или политики)
+
+```
+{
+  "Key": "documents/report.pdf",
+  "Size": 10240,
+  "ETag": "abc123...",
+  "LastModified": "2025-01-01T12:00:00Z",
+  "ContentType": "application/pdf",
+  "StorageClass": "STANDARD"
+}
+```
+
+3. Key (ключ) — "путь" к объекту
+
+Это уникальный идентификатор объекта в бакете
+Выглядит как путь: folder/subfolder/file.txt
+Но на самом деле это просто строка, а не настоящие папки
+
+В S3 нет реальных папок
+Папки — это иллюзия, созданная с помощью / в ключе
+Объект с ключом photos/2025/summer.jpg — просто строка, никакой photos/ папки не существует
+
+Но ты можешь "листать" по префиксу photos/ — как будто это папка 
 
 
 
-# Собрать и запустить в фоне
-docker compose up --build -d
-
-# Посмотреть логи
-docker compose logs -f
-
-# Остановить
-docker compose down
-
-# Полная очистка (с данными)
-docker compose down --volumes
-
-# Если ты изменил код .NET или Dockerfile, выполнить:
-docker compose up --build -d
+4. Metadata (метаданные)
+Каждый объект может иметь:
+Системные метаданные: Content-Type, Content-Length, Last-Modified
+Пользовательские метаданные: x-amz-meta-author: Alex, x-amz-meta-version: 1.2
+Пример: при загрузке файла ты указываешь ContentType = "image/jpeg" 
 
 
-docker build -t filestorageapi:latest .
+5. Access Control — управление доступом
+Как ограничить доступ?
+    Bucket Policy — JSON-политика, определяющая, кто и что может делать
+    ACL (Access Control List) — старый способ, менее гибкий
+    IAM (в AWS) — управление пользователями и ролями
+    В MinIO: через access keys и policies
 
-docker run -d \
-    --name fileapi \
-    -p 5242:80 \
-    -e ASPNETCORE_ENVIRONMENT=Development \
-    -e AWS__Region=us-east-1 \
-    -e AWS__ServiceURL=http://host.docker.internal:9000 \
-    -e AWS__AccessKey=minioadmin \
-    -e AWS__SecretKey=minioadmin \
-    -e AWS__BucketName=myfiles \
-    filestorageapi:latest
-
-
-
-docker compose down --volumes --remove-orphans
-docker compose up --build -d
+6. Region (регион)
+Бакет создаётся в определённом регионе (например, us-east-1, eu-central-1)
+Влияет на:
+    Задержку
+    Стоимость
+    Юридические требования (локализация данных)
 
 
-# Контейнеры
+7. Endpoint (конечная точка)
 
-Контейнер — это запущенный (или остановленный) экземпляр образа.
-Он как "виртуальная машина", но легковесная — содержит приложение, его зависимости и среду выполнения.
-Пример: контейнер с твоим .NET API или MinIO.
-🔹 Где живёт?
-Запущен в памяти (если работает)
-Или остановлен, но сохранён в списке (можно запустить снова)
-
-
-# Удалить один контейнер
-docker rm имя_контейнера
-# Удалить остановленный контейнер принудительно
-docker rm -f имя_контейнера
-# Удалить все остановленные контейнеры
-docker container prune
-# Удалить ВСЕ контейнеры (даже запущенные — остановит и удалит)
-docker rm -f $(docker ps -aq)
+Это URL, по которому доступен S3
+    AWS: https://s3.us-east-1.amazonaws.com
+    MinIO: http://localhost:9000
+    Yandex: https://storage.yandexcloud.net
+    Ты подключаешься к этому URL через SDK 
 
 
-# Образы
-
-Образ — это шаблон для контейнера.
-Как "установочный ISO", из которого запускаются контейнеры.
-Примеры:
-mcr.microsoft.com/dotnet/aspnet:9.0
-minio/minio:latest
-filestorageapi:latest (твой собранный образ)
-🔹 Где живёт?
-На диске, занимает место
-Не исчезает сам по себе, даже если контейнер удалён
-
-# Удалить один образ
-docker rmi имя_образа:тег
-# Пример:
-docker rmi filestorageapi:latest
-# Удалить все образы с определённым именем
-docker rmi $(docker images 'filestorageapi' -q)
-# Удалить ВСЕ неиспользуемые образы
-docker image prune -a
-
-# Тома
-Том — это персистентное хранилище данных, которое не исчезает при удалении контейнера.
-Пример: данные MinIO (файлы, которые ты загрузил) хранятся в volume, а не в контейнере.
-🔹 Зачем?
-Сохранить данные после пересоздания контейнера
-Поделиться данными между контейнерами
-Быстрый доступ к файлам с хоста
-
-
-docker volume ls
-# Удалить один том
-docker volume rm имя_тома
-# Пример:
-docker volume rm minio_data
-# Удалить ВСЕ неиспользуемые тома
-docker volume prune
-# Удалить ВСЕ тома (включая используемые — нужно остановить контейнеры)
-docker volume prune -a
-
-
-docker container prune
-docker image prune
-docker volume prune
-
-docker image prune -a
-
-
-# Почисти кэш сборки
-docker builder prune -f
-
-
-docker compose down --rmi local --volumes --remove-orphans
-
+Физическое хранилище

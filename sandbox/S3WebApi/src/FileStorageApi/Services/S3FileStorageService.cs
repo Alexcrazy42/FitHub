@@ -13,13 +13,6 @@ public class S3FileStorageService : IFileStorageService
         _s3Client = s3Client;
         _bucketName = configuration["AWS:BucketName"] 
                       ?? throw new ArgumentException("BucketName is not configured.");
-
-        // 🔽 Добавь эти строки
-        Console.WriteLine($"🔧 S3 Config:");
-        Console.WriteLine($"  AccessKey: '{configuration["AWS:AccessKey"]}'");
-        Console.WriteLine($"  SecretKey: '{configuration["AWS:SecretKey"]}'");
-        Console.WriteLine($"  ServiceURL: '{configuration["AWS:ServiceURL"]}'");
-        Console.WriteLine($"  BucketName: '{_bucketName}'");
     }
 
     public async Task EnsureBucketExistsAsync()

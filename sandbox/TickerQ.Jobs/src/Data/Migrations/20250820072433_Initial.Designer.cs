@@ -12,7 +12,7 @@ using TickerQ.Jobs.Data;
 namespace TickerQ.Jobs.Data.Migrations
 {
     [DbContext(typeof(TickerDataContext))]
-    [Migration("20250812194840_Initial")]
+    [Migration("20250820072433_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -88,6 +88,7 @@ namespace TickerQ.Jobs.Data.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("LockHolder")
+                        .IsConcurrencyToken()
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("LockedAt")

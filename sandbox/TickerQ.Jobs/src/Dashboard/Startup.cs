@@ -23,7 +23,6 @@ public sealed class Startup
         services.AddWeb<TickerDataContext>(HostType, configureTicker =>
         {
             configureTicker.AddDashboard();
-            configureTicker.AddDashboardBasicAuth();
         });
     }
 

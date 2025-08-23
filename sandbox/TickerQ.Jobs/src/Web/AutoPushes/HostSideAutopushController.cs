@@ -6,7 +6,7 @@ using TickerQ.Utilities.Models;
 
 namespace TickerQ.Jobs.Web.AutoPushes;
 
-public sealed class HostSideAutopushController
+internal sealed class HostSideAutopushController
 {
     private readonly IEmailNotificationService emailNotificationService;
 

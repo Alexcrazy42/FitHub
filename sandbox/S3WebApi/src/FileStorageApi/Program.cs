@@ -18,7 +18,6 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-
 builder.Services.AddSingleton<IAmazonS3>(sp =>
 {
     var config = builder.Configuration;
@@ -27,12 +26,13 @@ builder.Services.AddSingleton<IAmazonS3>(sp =>
         new BasicAWSCredentials(config["AWS:AccessKey"], config["AWS:SecretKey"]),
         new AmazonS3Config
         {
-            ServiceURL = config["AWS:ServiceURL"],
-            ForcePathStyle = true,
-            RegionEndpoint = RegionEndpoint.GetBySystemName(config["AWS:Region"] ?? "us-east-1"),
-            UseHttp = true,
-            ThrottleRetries = false
-        });
+            ServiceURL = config["AWS:ServiceURL"],        // http://minio:9000
+            ForcePathStyle = true,                        // обязательно
+            UseHttp = true,                               // так как не HTTPS
+            Timeout = TimeSpan.FromSeconds(20),
+            MaxErrorRetry = 3,
+        }
+    );
 });
 
 builder.Services.AddScoped<IFileStorageService, S3FileStorageService>();
@@ -42,18 +42,31 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment()) // или всегда, если нужно
+if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "File Storage API v1");
-        c.RoutePrefix = "swagger"; // будет на http://localhost:5242/swagger
+        c.RoutePrefix = "swagger";
     });
 }
 
-app.UseHttpsRedirection();
-app.UseAuthorization();
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var fileStorageService = scope.ServiceProvider.GetRequiredService<IFileStorageService>();
+    
+    try
+    {
+        await fileStorageService.EnsureBucketExistsAsync();
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Ошибка при создании бакета на старте приложения.");
+    }
+}
 
 app.Run();

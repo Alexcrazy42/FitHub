@@ -10,6 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{2E301F2F-A
 		Directory.Packages.props = Directory.Packages.props
 		NuGet.config = NuGet.config
 		README.md = README.md
+		compose.yaml = compose.yaml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5F7767AA-B633-4E95-A70C-22F2CB386055}"
@@ -27,8 +28,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web", "src\Web\Web.csproj", "{DFE252B7-C7CE-4E26-B5B0-C4217BF6BAAF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utilities", "src\Utilities\Utilities.csproj", "{7E03472F-BD79-41B9-ADA7-BFCA5A2DAB79}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Ticker", "Ticker", "{FEB6279A-357D-4CD5-AD06-C8EB0283DB31}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -73,6 +72,5 @@ Global
 		{AB626A2D-2B5C-466D-BBDA-E047FA7DC1C2} = {5F7767AA-B633-4E95-A70C-22F2CB386055}
 		{DFE252B7-C7CE-4E26-B5B0-C4217BF6BAAF} = {5F7767AA-B633-4E95-A70C-22F2CB386055}
 		{7E03472F-BD79-41B9-ADA7-BFCA5A2DAB79} = {5F7767AA-B633-4E95-A70C-22F2CB386055}
-		{FEB6279A-357D-4CD5-AD06-C8EB0283DB31} = {5F7767AA-B633-4E95-A70C-22F2CB386055}
 	EndGlobalSection
 EndGlobal
