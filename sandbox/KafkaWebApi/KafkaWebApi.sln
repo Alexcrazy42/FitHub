@@ -14,6 +14,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A8E336BD-38E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaApi", "src\KafkaApi\KafkaApi.csproj", "{79533252-25A6-4BB8-9783-789A66B345BF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messaging.Kafka", "src\Messaging.Kafka\Messaging.Kafka.csproj", "{E2DCEEE2-33CB-48E6-85C3-B6A472E51A4A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,11 +23,16 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{79533252-25A6-4BB8-9783-789A66B345BF} = {A8E336BD-38E8-497B-B361-A1B4E50390DC}
+		{E2DCEEE2-33CB-48E6-85C3-B6A472E51A4A} = {A8E336BD-38E8-497B-B361-A1B4E50390DC}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{79533252-25A6-4BB8-9783-789A66B345BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{79533252-25A6-4BB8-9783-789A66B345BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{79533252-25A6-4BB8-9783-789A66B345BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{79533252-25A6-4BB8-9783-789A66B345BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2DCEEE2-33CB-48E6-85C3-B6A472E51A4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2DCEEE2-33CB-48E6-85C3-B6A472E51A4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2DCEEE2-33CB-48E6-85C3-B6A472E51A4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2DCEEE2-33CB-48E6-85C3-B6A472E51A4A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

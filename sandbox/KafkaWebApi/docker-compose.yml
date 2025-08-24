@@ -10,7 +10,7 @@ services:
       - kafka-net
   
   kafka:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:7.3.3
     depends_on:
       - zookeeper
     ports:
@@ -41,15 +41,15 @@ services:
     networks:
       - kafka-net
 
-  kafka-api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "5206:80"
-    environment:
-      - ASPNETCORE_URLS=http://+:80
-      - ASPNETCORE_ENVIRONMENT=Development
+#  kafka-api:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    ports:
+#      - "5206:80"
+#    environment:
+#      - ASPNETCORE_URLS=http://+:80
+#      - ASPNETCORE_ENVIRONMENT=Development
 
 networks:
   kafka-net:
