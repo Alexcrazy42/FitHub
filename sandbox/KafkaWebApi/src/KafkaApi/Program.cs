@@ -18,44 +18,39 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddKafka()
     .AddProducer<string, OrderCreatedEvent>()
-    .WithConfig(config =>
-    {
-        config.BootstrapServers = "localhost:9092";
-        config.Acks = Acks.All;
-        config.LingerMs = 10;
-        config.EnableIdempotence = true;
-        config.AllowAutoCreateTopics = false;
-        config.TransactionalId = "orders-producer-01";
-    })
+        .WithConfig(config =>
+        {
+            config.BootstrapServers = "localhost:9092";
+            config.Acks = Acks.All;
+            config.LingerMs = 10;
+            config.AllowAutoCreateTopics = false;
+        })
+    .AddConsumer<OrderCreatedHandler, string, OrderCreatedEvent>("orders")
+        .WithConfig(config =>
+        {
+            config.BootstrapServers = "localhost:9092";
+            config.AllowAutoCreateTopics = false;
+            config.GroupId = "orders";
+            config.AutoOffsetReset = AutoOffsetReset.Earliest;
+            config.SessionTimeoutMs = 45000;
+            config.EnableAutoCommit = false;
+        })
 
     .AddProducer<string, LogEvent>()
-    .WithConfig(config =>
-    {
-        config.BootstrapServers = "localhost:9092";
-        config.Acks = Acks.Leader;
-        config.LingerMs = 100;
-        config.AllowAutoCreateTopics = false;
-    })
-
-    .AddConsumer<OrderCreatedHandler, string, OrderCreatedEvent>("orders")
-    .WithConfig(config =>
-    {
-        config.BootstrapServers = "localhost:9092";
-        config.AllowAutoCreateTopics = false;
-        config.GroupId = "orders";
-        config.AutoOffsetReset = AutoOffsetReset.Latest;
-        config.SessionTimeoutMs = 45000;
-        config.EnableAutoCommit = false;
-    })
-
+        .WithConfig(config =>
+        {
+            config.BootstrapServers = "localhost:9092";
+            config.Acks = Acks.Leader;
+            config.LingerMs = 100;
+            config.AllowAutoCreateTopics = false;
+        })
     .AddConsumer<LogEventHandler, string, LogEvent>("logs")
-    .WithConfig(config =>
-    {
-        config.BootstrapServers = "localhost:9092";
-        config.AutoOffsetReset = AutoOffsetReset.Earliest;
-        config.GroupId = "logs";
-    })
-    .Build();
+        .WithConfig(config =>
+        {
+            config.BootstrapServers = "localhost:9092";
+            config.AutoOffsetReset = AutoOffsetReset.Earliest;
+            config.GroupId = "logs";
+        });
 
 
 builder.Services.AddControllers();

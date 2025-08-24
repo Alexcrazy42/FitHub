@@ -32,9 +32,4 @@ public class KafkaBuilder
 
         return new ConsumerStep<TKey, TValue>(_services, this);
     }
-    
-    public void Build()
-    {
-        // Можно сохранить options в DI, если нужно
-    }
 }

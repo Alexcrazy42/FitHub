@@ -9,9 +9,9 @@ public class OrderCreatedHandler : IMessageHandler<string, OrderCreatedEvent>
     public OrderCreatedHandler(ILogger<OrderCreatedHandler> logger) =>
         _logger = logger;
 
-    public Task HandleAsync(string key, OrderCreatedEvent value, CancellationToken ct)
+    public async Task HandleAsync(string key, OrderCreatedEvent value, CancellationToken ct)
     {
-        _logger.LogInformation("Order {OrderId} created", value.OrderId);
-        return Task.CompletedTask;
+        await Task.Delay(1000, ct);
+        _logger.LogInformation("Order {OrderId} created123", value.OrderId);
     }
 }

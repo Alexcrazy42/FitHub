@@ -8,6 +8,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{0C215478-F
 		Dockerfile = Dockerfile
 		docker-compose.yml = docker-compose.yml
 		docker-compose.md = docker-compose.md
+		send_orders_parallel.ps1 = send_orders_parallel.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A8E336BD-38E8-497B-B361-A1B4E50390DC}"

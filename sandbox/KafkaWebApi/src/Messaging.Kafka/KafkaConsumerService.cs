@@ -34,7 +34,7 @@ public class KafkaConsumerService<TKey, TValue> : BackgroundService
     {
         var topic = _kafkaConsumerOptions.Topic;
 
-        using var consumer = new ConsumerBuilder<TKey, TValue>(_consumerOptions.Config)
+        var consumer = new ConsumerBuilder<TKey, TValue>(_consumerOptions.Config)
             .SetValueDeserializer(new JsonDeserializer<TValue>())
             .Build();
 
@@ -92,5 +92,16 @@ public class KafkaConsumerService<TKey, TValue> : BackgroundService
             _logger.LogError(ex, "Error handling message {Topic} {Partition} {Offset}", cr.Topic, cr.Partition, cr.Offset);
             throw;
         }
+    }
+    
+    public override void Dispose()
+    {
+        try
+        {
+            _consumer?.Close();
+            _consumer?.Dispose();
+        }
+        catch { }
+        base.Dispose();
     }
 }
