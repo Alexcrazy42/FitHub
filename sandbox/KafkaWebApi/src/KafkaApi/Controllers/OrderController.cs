@@ -7,13 +7,12 @@ namespace KafkaApi.Controllers;
 public class OrderController : ControllerBase
 {
     private readonly IKafkaProducer<string, OrderCreatedEvent> _producer;
-    private readonly IKafkaProducer<string, LogEvent> _producer1;
+    //private readonly IKafkaProducer<string, LogEvent> _producer1;
 
-    public OrderController(IKafkaProducer<string, OrderCreatedEvent> producer,
-        IKafkaProducer<string, LogEvent> producer1)
+    public OrderController(IKafkaProducer<string, OrderCreatedEvent> producer)
     {
         _producer = producer;
-        _producer1 = producer1;
+        //_producer1 = producer1;
     }
 
     [HttpPost("/order")]
@@ -37,9 +36,6 @@ public class OrderController : ControllerBase
             Source = guid.ToString(),
             Message = $"message {guid.ToString()}"
         };
-        await _producer1.ProduceAsync("logs", 
-            guid.ToString(), 
-            log);
 
         return Ok();
     }
