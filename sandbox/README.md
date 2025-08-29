@@ -1,17 +1,39 @@
 # Технологии для Sandbox
 
 
+Роадмап:
+    + S3: done
+    + Kafka: done
+    ELK. цель: я вижу логи в кибане, пишу их из C# через Serilog, они сохраняются в течении недели в volume
+    Jobs. Цель: я запускаю задачи 
+    Упаковка ASP.NET + Postgres + S3 + Kafka + ELK в докеркомпос
+    Написание логики приложения целиком в монолите (бэк + фронт)
+
+    
+
 
 PostgreSql
-Jobs (Ticker, Quartz, Hangfire)
-Kafka
-Rabbit MQ
+
 S3
-Prometheus + Grafana
-ELK (Elasticsearch, Logstash, Kibana)
+
+Kafka
+    Rabbit MQ
+
+
+Логи: 
+    ELK (Elasticsearch, Logstash, Kibana)
     Loki (Grafana Labs) — легковесная альтернатива ELK.
+    
+
+Jobs (Ticker, Quartz, Hangfire)
+
+
+OpenTelemetry — стандарт для сбора метрик, логов, трейсов.    
     Jaeger / Zipkin — распределённый трейсинг (tracing), особенно важно при микросервисах.
-    OpenTelemetry — стандарт для сбора метрик, логов, трейсов.
+
+
+Prometheus + Grafana
+
 
 Consul
 Kubernetes + IAC (Helm, Terraform, Ansible)

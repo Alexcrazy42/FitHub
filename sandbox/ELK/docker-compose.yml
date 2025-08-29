@@ -35,10 +35,11 @@ services:
       - "5000:5000/udp"   # например, для syslog
       - "9600:9600"       # Logstash Monitoring API
     volumes:
-      - logstash-config:/usr/share/logstash/pipeline:ro
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
       - logstash-logs:/usr/share/logstash/logs
     environment:
       - xpack.monitoring.enabled=false
+      - "LS_JAVA_OPTS=-Xms256m -Xmx512m"
     networks:
       - elk
     restart: unless-stopped
@@ -68,9 +69,6 @@ volumes:
     driver: local
   es-logs:
     name: elk-es-logs
-    driver: local
-  logstash-config:
-    name: elk-logstash-config
     driver: local
   logstash-logs:
     name: elk-logstash-logs
