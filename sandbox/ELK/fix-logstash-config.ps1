@@ -1,4 +1,4 @@
-﻿$confPath = "C:\Users\alexc\source\gems\pet-projects\FitHub\sandbox\ELK\logstash\pipeline\logstash.conf"
+﻿$confPath = Join-Path $PSScriptRoot "logstash\pipeline\logstash.conf"
 
 # Проверяем, существует ли файл
 if (-Not (Test-Path $confPath)) {
@@ -29,4 +29,4 @@ if ($bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
     Write-Host "✅ BOM отсутствует — всё в порядке." -ForegroundColor Green
 }
 
-Read-Host "Нажмите Enter для завершения"
+$res = Read-Host "Нажмите Enter для завершения"
