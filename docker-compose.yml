@@ -1,0 +1,169 @@
+﻿version: "3.9"
+
+services:
+  postgres-db:
+    image: postgres:16
+    container_name: postgres-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: fit_hub
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - app-net
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio-local
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # Web UI
+    environment:
+        MINIO_ROOT_USER: minio     # ← Измените здесь
+        MINIO_ROOT_PASSWORD: minio123  # ← И здесь
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - app-net
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+      - zookeeper-log:/var/lib/zookeeper/log
+    networks:
+      - app-net
+  
+  kafka:
+    image: confluentinc/cp-kafka:7.3.3
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"         # Внешний доступ (для .NET приложения)
+      - "9093:9093"         # Внутренний (для Kafka UI)
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_INTERNAL://0.0.0.0:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    networks:
+      - app-net
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    depends_on:
+      - kafka
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9093
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    networks:
+      - app-net
+
+  elasticsearch:
+    image: elasticsearch:8.17.10
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+      - xpack.monitoring.collection.enabled=true
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+      - es-logs:/usr/share/elasticsearch/logs
+    networks:
+      - app-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  logstash:
+    image: logstash:8.17.10
+    container_name: logstash
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    ports:
+      - "5000:5000/tcp"   # приём JSON-логов
+      - "5000:5000/udp"   # например, для syslog
+      - "9600:9600"       # Logstash Monitoring API
+    volumes:
+      - ./iac_configs/logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - logstash-logs:/usr/share/logstash/logs
+    environment:
+      - xpack.monitoring.enabled=false
+      - "LS_JAVA_OPTS=-Xms256m -Xmx512m"
+    networks:
+      - app-net
+    restart: unless-stopped
+
+  kibana:
+    image: kibana:8.17.10
+    container_name: kibana
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    ports:
+      - "5601:5601"
+    volumes:
+      - kibana-logs:/usr/share/kibana/logs
+    environment:
+      - ELASTICSEARCH_HOSTS=["http://elasticsearch:9200"]
+      - SERVER_NAME=kibana
+      - LOGS_DESTINATION=stdout
+    networks:
+      - app-net
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+    name: fit-hub-postgres-data
+    driver: local
+  minio_data:
+  kafka-data:
+  zookeeper-data:
+  zookeeper-log:
+  es-data:
+    name: elk-es-data
+    driver: local
+  es-logs:
+    name: elk-es-logs
+    driver: local
+  logstash-logs:
+    name: elk-logstash-logs
+    driver: local
+  kibana-logs:
+    name: elk-kibana-logs
+    driver: local
+
+networks:
+  app-net:
+    driver: bridge
+
