@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+        <UserSecretsId>dotnet-Node-2b6a98de-0fdb-49a0-87cc-47fd265411c6</UserSecretsId>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.6"/>
+        <PackageReference Include="Npgsql" Version="9.0.3" />
+        <PackageReference Include="Quartz" Version="3.15.0" />
+        <PackageReference Include="Quartz.Extensions.Hosting" Version="3.15.0" />
+        <PackageReference Include="Quartz.Serialization.SystemTextJson" Version="3.15.0" />
+        <PackageReference Include="Quartzmin" Version="1.0.3" />
+        <PackageReference Include="Quartzmin.SelfHost" Version="1.0.3" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.4" />
+    </ItemGroup>
+</Project>

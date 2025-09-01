@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: quartz-postgres
+    environment:
+      POSTGRES_DB: quartz_db
+      POSTGRES_USER: quartz_user
+      POSTGRES_PASSWORD: quartz_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-quartz.sql:/docker-entrypoint-initdb.d/init-quartz.sql
+
+  quartz-node1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: quartz-node-1
+    depends_on:
+      - postgres
+    environment:
+      QUARTZ__JOBSTORE__DRIVERDELEGATETYPE: "Quartz.Impl.AdoJobStore.PostgreSQLDelegate, Quartz"
+      QUARTZ__JOBSTORE__DATASOURCE: default
+      QUARTZ__DATASOURCE__DEFAULT__CONNECTIONSTRING: "Server=postgres;Port=5432;Database=quartz_db;User Id=quartz_user;Password=quartz_pass;"
+      QUARTZ__DATASOURCE__DEFAULT__PROVIDER: Npgsql
+      QUARTZ__JOBSTORE__CLUSTERED: true
+      QUARTZ__JOBSTORE__CLUSTERCHECKININTERVAL: 7500
+      ASPNETCORE_ENVIRONMENT: Development
+      QUARTZ__SCHEDULER__INSTANCEID: Node1
+      QUARTZ__SCHEDULER__INSTANCENAME: ClusteredScheduler
+      ASPNETCORE_URLS: http://+:80
+      
+    ports:
+      - "5001:80"   # API + Swagger + Quartzmin будут тут
+
+  quartz-node2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: quartz-node-2
+    depends_on:
+      - postgres
+    environment:
+      QUARTZ__JOBSTORE__DRIVERDELEGATETYPE: "Quartz.Impl.AdoJobStore.PostgreSQLDelegate, Quartz"
+      QUARTZ__JOBSTORE__DATASOURCE: default
+      QUARTZ__DATASOURCE__DEFAULT__CONNECTIONSTRING: "Server=postgres;Port=5432;Database=quartz_db;User Id=quartz_user;Password=quartz_pass;"
+      QUARTZ__DATASOURCE__DEFAULT__PROVIDER: Npgsql
+      QUARTZ__JOBSTORE__CLUSTERED: true
+      QUARTZ__JOBSTORE__CLUSTERCHECKININTERVAL: 7500
+      ASPNETCORE_ENVIRONMENT: Development
+      QUARTZ__SCHEDULER__INSTANCEID: Node2
+      QUARTZ__SCHEDULER__INSTANCENAME: ClusteredScheduler
+      ASPNETCORE_URLS: http://+:80
+    ports:
+      - "5002:80"   # API + Swagger + Quartzmin будут тут
+
+volumes:
+  postgres_data:
