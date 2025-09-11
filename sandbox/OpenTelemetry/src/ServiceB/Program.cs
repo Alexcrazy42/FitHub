@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using OpenTelemetry;
+using OpenTelemetry.Exporter;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using ServiceB.Data;
@@ -9,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
+//AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -29,26 +31,24 @@ builder.Services.AddHttpClient("ServiceA", client =>
     client.BaseAddress = new Uri("http://servicea:8080");
 }); 
 
-// OpenTelemetry
-builder.Services.AddOpenTelemetry()
-    .ConfigureResource(resource => resource.AddService(builder.Configuration["OTEL_SERVICE_NAME"]))
+builder.Services
+    .AddOpenTelemetry()
+    .ConfigureResource(r => r.AddService(
+        Environment.GetEnvironmentVariable("OTEL_SERVICE_NAME") ?? "service-b"))
     .WithTracing(tracing =>
     {
         tracing
             .AddAspNetCoreInstrumentation()
             .AddHttpClientInstrumentation()
-            .AddEntityFrameworkCoreInstrumentation()
-            .AddJaegerExporter(o =>
-            {
-                o.AgentHost = "jaeger"; // Service name from docker-compose.yml
-                o.AgentPort = 6831; 
-            });
-            // .AddOtlpExporter(otlp =>
-            // {
-            //     otlp.Endpoint = new Uri(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
-            //     otlp.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc; // ← ДОБАВЬ ЭТУ СТРОКУ
-            // });
+            .AddEntityFrameworkCoreInstrumentation();
+
+        tracing.AddOtlpExporter(o =>
+        {
+            o.Endpoint = new Uri("http://jaeger:4318");
+            o.Protocol = OtlpExportProtocol.HttpProtobuf;
+        });
     });
+
 
 var app = builder.Build();
 

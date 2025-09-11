@@ -7,12 +7,13 @@
     + ELK. цель: я вижу логи в кибане, пишу их из C# через Serilog, они сохраняются в течении недели в volume
     + Jobs. Цель: я запускаю задачи на разных нодах с помощью Hangfire. они конкурируют за выполнение задач, но выигрывает только один
     + Упаковка ASP.NET + Postgres + S3 + Kafka + ELK в докеркомпос
+    Добавить Redis в Docker-compose
+    OpenTelemetry: по всем микросервисам формируются trace, я вижу span по: бд, http запросы, kafka, фоновые задачи (?)
+    Prometheus + Grafana в docker-compose
     Написание логики приложения целиком в монолите (бэк + фронт)
 
-    
 
-
-PostgreSql
+PostgreSql +
 
 S3 +
 
@@ -27,9 +28,9 @@ S3 +
     
 
 Jobs
-    TickerQ
-    Hangfire
-    Quartz
+    TickerQ +- не зашел совсем + уж слишком новый и сырой, хоть и перспективный
+    Hangfire +
+    Quartz +
 
 
 OpenTelemetry — стандарт для сбора метрик, логов, трейсов.

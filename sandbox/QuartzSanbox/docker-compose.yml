@@ -22,17 +22,8 @@ services:
     depends_on:
       - postgres
     environment:
-      QUARTZ__JOBSTORE__DRIVERDELEGATETYPE: "Quartz.Impl.AdoJobStore.PostgreSQLDelegate, Quartz"
-      QUARTZ__JOBSTORE__DATASOURCE: default
-      QUARTZ__DATASOURCE__DEFAULT__CONNECTIONSTRING: "Server=postgres;Port=5432;Database=quartz_db;User Id=quartz_user;Password=quartz_pass;"
-      QUARTZ__DATASOURCE__DEFAULT__PROVIDER: Npgsql
-      QUARTZ__JOBSTORE__CLUSTERED: true
-      QUARTZ__JOBSTORE__CLUSTERCHECKININTERVAL: 7500
-      ASPNETCORE_ENVIRONMENT: Development
-      QUARTZ__SCHEDULER__INSTANCEID: Node1
-      QUARTZ__SCHEDULER__INSTANCENAME: ClusteredScheduler
       ASPNETCORE_URLS: http://+:80
-      
+      NodeId: 1
     ports:
       - "5001:80"   # API + Swagger + Quartzmin будут тут
 
@@ -44,16 +35,8 @@ services:
     depends_on:
       - postgres
     environment:
-      QUARTZ__JOBSTORE__DRIVERDELEGATETYPE: "Quartz.Impl.AdoJobStore.PostgreSQLDelegate, Quartz"
-      QUARTZ__JOBSTORE__DATASOURCE: default
-      QUARTZ__DATASOURCE__DEFAULT__CONNECTIONSTRING: "Server=postgres;Port=5432;Database=quartz_db;User Id=quartz_user;Password=quartz_pass;"
-      QUARTZ__DATASOURCE__DEFAULT__PROVIDER: Npgsql
-      QUARTZ__JOBSTORE__CLUSTERED: true
-      QUARTZ__JOBSTORE__CLUSTERCHECKININTERVAL: 7500
-      ASPNETCORE_ENVIRONMENT: Development
-      QUARTZ__SCHEDULER__INSTANCEID: Node2
-      QUARTZ__SCHEDULER__INSTANCENAME: ClusteredScheduler
       ASPNETCORE_URLS: http://+:80
+      NodeId: 2
     ports:
       - "5002:80"   # API + Swagger + Quartzmin будут тут
 

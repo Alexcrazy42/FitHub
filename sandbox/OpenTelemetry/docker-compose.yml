@@ -2,12 +2,16 @@ version: '3.8'
 
 services:
   jaeger:
-    image: jaegertracing/all-in-one:1.54
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger
+    restart: always
     ports:
-      - "16686:16686" # Jaeger UI
-      - "6831:6831/udp" # Jaeger agent UDP port
-      - "5778:5778" # Jaeger agent HTTP port
-      - "14268:14268" # Jaeger collector HTTP port
+      - 4317:4317
+      - 4318:4318
+      - 16686:16686
+      - 16685:16685
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:16686"]
       interval: 10s
@@ -108,8 +112,9 @@ services:
       - ConnectionStrings__DefaultConnection=Host=postgres-a;Database=servicea_db;Username=user;Password=password
       - Cache__Redis=redis:6379
       - Kafka__BootstrapServers=kafka:9092
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:16686
       - OTEL_SERVICE_NAME=service-a
+      - OTEL_LOG_LEVEL=debug
 
   # ServiceB
   serviceb:
@@ -128,8 +133,9 @@ services:
     environment:
       - ConnectionStrings__DefaultConnection=Host=postgres-b;Database=serviceb_db;Username=user;Password=password
       - Kafka__BootstrapServers=kafka:9092
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:16686
       - OTEL_SERVICE_NAME=service-b
+      - OTEL_LOG_LEVEL=debug
 
 volumes:
   postgres_a_data:

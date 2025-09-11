@@ -16,17 +16,9 @@ public class HelloJob : IJob
     {
         var jobName = context.JobDetail.Key.Name;
         var fireTime = context.FireTimeUtc.LocalDateTime.ToString(CultureInfo.InvariantCulture);
-        var instanceId = Environment.GetEnvironmentVariable("QUARTZ__SCHEDULER__INSTANCEID") ?? "unknown";
+        var instanceId = Environment.GetEnvironmentVariable("NodeId") ?? "unknown";
 
         logger.LogInformation("[Node: {instanceId}] Job {jobName} executed at {fireTime}", instanceId, jobName, fireTime);
         return Task.CompletedTask;
-    }
-}
-
-public class ConsoleLogger
-{
-    public void Log(string message)
-    {
-        Console.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}");
     }
 }

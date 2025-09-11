@@ -83,7 +83,6 @@ public class KafkaWeatherConsumer : BackgroundService
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var httpClientFactory = scope.ServiceProvider.GetRequiredService<IHttpClientFactory>();
 
-        // 1. Сохраняем событие в БД
         db.WeatherLogs.Add(new WeatherLog
         {
             City = weatherEvent.City,
@@ -92,7 +91,7 @@ public class KafkaWeatherConsumer : BackgroundService
         });
         await db.SaveChangesAsync(ct);
 
-        // 2. Делаем HTTP-запрос к ServiceA (для демонстрации трейса)
+
         try
         {
             var client = httpClientFactory.CreateClient("ServiceA");
@@ -105,7 +104,7 @@ public class KafkaWeatherConsumer : BackgroundService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to call ServiceA for {City}", weatherEvent.City);
-            throw; // будет пойман выше и записан в трейс
+            throw;
         }
     }
 }
