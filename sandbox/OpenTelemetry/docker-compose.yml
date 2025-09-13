@@ -18,8 +18,9 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+    networks:
+      - app-network
 
-  # PostgreSQL for ServiceA
   postgres-a:
     image: postgres:15
     environment:
@@ -36,8 +37,9 @@ services:
       timeout: 5s
       retries: 5
       start_period: 15s
+    networks:
+      - app-network
 
-  # PostgreSQL for ServiceB
   postgres-b:
     image: postgres:15
     environment:
@@ -54,8 +56,9 @@ services:
       timeout: 5s
       retries: 5
       start_period: 15s
+    networks:
+      - app-network
 
-  # Redis for ServiceA (кэш)
   redis:
     image: redis:7
     ports:
@@ -66,13 +69,16 @@ services:
       timeout: 3s
       retries: 3
       start_period: 10s
+    networks:
+      - app-network
 
-  # Kafka + Zookeeper
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.0
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - app-network
 
   kafka:
     image: confluentinc/cp-kafka:7.4.0
@@ -91,8 +97,9 @@ services:
       timeout: 5s
       retries: 5
       start_period: 20s
+    networks:
+      - app-network
 
-  # ServiceA
   servicea:
     build:
       context: ./src/ServiceA
@@ -112,11 +119,12 @@ services:
       - ConnectionStrings__DefaultConnection=Host=postgres-a;Database=servicea_db;Username=user;Password=password
       - Cache__Redis=redis:6379
       - Kafka__BootstrapServers=kafka:9092
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:16686
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317   # ← ИСПРАВЛЕНО!
       - OTEL_SERVICE_NAME=service-a
       - OTEL_LOG_LEVEL=debug
+    networks:
+      - app-network
 
-  # ServiceB
   serviceb:
     build:
       context: ./src/ServiceB
@@ -133,10 +141,17 @@ services:
     environment:
       - ConnectionStrings__DefaultConnection=Host=postgres-b;Database=serviceb_db;Username=user;Password=password
       - Kafka__BootstrapServers=kafka:9092
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:16686
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317   # ← ИСПРАВЛЕНО!
       - OTEL_SERVICE_NAME=service-b
       - OTEL_LOG_LEVEL=debug
+    networks:
+      - app-network
 
 volumes:
   postgres_a_data:
   postgres_b_data:
+
+networks:
+  app-network:
+    driver: bridge
+    name: app-network

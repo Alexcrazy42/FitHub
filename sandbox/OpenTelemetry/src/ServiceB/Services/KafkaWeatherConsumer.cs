@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Text;
 using Confluent.Kafka;
 using OpenTelemetry.Trace;
 using ServiceB.Contracts;
@@ -44,7 +45,27 @@ public class KafkaWeatherConsumer : BackgroundService
                 {
                     var consumeResult = consumer.Consume(stoppingToken);
 
-                    using var activity = _activitySource.StartActivity("Consume Weather Event", ActivityKind.Consumer);
+                    string? traceparent = null;
+                    if (consumeResult.Message.Headers != null)
+                    {
+                        var header = consumeResult.Message.Headers.GetLastBytes("traceparent");
+                        if (header != null)
+                        {
+                            traceparent = Encoding.UTF8.GetString(header);
+                        }
+                    }
+                    
+                    ActivityContext? parentContext = null;
+                    if (!string.IsNullOrEmpty(traceparent) && ActivityContext.TryParse(traceparent, null, out var context))
+                    {
+                        parentContext = context;
+                    }
+                    
+                    using var activity = _activitySource.StartActivity(
+                        "Consume Weather Event",
+                        ActivityKind.Consumer,
+                        parentContext ?? default(ActivityContext)
+                    );
                     activity?.SetTag("messaging.system", "kafka");
                     activity?.SetTag("messaging.destination", "weather.events");
                     activity?.SetTag("messaging.destination_kind", "topic");

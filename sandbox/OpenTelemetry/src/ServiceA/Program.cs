@@ -19,6 +19,7 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new() { Title = "ServiceA API", Version = "v1" });
 });
 
+
 // PostgreSQL
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -40,15 +41,12 @@ builder.Services
     .WithTracing(tracing =>
     {
         tracing
+            .AddSource("ServiceA.KafkaProducer")
             .AddAspNetCoreInstrumentation()
             .AddHttpClientInstrumentation()
             .AddEntityFrameworkCoreInstrumentation();
 
-        tracing.AddOtlpExporter(o =>
-        {
-            o.Endpoint = new Uri("http://jaeger:4318");
-            o.Protocol = OtlpExportProtocol.HttpProtobuf;
-        });
+        tracing.AddOtlpExporter();
     });
 
 var app = builder.Build();

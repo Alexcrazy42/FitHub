@@ -38,15 +38,12 @@ builder.Services
     .WithTracing(tracing =>
     {
         tracing
+            .AddSource("ServiceB.KafkaConsumer")
             .AddAspNetCoreInstrumentation()
             .AddHttpClientInstrumentation()
             .AddEntityFrameworkCoreInstrumentation();
 
-        tracing.AddOtlpExporter(o =>
-        {
-            o.Endpoint = new Uri("http://jaeger:4318");
-            o.Protocol = OtlpExportProtocol.HttpProtobuf;
-        });
+        tracing.AddOtlpExporter();
     });
 
 

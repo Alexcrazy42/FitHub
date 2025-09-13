@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Text;
 using Confluent.Kafka;
 using OpenTelemetry.Trace;
 using ServiceA.Contracts;
@@ -35,6 +36,14 @@ public class KafkaProducerService : IDisposable
                 Key = weatherEvent.City,
                 Value = System.Text.Json.JsonSerializer.Serialize(weatherEvent)
             };
+
+            // 👇 Добавляем заголовок с контекстом трейсинга
+            if (Activity.Current?.Context != default)
+            {
+                var traceparent = Activity.Current.Id; // W3C traceparent format
+                message.Headers = new Headers();
+                message.Headers.Add("traceparent", Encoding.UTF8.GetBytes(traceparent));
+            }
 
             var deliveryResult = await _producer.ProduceAsync("weather.events", message);
             activity?.SetTag("messaging.kafka.message.offset", deliveryResult.Offset.Value);
