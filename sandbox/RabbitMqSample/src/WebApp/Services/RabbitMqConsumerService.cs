@@ -32,35 +32,57 @@ public class RabbitMqConsumerService : BackgroundService
     }
 
     private async Task ConsumeQueueAsync(IChannel channel, string queueName, string consumerTagPrefix, CancellationToken stoppingToken)
-    {
-        // Создаём consumer ДО вызова BasicConsumeAsync
-        var consumer = new AsyncEventingBasicConsumer(channel);
+{
+    var consumer = new AsyncEventingBasicConsumer(channel);
 
-        // Подписываемся на событие получения сообщения
-        consumer.ReceivedAsync += async (sender, eventArgs) =>
+    consumer.ReceivedAsync += async (sender, eventArgs) =>
+    {
+        try
         {
+            byte[] body = eventArgs.Body.ToArray();
+            var message = Encoding.UTF8.GetString(body);
+            _logger.LogInformation($"📥 [{consumerTagPrefix}] Received: {message}");
+
+            // 🧨 Искусственная ошибка: если сообщение содержит "fail" — бросаем исключение
+            if (queueName == "direct.queue1" && message.Contains("fail"))
+            {
+                throw new InvalidOperationException($"Simulated failure for message: {message}");
+            }
+
+            // Если всё хорошо — подтверждаем
+            await ((AsyncEventingBasicConsumer)sender).Channel.BasicAckAsync(eventArgs.DeliveryTag, multiple: false, cancellationToken: stoppingToken);
+            _logger.LogInformation($"✅ [{consumerTagPrefix}] Message acknowledged: {message}");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"❌ Error processing message in [{consumerTagPrefix}]. Message will be NACKed or go to DLQ after retries.");
+
+            // ❗ Важно: не делаем ACK → сообщение вернётся в очередь или уйдёт в DLQ, если достигнут лимит доставок
+            // В нашем случае — так как нет настроек retry, RabbitMQ сразу отправит в DLQ (если очередь настроена с DLQ)
+            // Но по умолчанию — без QoS и без настроек TTL/retry — сообщение может застрять.
+
+            // 👇 Поэтому явно отклоняем сообщение без повторной постановки в очередь → сразу в DLQ
             try
             {
-                byte[] body = eventArgs.Body.ToArray();
-                var message = Encoding.UTF8.GetString(body);
-                _logger.LogInformation($"📥 [{consumerTagPrefix}] Received: {message}");
-                Console.WriteLine($"📥 [{consumerTagPrefix}] Received: {message}");
-                await ((AsyncEventingBasicConsumer)sender).Channel.BasicAckAsync(eventArgs.DeliveryTag, multiple: false, cancellationToken: stoppingToken);
+                await ((AsyncEventingBasicConsumer)sender).Channel.BasicNackAsync(
+                    deliveryTag: eventArgs.DeliveryTag,
+                    multiple: false,
+                    requeue: false, // ← не возвращать в очередь → сразу в DLQ
+                    cancellationToken: stoppingToken);
             }
-            catch (Exception ex)
+            catch (Exception nackEx)
             {
-                _logger.LogError(ex, $"❌ Error processing message in [{consumerTagPrefix}]");
+                _logger.LogError(nackEx, "Failed to NACK message");
             }
-            await Task.CompletedTask;
-        };
+        }
+    };
 
-        // Запускаем потребление
-        await channel.BasicConsumeAsync(
-            queue: queueName,
-            autoAck: false,
-            consumer: consumer,
-            cancellationToken: stoppingToken);
+    await channel.BasicConsumeAsync(
+        queue: queueName,
+        autoAck: false,
+        consumer: consumer,
+        cancellationToken: stoppingToken);
 
-        _logger.LogInformation($"👂 Started consuming {queueName}");
-    }
+    _logger.LogInformation($"👂 Started consuming {queueName}");
+}
 }

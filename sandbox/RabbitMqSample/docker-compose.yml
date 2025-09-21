@@ -15,29 +15,30 @@ services:
     networks:
       - file-network
     healthcheck:
-      test: [ "CMD", "rabbitmq-diagnostics", "ping" ]
+      test: [ "CMD", "nc", "-z", "localhost", "5672" ]
       interval: 10s
       timeout: 5s
-      retries: 10
-      start_period: 30s
+      retries: 15
+      start_period: 40s
 
-  webapi:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: aspnet_rabbit_demo
-    ports:
-      - "8080:80"
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    environment:
-      - RABBITMQ_HOST=rabbitmq
-      - RABBITMQ_PORT=5672
-      - RABBITMQ_USERNAME=guest
-      - RABBITMQ_PASSWORD=guest
-    networks:
-      - file-network
+#  webapi:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    container_name: aspnet_rabbit_demo
+#    ports:
+#      - "8080:80"
+#    depends_on:
+#      rabbitmq:
+#        condition: service_healthy
+#    environment:
+#      - ASPNETCORE_URLS=http://+:80
+#      - RABBITMQ_HOST=rabbitmq
+#      - RABBITMQ_PORT=5672
+#      - RABBITMQ_USERNAME=guest
+#      - RABBITMQ_PASSWORD=guest
+#    networks:
+#      - file-network
 
 volumes:
   rabbitmq_data:
