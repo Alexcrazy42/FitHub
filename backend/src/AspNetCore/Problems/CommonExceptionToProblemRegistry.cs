@@ -9,6 +9,7 @@ internal sealed class CommonExceptionToProblemRegistry : IExceptionToProblemRegi
     {
         { typeof(AlreadyExistsException), HttpStatusCode.BadRequest },
         { typeof(ValidationException), HttpStatusCode.BadRequest },
+        { typeof(DetailedValidationException), HttpStatusCode.BadRequest },
         { typeof(NotFoundException), HttpStatusCode.NotFound }
     };
 

@@ -11,7 +11,7 @@
         + Добавить Redis в Docker-compose
         + OpenTelemetry: по всем микросервисам формируются trace, я вижу span по: бд, http запросы, kafka, фоновые задачи (?)
         + Prometheus + Grafana в docker-compose
-        RabbitMQ
+        + RabbitMQ
     
     основная часть:
         планирование модулей (бэк, тесты, фронт)
@@ -41,7 +41,7 @@ S3 +
 
 Брокеры
     Kafka +
-    RabbitMQ
+    RabbitMQ +
 
 
 Логи: 

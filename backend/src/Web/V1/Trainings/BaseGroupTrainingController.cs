@@ -5,8 +5,11 @@ using FitHub.Contracts;
 using FitHub.Contracts.V1;
 using FitHub.Contracts.V1.Trainings.BaseGroupTrainings;
 using FitHub.Domain.Trainings;
+using FitHub.Web.Validation;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ValidationException = FitHub.Common.Entities.ValidationException;
 
 namespace FitHub.Web.V1.Trainings;
 
@@ -49,8 +52,14 @@ public class BaseGroupTrainingController : ControllerBase
     }
 
     [HttpPost(ApiRoutesV1.BaseGroupTrainings)]
-    public async Task<BaseGroupTrainingResponse> CreateAsync([FromBody] CreateBaseGroupTrainingRequest request, CancellationToken ct)
+    public async Task<BaseGroupTrainingResponse> CreateAsync(
+        [FromBody] CreateBaseGroupTrainingRequest request,
+        [FromServices] IValidator<CreateBaseGroupTrainingRequest> validator,
+        CancellationToken ct)
     {
+        var validationResult = await validator.ValidateAsync(request, ct);
+        validationResult.HandleValidationResult();
+
         request = ValidationException.ThrowIfNull(request, "request cannot be null");
 
         var entity = await service.CreateAsync(request, ct);

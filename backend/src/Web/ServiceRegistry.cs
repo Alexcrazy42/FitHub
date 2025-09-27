@@ -1,5 +1,8 @@
 ﻿using FitHub.Common.AspNetCore;
 using FitHub.Common.Extensions.Configuration;
+using FitHub.Web.V1.Trainings.Validators;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +16,8 @@ public static class ServiceRegistry
         services.AddBindedOptions<AuthOptions>();
         var authOptions = configuration.GetRequiredOptions<AuthOptions>();
         services.AddJwtAuthenticationAndAuthorization<AuthOptions>(authOptions);
+
+        services.AddValidations();
 
         services
             .AddMvcCore()
@@ -34,5 +39,14 @@ public static class ServiceRegistry
         {
             configure.MapControllers().RequireAuthorization();
         });
+    }
+
+    private static void AddValidations(this IServiceCollection services)
+    {
+        // нельзя раскоментировать эту строчку, иначе ломается ответ ProblemDetails заготовленный
+        //services.AddFluentValidationAutoValidation(config => config.DisableDataAnnotationsValidation = true);
+
+        var webAssembly = typeof(Web.ServiceRegistry).Assembly;
+        services.AddValidatorsFromAssembly(webAssembly);
     }
 }
