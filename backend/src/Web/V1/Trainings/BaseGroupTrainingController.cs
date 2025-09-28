@@ -26,7 +26,7 @@ public class BaseGroupTrainingController : ControllerBase
         this.repository = repository;
     }
 
-    [HttpGet(ApiRoutesV1.BaseGroupTrainings)]
+    [HttpGet("api/v2/base-group-trainings")]
     public async Task<ListResponse<BaseGroupTrainingResponse>> GetAllAsync(CancellationToken ct)
     {
         var all = await repository.GetAllAsync(x => true, ct);

@@ -1,4 +1,5 @@
-﻿using FitHub.Common.AspNetCore;
+﻿using System.Text.Json.Serialization;
+using FitHub.Common.AspNetCore;
 using FitHub.Common.Extensions.Configuration;
 using FitHub.Web.V1.Trainings.Validators;
 using FluentValidation;
@@ -23,7 +24,10 @@ public static class ServiceRegistry
             .AddMvcCore()
             .AddApiExplorer()
             .AddApplicationPart(typeof(Web.ServiceRegistry).Assembly)
-            .AddControllersAsServices();
+            .AddControllersAsServices().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
 
         services.AddExceptionAsProblemDetails();
         services.AddSignalR();
@@ -33,12 +37,6 @@ public static class ServiceRegistry
     {
         var authOptions = configuration.GetRequiredOptions<AuthOptions>();
         app.UseAuthenticationAndAuthorization(authOptions);
-
-
-        app.UseEndpoints(configure =>
-        {
-            configure.MapControllers().RequireAuthorization();
-        });
     }
 
     private static void AddValidations(this IServiceCollection services)

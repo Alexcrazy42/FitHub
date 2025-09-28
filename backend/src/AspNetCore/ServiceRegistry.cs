@@ -52,11 +52,6 @@ public static class ServiceRegistry
         services.AddCurrentIdentityUserAccessor();
 
         services.AddBindedOptionsAs<TAuthOptions, IAuthOptions>();
-        services
-            .AddMvcCore()
-            .AddApiExplorer()
-            .AddApplicationPart(typeof(ServiceRegistry).Assembly)
-            .AddControllersAsServices();
 
         services.AddAuthorization(options =>
         {
