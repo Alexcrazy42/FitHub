@@ -31,46 +31,6 @@ public sealed class Startup
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(options =>
         {
-            options.SwaggerDoc("v1", new OpenApiInfo
-            {
-                Title = "FitHub API v1",
-                Version = "v1",
-                Description = "An ASP.NET Core Web API for managing ToDo items",
-                TermsOfService = new Uri("https://example.com/terms"),
-                Contact = new OpenApiContact
-                {
-                    Name = "Example Contact",
-                    Url = new Uri("https://example.com/contact")
-                },
-                License = new OpenApiLicense
-                {
-                    Name = "Example License",
-                    Url = new Uri("https://example.com/license")
-                }
-            });
-
-            options.SwaggerDoc("v2", new OpenApiInfo
-            {
-                Title = "FitHub API v2",
-                Version = "v2"
-            });
-
-            options.DocInclusionPredicate((docName, apiDesc) =>
-            {
-                var relativePath = apiDesc.RelativePath?.ToLowerInvariant();
-                if (string.IsNullOrEmpty(relativePath))
-                {
-                    return false;
-                }
-
-                return docName switch
-                {
-                    "v1" => relativePath.StartsWith("api/v1/"),
-                    "v2" => relativePath.StartsWith("api/v2/"),
-                    _ => false
-                };
-            });
-
             var xmlFilename = $"{typeof(Web.ServiceRegistry).Assembly.GetName().Name}.xml";
             options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
         });
@@ -98,8 +58,6 @@ public sealed class Startup
             });
             app.UseSwaggerUI(options =>
             {
-                options.SwaggerEndpoint("/swagger/v1/swagger.json", "FitHub API v1");
-                options.SwaggerEndpoint("/swagger/v2/swagger.json", "FitHub API v2");
             });
         }
 

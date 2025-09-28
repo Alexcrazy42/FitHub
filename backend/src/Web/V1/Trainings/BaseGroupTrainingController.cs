@@ -26,7 +26,7 @@ public class BaseGroupTrainingController : ControllerBase
         this.repository = repository;
     }
 
-    [HttpGet("api/v2/base-group-trainings")]
+    [HttpGet(ApiRoutesV1.BaseGroupTrainings)]
     public async Task<ListResponse<BaseGroupTrainingResponse>> GetAllAsync(CancellationToken ct)
     {
         var all = await repository.GetAllAsync(x => true, ct);
@@ -36,7 +36,9 @@ public class BaseGroupTrainingController : ControllerBase
         return ListResponse<BaseGroupTrainingResponse>.Create(responses);
     }
 
+
     [HttpGet(ApiRoutesV1.BaseGroupTrainingsById)]
+
     public async Task<BaseGroupTrainingResponse> GetByIdAsync([FromRoute] Guid? id, CancellationToken ct)
     {
         id = ValidationException.ThrowIfNull(id, "id cannot be null");
@@ -54,11 +56,10 @@ public class BaseGroupTrainingController : ControllerBase
     [HttpPost(ApiRoutesV1.BaseGroupTrainings)]
     public async Task<BaseGroupTrainingResponse> CreateAsync(
         [FromBody] CreateBaseGroupTrainingRequest request,
-        [FromServices] IValidator<CreateBaseGroupTrainingRequest> validator,
+        [FromServices] IValidator<CreateBaseGroupTrainingRequest>? validator,
         CancellationToken ct)
     {
-        var validationResult = await validator.ValidateAsync(request, ct);
-        validationResult.HandleValidationResult();
+        await validator.HandleValidationAsync(request, ct);
 
         request = ValidationException.ThrowIfNull(request, "request cannot be null");
 

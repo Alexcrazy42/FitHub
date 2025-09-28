@@ -1,5 +1,24 @@
 ﻿# Идея
 
+Части:
+Дашборд админа - https://tailux.piniastudio.com/dashboards/sales
+Таблица - https://tailux.piniastudio.com/tables/users-datatable
+Формы - https://tailux.piniastudio.com/forms/new-post-form
+Помощь пользователю - https://tailux.piniastudio.com/components/data-display/contextual-help
+
+
+Готовые компоненты:
+Чат - https://tailux.piniastudio.com/apps/chat
+Карта пользователя - https://tailux.piniastudio.com/prototypes/users-card/users-card-2
+Прайс-лист - https://tailux.piniastudio.com/prototypes/price-list/price-list-1
+Вопросы - https://tailux.piniastudio.com/prototypes/help/help-1
+
+
+еще одна штука: 
+    https://flowbite.com/blocks/
+    https://daisyui.com/
+
+
 Главные администраторы по всему комплексу сетей:
     создание группы мышцы
     создание тренажеров
@@ -7,6 +26,7 @@
     создание видеотренировок
     создание базовых групповых тренировок
     создает истории, которые увидят все пользователи
+    дашборд админа: продажи, покупатели
     
 
 Администратор зала управляет по своему залу:
