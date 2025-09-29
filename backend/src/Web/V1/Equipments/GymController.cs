@@ -27,7 +27,7 @@ public class GymController : ControllerBase
 
         if (gym == null)
         {
-            throw new CommonException("Зал не найден!");
+            throw new NotFoundException("Зал не найден!");
         }
 
         return gym.ToResponse();

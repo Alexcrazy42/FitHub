@@ -16,6 +16,9 @@ public static class EquipmentResponseExtensions
     public static IReadOnlyList<EquipmentInstructionResponse> ToResponses(this IReadOnlyList<EquipmentInstruction> instructions)
         => instructions.Select(ToResponse).ToList();
 
+    public static IReadOnlyList<GymZoneResponse> ToResponses(this IReadOnlyList<GymZone> gymZones)
+        => gymZones.Select(ToResponse).ToList();
+
     public static GymResponse ToResponse(this Gym gym)
     {
         return new GymResponse
@@ -43,6 +46,16 @@ public static class EquipmentResponseExtensions
             Id = instruction.Id.Value,
             EquipmentId = instruction.Equipment.Id.Value,
             VideoUrl = instruction.VideoUrl
+        };
+    }
+
+    public static GymZoneResponse ToResponse(this GymZone gymZone)
+    {
+        return new GymZoneResponse()
+        {
+            Id = gymZone.Id.Value,
+            Name = gymZone.Name,
+            Description = gymZone.Description,
         };
     }
 }

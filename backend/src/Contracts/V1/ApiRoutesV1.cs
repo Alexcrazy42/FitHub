@@ -13,6 +13,13 @@ public class ApiRoutesV1
 
     #endregion
 
+    #region GymZones
+
+    public const string GymZones = Root + "/gyms";
+
+    public const string GymZoneById = GymZones + "/{id:guid}";
+
+    #endregion
 
     #region MuscleGroups
 

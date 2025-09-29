@@ -1,6 +1,13 @@
-﻿namespace FitHub.Data.Equipments.Gyms;
+﻿using FitHub.Domain.Equipments;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-public class GymZoneConfiguration
+namespace FitHub.Data.Equipments.Gyms;
+
+public class GymZoneConfiguration : IEntityTypeConfiguration<GymZone>
 {
-    
+    public void Configure(EntityTypeBuilder<GymZone> builder)
+    {
+
+    }
 }

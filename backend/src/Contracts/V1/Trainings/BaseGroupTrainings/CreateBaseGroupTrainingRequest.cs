@@ -11,12 +11,4 @@ public sealed class CreateBaseGroupTrainingRequest
     public int? Complexity { get; set; }
 
     public Guid? TrainingTypeId { get; set; }
-
-    public MyEnum? Enum { get; set; }
-}
-
-public enum MyEnum
-{
-    Junior,
-    Middle
 }

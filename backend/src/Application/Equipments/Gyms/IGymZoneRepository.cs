@@ -1,6 +1,9 @@
-﻿namespace FitHub.Application.Equipments.Gyms;
+﻿using FitHub.Common.Entities.Storage;
+using FitHub.Domain.Equipments;
 
-public interface IGymZoneRepository
+namespace FitHub.Application.Equipments.Gyms;
+
+public interface IGymZoneRepository : IPendingRepository<GymZone, GymZoneId>
 {
-    
+
 }

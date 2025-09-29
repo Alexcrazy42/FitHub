@@ -7,6 +7,7 @@ public class Gym : IEntity<GymId>
 {
     private List<Equipment> equipments = [];
     private List<GymAdmin> admins = [];
+    private List<GymZone> zones = [];
 
     public Gym(GymId id, string name, string description)
     {
@@ -24,6 +25,8 @@ public class Gym : IEntity<GymId>
     public IReadOnlyList<Equipment> Equipments => equipments;
 
     public IReadOnlyList<GymAdmin> Admins => admins;
+
+    public IReadOnlyList<GymZone> Zones => zones;
 
     public void AddEquipments(IReadOnlyList<Equipment> newEquipments)
     {
