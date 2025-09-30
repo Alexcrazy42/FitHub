@@ -3,7 +3,7 @@ import { Layout } from "antd";
 import GymCalendar from "./components/Calendar/GymCalendar";
 import VideoPlayerWithTimestamps from './components/Calendar/VideoPlayerWithTimestamps';
 
-function App() {
+function Calendar() {
 
   const videoUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4';
   const timestamps = [
@@ -26,4 +26,4 @@ function App() {
   )
 }
 
-export default App
+export default Calendar
