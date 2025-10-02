@@ -1,9 +1,9 @@
 ﻿// src/pages/Auth/Login.tsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/useAuth';
 import { User } from '../../types/auth';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../../context/useTheme';
 
 const Login: React.FC = () => {
   const [role, setRole] = useState<'admin' | 'user'>('user');

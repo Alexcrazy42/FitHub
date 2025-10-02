@@ -1,6 +1,6 @@
 ﻿// src/pages/user/Profile.tsx
-import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/useAuth';
+import { useTheme } from '../../context/useTheme';
 
 const UserProfile: React.FC = () => {
   const { user } = useAuth();

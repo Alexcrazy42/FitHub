@@ -2,16 +2,41 @@
 import NotFound from '../pages/NotFound';
 import DashboardLayout from '../layouts/DashboardLayout';
 import ProtectedRoute from './ProtectedRoute';
-import { adminRoutes } from './AdminRoutes';
+import {adminMenuConfig} from '../routes/adminMenuConfig'
 import { userRoutes } from './UserRoutes';
 import Login from '../pages/Auth/Login';
+import { MenuItem } from './MenuItem';
 
-const routes: RouteObject[] = [
+const getAdminRoutePath = (fullPath: string): string => {
+  return fullPath.replace(/^\/admin\//, '');
+};
+
+
+const extractRoutesFromMenu = (items: MenuItem[]): { path: string; element: React.ReactNode }[] => {
+  let routes: { path: string; element: React.ReactNode }[] = [];
+
+  for (const item of items) {
+    // Если это лист (есть path и element) — добавляем
+    if (item.path && item.element) {
+      routes.push({
+        path: getAdminRoutePath(item.path),
+        element: item.element,
+      });
+    }
+
+    // Если есть дети — рекурсивно обходим их
+    if (item.children) {
+      routes = routes.concat(extractRoutesFromMenu(item.children));
+    }
+  }
+
+  return routes;
+};
+
+export const routes: RouteObject[] = [
   { path: '/login', element: <Login /> },
   {
-    element: (
-      <ProtectedRoute allowedRoles={['admin', 'user']} />
-    ),
+    element: <ProtectedRoute allowedRoles={['admin', 'user']} />,
     children: [
       {
         element: <DashboardLayout />,
@@ -19,18 +44,12 @@ const routes: RouteObject[] = [
           {
             path: '/admin/*',
             element: <ProtectedRoute allowedRoles={['admin']} />,
-            children: adminRoutes.map((route) => ({
-              ...route,
-              path: route.path,
-            })),
+            children: extractRoutesFromMenu(adminMenuConfig)
           },
           {
             path: '/user/*',
             element: <ProtectedRoute allowedRoles={['user']} />,
-            children: userRoutes.map((route) => ({
-              ...route,
-              path: route.path,
-            })),
+            children: userRoutes,
           },
         ],
       },

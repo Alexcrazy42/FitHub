@@ -4,7 +4,7 @@ import { MenuUnfoldOutlined, MenuFoldOutlined, SunOutlined, MoonOutlined } from 
 import { useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import { Outlet } from 'react-router-dom';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../context/useTheme';
 
 const { Sider, Content, Header } = Layout;
 

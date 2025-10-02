@@ -1,87 +1,107 @@
-﻿// src/components/Sidebar/index.tsx
-import { Menu } from 'antd';
+﻿// Sidebar.tsx
+import React from 'react';
+import { Menu, MenuProps } from 'antd';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { adminRoutes } from '../../routes/AdminRoutes';
-import { userRoutes } from '../../routes/UserRoutes';
-import { useTheme } from '../../context/ThemeContext';
+import {
+  DashboardOutlined,
+  SettingOutlined,
+  HomeOutlined,
+  UserOutlined,
+  OrderedListOutlined,
+  ShopOutlined,
+  FileTextOutlined,
+  LikeOutlined,
+} from '@ant-design/icons';
+import { UserRole } from '../../types/auth';
+import { adminMenuConfig } from '../../routes/adminMenuConfig';
+import { useAuth } from '../../context/useAuth';
 
 interface SidebarProps {
   collapsed: boolean;
+  user?: { role: UserRole } | null;
+  isDark?: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
-  const { user } = useAuth();
+interface MenuItem {
+  key: string;
+  label: string;
+  icon?: React.ReactNode;
+  path?: string; // если есть — это ссылка
+  children?: MenuItem[]; // если есть — это папка
+}
+
+const userMenuItems: MenuItem[] = [
+  {
+    key: '/user/home',
+    label: 'Главная',
+    icon: <HomeOutlined />,
+    path: '/user/home',
+  },
+  {
+    key: '/user/profile',
+    label: 'Профиль',
+    icon: <UserOutlined />,
+    path: '/user/profile',
+  },
+  {
+    key: '/user/orders',
+    label: 'Мои заказы',
+    icon: <OrderedListOutlined />,
+    children: [
+      { key: '/user/orders/history', label: 'История', icon: <UserOutlined />, path: '/user/orders/history' },
+      { key: '/user/orders/favorites', label: 'Избранное', icon: <LikeOutlined />, path: '/user/orders/favorites' },
+    ],
+  },
+];
+
+type AntdMenuItem = Required<MenuProps>['items'][number];
+
+const transformToAntdMenu = (items: MenuItem[], collapsed: boolean): AntdMenuItem[] => {
+  return items.map((item) => {
+    const hasChildren = item.children && item.children.length > 0;
+
+    const baseItem: AntdMenuItem = {
+      key: item.key,
+      icon: item.icon,
+      title: item.label, // ← КЛЮЧЕВОЙ МОМЕНТ: title для tooltip и popup
+      label: item.path && !hasChildren ? (
+        <Link to={item.path} className="flex items-center">
+
+          {!collapsed && item.label}
+        </Link>
+      ) : (
+        item.label
+      ),
+    };
+
+    if (hasChildren) {
+      baseItem.children = transformToAntdMenu(item.children!, collapsed);
+    }
+
+    return baseItem;
+  });
+};
+
+const Sidebar: React.FC<SidebarProps> = ({ collapsed, isDark = false }) => {
   const location = useLocation();
-   const { theme } = useTheme();
+  const {user} = useAuth();
 
-   const isDark = theme === 'dark';
+  let menuConfig: MenuItem[] = [];
+  if (user?.role === 'admin') {
+    menuConfig = adminMenuConfig;
+  } else if (user?.role === 'user') {
+    menuConfig = userMenuItems;
+  }
 
-  const getMenuItems = () => {
-    if (user?.role === 'admin') {
-      return adminRoutes.map((route) => {
-        const path = route.path === '' ? '' : `/${route.path}`;
-        return {
-          key: `/admin${path}`,
-          label: !collapsed ? (
-            <Link to={`/admin${path}`}>
-              {route.path === '' ? 'Dashboard' : route.path.charAt(0).toUpperCase() + route.path.slice(1)}
-            </Link>
-          ) : null,
-          icon: route.path === '' ? '📊' : '⚙️', // можно заменить на Ant Design иконки
-        };
-      });
-    }
-    
-
-    if (user?.role === 'user') {
-      return userRoutes.map((route) => {
-        const path = route.path === '' ? '' : `/${route.path}`;
-        return {
-          key: `/user${path}`,
-          label: !collapsed ? (
-            <Link to={`/user${path}`}>
-              {route.path === '' ? 'Home' : route.path.charAt(0).toUpperCase() + route.path.slice(1)}
-            </Link>
-          ) : null,
-          icon: route.path === '' ? '🏠' : '👤',
-        };
-      });
-    }
-
-    return [];
-  };
-
-   const items = getMenuItems().map((item) => ({
-    ...item,
-    label: (
-      <Link to={item.key} className="flex items-center">
-        {item.icon}
-        {!collapsed && <span className="ml-2">{item.label}</span>}
-      </Link>
-    ),
-    icon: null,
-  }));
-
-  // const items = user?.role === 'admin'
-  //   ? [
-  //       { key: '/admin', icon: '🏠', label: 'Dashboard' },
-  //       { key: '/admin/settings', icon: '👤', label: 'Settings' },
-  //     ]
-  //   : user?.role === 'user'
-  //   ? [
-  //       { key: '/user', icon: '📊', label: 'Home' },
-  //       { key: '/user/profile', icon: '', label: 'Profile' },
-  //     ]
-  //   : [];
+  const menuItems = transformToAntdMenu(menuConfig, collapsed);
 
   return (
     <Menu
-      theme={isDark ? 'dark' : 'light'} // ← важно!
+      theme={isDark ? 'dark' : 'light'}
       mode="inline"
       selectedKeys={[location.pathname]}
-      items={items}
       inlineCollapsed={collapsed}
+      items={menuItems}
     />
   );
 };
