@@ -1,6 +1,4 @@
-﻿// config/adminMenu.ts
-
-import { DashboardOutlined } from "@ant-design/icons";
+﻿import { DashboardOutlined, HomeOutlined, OrderedListOutlined } from "@ant-design/icons";
 import AdminDashboard from "../pages/admin/Dashboard";
 import { MenuItem } from "./MenuItem";
 
@@ -8,14 +6,14 @@ export const adminMenuConfig: MenuItem[] = [
   {
     key: 'dashboard',
     label: 'Главная',
-    icon: <DashboardOutlined />,
+    icon: <HomeOutlined />,
     path: '/admin/dashboard',
     element: <AdminDashboard />,
   },
   {
     key: 'orders',
     label: 'Заказы',
-    icon: <DashboardOutlined />,
+    icon: <OrderedListOutlined />,
     children: [
       {
         key: 'orders-list',

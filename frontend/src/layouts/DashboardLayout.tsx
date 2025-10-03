@@ -1,5 +1,4 @@
-﻿// src/layouts/DashboardLayout.tsx
-import { Layout, Button } from 'antd';
+﻿import { Layout, Button } from 'antd';
 import { MenuUnfoldOutlined, MenuFoldOutlined, SunOutlined, MoonOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import Sidebar from '../components/Sidebar';

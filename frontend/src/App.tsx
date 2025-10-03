@@ -1,6 +1,6 @@
 ﻿// src/App.tsx
 import { RouterProvider } from 'react-router-dom';
-import { router } from './routes';
+import { router } from './routes/router';
 import { useTheme } from './context/useTheme';
 import { ConfigProvider, theme as antdTheme } from 'antd';
 

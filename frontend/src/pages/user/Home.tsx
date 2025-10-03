@@ -10,12 +10,19 @@ import {
   Checkbox,
   Popover,
   Button,
+  Descriptions,
+  Drawer,
+  Space,
+  Badge,
 } from 'antd';
 import { SettingOutlined } from '@ant-design/icons';
 import { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import { FilterValue, SorterResult } from 'antd/es/table/interface';
 import { AnyObject } from 'antd/es/_util/type';
 import dayjs from 'dayjs';
+import { Typography } from 'antd';
+const { Text } = Typography;
+import { useNavigate } from "react-router";
 
 const { Option } = Select;
 
@@ -61,7 +68,6 @@ const mockOrders: Order[] = Array.from({ length: 150 }, (_, i) => ({
   notes: i % 7 === 0 ? `Особое примечание к заказу ${i + 1}` : '',
 }));
 
-// Маппинг для русских названий колонок
 const columnLabels: Record<keyof Order, string> = {
   id: 'ID',
   orderNumber: 'Номер заказа',
@@ -79,7 +85,6 @@ const columnLabels: Record<keyof Order, string> = {
   notes: 'Примечания',
 };
 
-// Локализация статусов
 const statusLabels: Record<Order['status'], string> = {
   pending: 'В ожидании',
   confirmed: 'Подтверждён',
@@ -88,7 +93,6 @@ const statusLabels: Record<Order['status'], string> = {
   cancelled: 'Отменён',
 };
 
-// Локализация способов оплаты
 const paymentMethodLabels: Record<Order['paymentMethod'], string> = {
   card: 'Карта',
   paypal: 'PayPal',
@@ -96,7 +100,6 @@ const paymentMethodLabels: Record<Order['paymentMethod'], string> = {
   bank_transfer: 'Банковский перевод',
 };
 
-// Мок-АПИ (без изменений)
 const fetchOrders = ({
   page,
   pageSize,
@@ -169,6 +172,7 @@ const fetchOrders = ({
 };
 
 const UserHome: React.FC = () => {
+  const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
@@ -179,7 +183,7 @@ const UserHome: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<OrderFilters>({});
   const [visibleColumns, setVisibleColumns] = useState<Record<keyof Order, boolean>>({
-    id: true,
+    id: false,
     orderNumber: true,
     customerName: true,
     email: true,
@@ -194,6 +198,19 @@ const UserHome: React.FC = () => {
     itemsCount: false,
     notes: false,
   });
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [drawerVisible, setDrawerVisible] = useState(false);
+
+  const handleRowClick = (order: Order) => {
+    setSelectedOrder(order);
+    setDrawerVisible(true);
+  };
+
+  // Закрытие Drawer
+  const closeDrawer = () => {
+    setDrawerVisible(false);
+    setSelectedOrder(null);
+  };
 
   const loadOrders = async () => {
     setLoading(true);
@@ -467,7 +484,6 @@ const UserHome: React.FC = () => {
             if (ps !== pageSize) setPageSize(ps!);
           }}
           showSizeChanger
-          showQuickJumper
           showTotal={(total) => `Всего: ${total} заказов`}
         />
       </div>
@@ -481,7 +497,135 @@ const UserHome: React.FC = () => {
         pagination={false}
         onChange={handleTableChange}
         scroll={{ x: 'max-content' }}
+        onRow={(record) => ({
+          onClick: () => handleRowClick(record),
+          style: { cursor: 'pointer' },
+        })}
       />
+
+      <Drawer
+        title={
+          <Space>
+            <Text strong>Заказ №{selectedOrder?.orderNumber}</Text>
+            {selectedOrder && (
+              <Badge
+                status={
+                  selectedOrder.status === 'delivered'
+                    ? 'success'
+                    : selectedOrder.status === 'cancelled'
+                    ? 'error'
+                    : 'processing'
+                }
+                text={statusLabels[selectedOrder.status]}
+              />
+            )}
+          </Space>
+        }
+        width={600}
+        onClose={closeDrawer}
+        open={drawerVisible}
+        destroyOnClose
+      >
+        {selectedOrder && (
+          <div className="space-y-6">
+            {/* Основная информация */}
+            <Descriptions
+              title="Общая информация"
+              column={1}
+              bordered
+              size="small"
+            >
+              <Descriptions.Item label="Номер заказа">
+                {selectedOrder.orderNumber}
+              </Descriptions.Item>
+              <Descriptions.Item label="Статус">
+                <Tag
+                  color={
+                    selectedOrder.status === 'delivered'
+                      ? 'green'
+                      : selectedOrder.status === 'cancelled'
+                      ? 'red'
+                      : selectedOrder.status === 'pending'
+                      ? 'orange'
+                      : 'blue'
+                  }
+                >
+                  {statusLabels[selectedOrder.status]}
+                </Tag>
+              </Descriptions.Item>
+              <Descriptions.Item label="Сумма заказа">
+                <Text strong>
+                  {selectedOrder.totalAmount} {selectedOrder.currency}
+                </Text>
+              </Descriptions.Item>
+              <Descriptions.Item label="Количество товаров">
+                {selectedOrder.itemsCount} шт.
+              </Descriptions.Item>
+              <Descriptions.Item label="Дата создания">
+                {dayjs(selectedOrder.createdAt).format('DD.MM.YYYY HH:mm:ss')}
+              </Descriptions.Item>
+              <Descriptions.Item label="Последнее обновление">
+                {dayjs(selectedOrder.updatedAt).format('DD.MM.YYYY HH:mm:ss')}
+              </Descriptions.Item>
+            </Descriptions>
+
+            {/* Контактная информация */}
+            <Descriptions title="Контакты" column={1} bordered size="small">
+              <Descriptions.Item label="Покупатель">
+                {selectedOrder.customerName}
+              </Descriptions.Item>
+              <Descriptions.Item label="Email">
+                <a href={`mailto:${selectedOrder.email}`}>{selectedOrder.email}</a>
+              </Descriptions.Item>
+              <Descriptions.Item label="Телефон">
+                <a href={`tel:${selectedOrder.phone}`}>{selectedOrder.phone}</a>
+              </Descriptions.Item>
+            </Descriptions>
+
+            {/* Доставка и оплата */}
+            <Descriptions title="Доставка и оплата" column={1} bordered size="small">
+              <Descriptions.Item label="Адрес доставки">
+                {selectedOrder.shippingAddress}
+              </Descriptions.Item>
+              <Descriptions.Item label="Способ оплаты">
+                {paymentMethodLabels[selectedOrder.paymentMethod]}
+              </Descriptions.Item>
+            </Descriptions>
+
+            {/* Примечания */}
+            {selectedOrder.notes && (
+              <Descriptions title="Примечания" column={1} bordered size="small">
+                <Descriptions.Item label="Комментарий">
+                  {selectedOrder.notes}
+                </Descriptions.Item>
+              </Descriptions>
+            )}
+
+            {/* Дополнительные метаданные */}
+            <Descriptions title="Техническая информация" column={1} bordered size="small">
+              <Descriptions.Item label="ID заказа (внутренний)">
+                <Text copyable>{selectedOrder.id}</Text>
+              </Descriptions.Item>
+              <Descriptions.Item label="Валюта">
+                {selectedOrder.currency}
+              </Descriptions.Item>
+            </Descriptions>
+
+            <div className="mt-6 pt-4 border-t">
+              <Button
+                type="primary"
+                block
+                onClick={() => {
+                  closeDrawer();
+                  navigate(`/user/home/${selectedOrder.id}`);
+                }}
+              >
+                Перейти к заказу
+              </Button>
+            </div>
+          </div>
+        )}
+      </Drawer>
     </div>
   );
 };

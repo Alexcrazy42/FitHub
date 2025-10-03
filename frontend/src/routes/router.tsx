@@ -2,31 +2,46 @@
 import NotFound from '../pages/NotFound';
 import DashboardLayout from '../layouts/DashboardLayout';
 import ProtectedRoute from './ProtectedRoute';
-import {adminMenuConfig} from '../routes/adminMenuConfig'
-import { userRoutes } from './UserRoutes';
+import {adminMenuConfig} from './adminMenuConfig'
 import Login from '../pages/Auth/Login';
 import { MenuItem } from './MenuItem';
+import { userMenuConfig } from './userMenuConfig';
+import OrderDetailsPage from '../pages/user/OrderDetailsPage';
+
 
 const getAdminRoutePath = (fullPath: string): string => {
   return fullPath.replace(/^\/admin\//, '');
 };
 
+const getUserRoutePath = (fullPath: string) : string => {
+  return fullPath.replace(/^\/user\//, '');
+}
 
-const extractRoutesFromMenu = (items: MenuItem[]): { path: string; element: React.ReactNode }[] => {
+export enum UserType {
+  Admin,
+  User
+}
+
+const extractRoutesFromMenu = (items: MenuItem[], userType: UserType): { path: string; element: React.ReactNode }[] => {
   let routes: { path: string; element: React.ReactNode }[] = [];
 
   for (const item of items) {
-    // Если это лист (есть path и element) — добавляем
     if (item.path && item.element) {
-      routes.push({
-        path: getAdminRoutePath(item.path),
-        element: item.element,
-      });
+      if(userType === UserType.Admin) {
+        routes.push({
+          path: getAdminRoutePath(item.path),
+          element: item.element,
+        });
+      } else if (userType === UserType.User) {
+        routes.push({
+          path: getUserRoutePath(item.path),
+          element: item.element,
+        });
+      }
+      
     }
-
-    // Если есть дети — рекурсивно обходим их
     if (item.children) {
-      routes = routes.concat(extractRoutesFromMenu(item.children));
+      routes = routes.concat(extractRoutesFromMenu(item.children, userType));
     }
   }
 
@@ -44,12 +59,15 @@ export const routes: RouteObject[] = [
           {
             path: '/admin/*',
             element: <ProtectedRoute allowedRoles={['admin']} />,
-            children: extractRoutesFromMenu(adminMenuConfig)
+            children: extractRoutesFromMenu(adminMenuConfig, UserType.Admin)
           },
           {
             path: '/user/*',
             element: <ProtectedRoute allowedRoles={['user']} />,
-            children: userRoutes,
+            children: [
+              ...extractRoutesFromMenu(userMenuConfig, UserType.User),
+              { path: 'home/:orderId', element: <OrderDetailsPage /> },
+            ],
           },
         ],
       },
