@@ -14,12 +14,10 @@ import {
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { Order } from './Home';
+import { paymentMethodLabels } from './paymentMethodLabels';
+import { statusLabels } from './statusLabels';
 
 const { Title, Text } = Typography;
-
-// Если fetchOrderById не вынесен — создай его
-// Для демо используем mockOrders из UserHome
-// Но лучше вынести mockOrders и fetchOrderById в отдельный файл, например, api/orders.ts
 
 const OrderDetailsPage: React.FC = () => {
   const { orderId } = useParams<{ orderId: string }>();
@@ -81,21 +79,6 @@ const OrderDetailsPage: React.FC = () => {
       </div>
     );
   }
-
-  const statusLabels: Record<Order['status'], string> = {
-    pending: 'В ожидании',
-    confirmed: 'Подтверждён',
-    shipped: 'Отправлен',
-    delivered: 'Доставлен',
-    cancelled: 'Отменён',
-  };
-
-  const paymentMethodLabels: Record<Order['paymentMethod'], string> = {
-    card: 'Карта',
-    paypal: 'PayPal',
-    cash: 'Наличные',
-    bank_transfer: 'Банковский перевод',
-  };
 
   return (
     <div className="p-4 max-w-4xl mx-auto">

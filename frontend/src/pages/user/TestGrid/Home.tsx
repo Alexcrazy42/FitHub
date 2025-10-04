@@ -10,17 +10,14 @@ import {
   Checkbox,
   Popover,
   Button,
-  Descriptions,
-  Drawer,
-  Space,
-  Badge,
+  Empty
 } from 'antd';
 import { SettingOutlined, SortAscendingOutlined } from '@ant-design/icons';
 import { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
-import { Typography } from 'antd';
-const { Text } = Typography;
-import { useNavigate } from "react-router";
+import { OrderDetailsDrawer } from './OrderDetailsDrawer';
+import { statusLabels } from './statusLabels';
+import { paymentMethodLabels } from './paymentMethodLabels';
 
 const { Option } = Select;
 
@@ -53,7 +50,6 @@ type SortConfig = {
   direction: 'asc' | 'desc';
 };
 
-// Мок-данные (без изменений)
 const mockOrders: Order[] = Array.from({ length: 150 }, (_, i) => ({
   id: `order-${i + 1}`,
   orderNumber: `ORD-${String(i + 1000).padStart(6, '0')}`,
@@ -72,7 +68,7 @@ const mockOrders: Order[] = Array.from({ length: 150 }, (_, i) => ({
 }));
 
 const columnLabels: Record<keyof Order, string> = {
-  id: 'ID',
+  id: 'Айди',
   orderNumber: 'Номер заказа',
   customerName: 'Покупатель',
   email: 'Email',
@@ -88,22 +84,6 @@ const columnLabels: Record<keyof Order, string> = {
   notes: 'Примечания',
 };
 
-const statusLabels: Record<Order['status'], string> = {
-  pending: 'В ожидании',
-  confirmed: 'Подтверждён',
-  shipped: 'Отправлен',
-  delivered: 'Доставлен',
-  cancelled: 'Отменён',
-};
-
-const paymentMethodLabels: Record<Order['paymentMethod'], string> = {
-  card: 'Карта',
-  paypal: 'PayPal',
-  cash: 'Наличные',
-  bank_transfer: 'Банковский перевод',
-};
-
-// 🔥 ДОБАВЛЯЕМ ВОЗМОЖНЫЕ ПОЛЯ ДЛЯ СОРТИРОВКИ
 const sortableFields: { value: keyof Order; label: string }[] = [
   { value: 'createdAt', label: 'Дата создания' },
   { value: 'updatedAt', label: 'Дата обновления' },
@@ -116,7 +96,7 @@ const fetchOrders = ({
   pageSize,
   searchQuery,
   filters,
-  sortConfig, // 🔥 ДОБАВЛЯЕМ СОРТИРОВКУ В ЗАПРОС
+  sortConfig
 }: {
   page: number;
   pageSize: number;
@@ -154,7 +134,6 @@ const fetchOrders = ({
         }
       }
 
-      // 🔥 ДОБАВЛЯЕМ СОРТИРОВКУ
       if (sortConfig) {
         filtered.sort((a, b) => {
           const aVal = a[sortConfig.field];
@@ -167,11 +146,6 @@ const fetchOrders = ({
           }
           if (typeof aVal === 'number' && typeof bVal === 'number') {
             return sortConfig.direction === 'desc' ? bVal - aVal : aVal - bVal;
-          }
-          if (aVal instanceof Date && bVal instanceof Date) {
-            return sortConfig.direction === 'desc' 
-              ? bVal.getTime() - aVal.getTime()
-              : aVal.getTime() - bVal.getTime();
           }
           return 0;
         });
@@ -187,7 +161,6 @@ const fetchOrders = ({
 };
 
 const UserHome: React.FC = () => {
-  const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
@@ -231,7 +204,6 @@ const UserHome: React.FC = () => {
   const buildQuery = (filters: OrderFilters, search: string, sortConfig: SortConfig) => {
     const params = new URLSearchParams();
 
-    // Поиск
     if (search) {
       params.set('q', search);
     }
@@ -265,7 +237,7 @@ const UserHome: React.FC = () => {
     return queryString;
   };
 
-  // Закрытие Drawer
+
   const closeDrawer = () => {
     setDrawerVisible(false);
     setSelectedOrder(null);
@@ -278,7 +250,7 @@ const UserHome: React.FC = () => {
       pageSize,
       searchQuery,
       filters: appliedFilters,
-      sortConfig: appliedSort, // 🔥 ПЕРЕДАЕМ ПРИМЕНЕННУЮ СОРТИРОВКУ
+      sortConfig: appliedSort
     });
     setOrders(response.data);
     setTotal(response.total);
@@ -287,7 +259,7 @@ const UserHome: React.FC = () => {
 
   useEffect(() => {
     loadOrders();
-  }, [page, pageSize, appliedFilters, appliedSort]); // 🔥 ДОБАВЛЯЕМ appliedSort В ЗАВИСИМОСТИ
+  }, [page, pageSize]);
 
   const toggleColumn = (key: keyof Order) => {
     setVisibleColumns((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -297,10 +269,10 @@ const UserHome: React.FC = () => {
     setAppliedFilters((prev) => ({ ...prev, [field]: value ?? undefined }));
   };
 
-  // 🔥 ФУНКЦИЯ ДЛЯ ПРИМЕНЕНИЯ ФИЛЬТРОВ И СОРТИРОВКИ
+
   const applyFiltersAndSort = () => {
     setAppliedSort(tempSort);
-    setPage(1); // Сбрасываем на первую страницу при применении
+    setPage(1);
     loadOrders();
     buildQuery(appliedFilters, searchQuery, tempSort);
   };
@@ -308,7 +280,7 @@ const UserHome: React.FC = () => {
   const columns: ColumnsType<Order> = useMemo(() => {
     const allColumns: ColumnsType<Order> = [
       {
-        title: 'ID',
+        title: 'Айди',
         dataIndex: 'id',
         key: 'id',
         width: 120,
@@ -402,6 +374,7 @@ const UserHome: React.FC = () => {
       },
     ];
 
+
     return allColumns.filter((col) => visibleColumns[col.key as keyof Order]);
   }, [visibleColumns]);
 
@@ -409,7 +382,6 @@ const UserHome: React.FC = () => {
     <div className="p-4 max-w-7xl mx-auto">
       <Card className="mb-4">
         <div className="flex flex-wrap gap-4 items-end justify-between">
-          {/* Поиск */}
           <Input
             placeholder="Поиск по заказам..."
             value={searchQuery}
@@ -418,7 +390,6 @@ const UserHome: React.FC = () => {
             style={{ width: 300 }}
           />
 
-          {/* Кнопка управления колонками */}
           <Popover
             content={
               <div className="flex flex-col gap-2 max-h-60 overflow-y-auto p-2 w-48">
@@ -518,7 +489,6 @@ const UserHome: React.FC = () => {
         {/* Кнопка применения */}
         <div className="mt-4 flex justify-end">
           <Button
-            type="primary"
             icon={<SortAscendingOutlined />}
             onClick={applyFiltersAndSort}
             style={{ width: 200 }}
@@ -540,10 +510,21 @@ const UserHome: React.FC = () => {
           }}
           showSizeChanger
           showTotal={(total) => `Всего: ${total} заказов`}
+          locale={{
+            items_per_page: '/ страница',
+            jump_to: 'Перейти',
+            jump_to_confirm: 'подтвердить',
+            page: 'Страница',
+            prev_page: 'Предыдущая',
+            next_page: 'Следующая',
+            prev_5: 'Предыдущие 5',
+            next_5: 'Следующие 5',
+            prev_3: 'Предыдущие 3',
+            next_3: 'Следующие 3',
+          }}
         />
       </div>
 
-      {/* Таблица */}
       <Table
         dataSource={orders}
         columns={columns}
@@ -555,131 +536,34 @@ const UserHome: React.FC = () => {
           onClick: () => handleRowClick(record),
           style: { cursor: 'pointer' },
         })}
+        locale={{
+          emptyText: (
+            <Empty
+              description={
+                <div>
+                  <div style={{ marginBottom: 8 }}>Заказы не найдены</div>
+                  <Button 
+                    
+                    onClick={() => {
+                      setSearchQuery('');
+                      setAppliedFilters({});
+                      setPage(1);
+                    }}
+                  >
+                    Сбросить фильтры
+                  </Button>
+                </div>
+              }
+            />
+          )
+        }}
       />
 
-      <Drawer
-        title={
-          <Space>
-            <Text strong>Заказ №{selectedOrder?.orderNumber}</Text>
-            {selectedOrder && (
-              <Badge
-                status={
-                  selectedOrder.status === 'delivered'
-                    ? 'success'
-                    : selectedOrder.status === 'cancelled'
-                    ? 'error'
-                    : 'processing'
-                }
-                text={statusLabels[selectedOrder.status]}
-              />
-            )}
-          </Space>
-        }
-        width={600}
+      <OrderDetailsDrawer
+        selectedOrder={selectedOrder}
+        drawerVisible={drawerVisible}
         onClose={closeDrawer}
-        open={drawerVisible}
-        destroyOnClose
-      >
-        {selectedOrder && (
-          <div className="space-y-6">
-            {/* Основная информация */}
-            <Descriptions
-              title="Общая информация"
-              column={1}
-              bordered
-              size="small"
-            >
-              <Descriptions.Item label="Номер заказа">
-                {selectedOrder.orderNumber}
-              </Descriptions.Item>
-              <Descriptions.Item label="Статус">
-                <Tag
-                  color={
-                    selectedOrder.status === 'delivered'
-                      ? 'green'
-                      : selectedOrder.status === 'cancelled'
-                      ? 'red'
-                      : selectedOrder.status === 'pending'
-                      ? 'orange'
-                      : 'blue'
-                  }
-                >
-                  {statusLabels[selectedOrder.status]}
-                </Tag>
-              </Descriptions.Item>
-              <Descriptions.Item label="Сумма заказа">
-                <Text strong>
-                  {selectedOrder.totalAmount} {selectedOrder.currency}
-                </Text>
-              </Descriptions.Item>
-              <Descriptions.Item label="Количество товаров">
-                {selectedOrder.itemsCount} шт.
-              </Descriptions.Item>
-              <Descriptions.Item label="Дата создания">
-                {dayjs(selectedOrder.createdAt).format('DD.MM.YYYY HH:mm:ss')}
-              </Descriptions.Item>
-              <Descriptions.Item label="Последнее обновление">
-                {dayjs(selectedOrder.updatedAt).format('DD.MM.YYYY HH:mm:ss')}
-              </Descriptions.Item>
-            </Descriptions>
-
-            {/* Контактная информация */}
-            <Descriptions title="Контакты" column={1} bordered size="small">
-              <Descriptions.Item label="Покупатель">
-                {selectedOrder.customerName}
-              </Descriptions.Item>
-              <Descriptions.Item label="Email">
-                <a href={`mailto:${selectedOrder.email}`}>{selectedOrder.email}</a>
-              </Descriptions.Item>
-              <Descriptions.Item label="Телефон">
-                <a href={`tel:${selectedOrder.phone}`}>{selectedOrder.phone}</a>
-              </Descriptions.Item>
-            </Descriptions>
-
-            {/* Доставка и оплата */}
-            <Descriptions title="Доставка и оплата" column={1} bordered size="small">
-              <Descriptions.Item label="Адрес доставки">
-                {selectedOrder.shippingAddress}
-              </Descriptions.Item>
-              <Descriptions.Item label="Способ оплаты">
-                {paymentMethodLabels[selectedOrder.paymentMethod]}
-              </Descriptions.Item>
-            </Descriptions>
-
-            {/* Примечания */}
-            {selectedOrder.notes && (
-              <Descriptions title="Примечания" column={1} bordered size="small">
-                <Descriptions.Item label="Комментарий">
-                  {selectedOrder.notes}
-                </Descriptions.Item>
-              </Descriptions>
-            )}
-
-            {/* Дополнительные метаданные */}
-            <Descriptions title="Техническая информация" column={1} bordered size="small">
-              <Descriptions.Item label="ID заказа (внутренний)">
-                <Text copyable>{selectedOrder.id}</Text>
-              </Descriptions.Item>
-              <Descriptions.Item label="Валюта">
-                {selectedOrder.currency}
-              </Descriptions.Item>
-            </Descriptions>
-
-            <div className="mt-6 pt-4 border-t">
-              <Button
-                type="primary"
-                block
-                onClick={() => {
-                  closeDrawer();
-                  navigate(`/user/home/${selectedOrder.id}`);
-                }}
-              >
-                Перейти к заказу
-              </Button>
-            </div>
-          </div>
-        )}
-      </Drawer>
+      />
     </div>
   );
 };

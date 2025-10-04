@@ -27,6 +27,5 @@ export const fetchZoneBookings = async (zoneId: number): Promise<ZoneBooking[]> 
 };
 
 export const createBooking = async (booking: CreateBookingDto): Promise<{ success: boolean }> => {
-  console.log("Бронирование создано:", booking);
   return { success: true };
 };

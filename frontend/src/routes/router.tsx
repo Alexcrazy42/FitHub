@@ -6,7 +6,7 @@ import {adminMenuConfig} from './adminMenuConfig'
 import Login from '../pages/Auth/Login';
 import { MenuItem } from './MenuItem';
 import { userMenuConfig } from './userMenuConfig';
-import OrderDetailsPage from '../pages/user/OrderDetailsPage';
+import OrderDetailsPage from '../pages/user/TestGrid/OrderDetailsPage';
 
 
 const getAdminRoutePath = (fullPath: string): string => {
@@ -66,7 +66,7 @@ export const routes: RouteObject[] = [
             element: <ProtectedRoute allowedRoles={['user']} />,
             children: [
               ...extractRoutesFromMenu(userMenuConfig, UserType.User),
-              { path: 'home/:orderId', element: <OrderDetailsPage /> },
+              { path: 'home/:orderId/order', element: <OrderDetailsPage /> },
             ],
           },
         ],

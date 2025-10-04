@@ -1,6 +1,5 @@
-﻿import UserHome from '../pages/user/Home';
-import OrderDetailsPage from '../pages/user/OrderDetailsPage';
-import UserProfile from '../pages/user/Profile';
+﻿import UserHome from '../pages/user/TestGrid/Home';
+import UserProfile from '../pages/user/Profile/Profile'
 import { MenuItem } from './MenuItem';
 import { HistoryOutlined, HomeOutlined, LikeOutlined, OrderedListOutlined, UserOutlined } from '@ant-design/icons';
 

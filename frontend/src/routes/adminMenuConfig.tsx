@@ -1,4 +1,4 @@
-﻿import { DashboardOutlined, HomeOutlined, OrderedListOutlined } from "@ant-design/icons";
+﻿import { HomeOutlined, OrderedListOutlined } from "@ant-design/icons";
 import AdminDashboard from "../pages/admin/Dashboard";
 import { MenuItem } from "./MenuItem";
 
