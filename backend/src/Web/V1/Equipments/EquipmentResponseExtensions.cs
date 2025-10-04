@@ -7,19 +7,19 @@ namespace FitHub.Web.V1.Equipments;
 
 public static class EquipmentResponseExtensions
 {
-    public static IReadOnlyList<GymResponse> ToResponses(this IReadOnlyList<Gym> gyms)
-        => gyms.Select(ToResponse).ToList();
+    public static IReadOnlyList<GymResponse> ToGymResponses(this IReadOnlyList<Gym> gyms)
+        => gyms.Select(ToGymResponse).ToList();
 
-    public static IReadOnlyList<EquipmentResponse> ToResponses(this IReadOnlyList<Equipment> equipments)
-        => equipments.Select(ToResponse).ToList();
+    public static IReadOnlyList<EquipmentResponse> ToEquipmentResponses(this IReadOnlyList<Equipment> equipments)
+        => equipments.Select(ToEquipmentResponse).ToList();
 
-    public static IReadOnlyList<EquipmentInstructionResponse> ToResponses(this IReadOnlyList<EquipmentInstruction> instructions)
-        => instructions.Select(ToResponse).ToList();
+    public static IReadOnlyList<EquipmentInstructionResponse> ToInstructionResponses(this IReadOnlyList<EquipmentInstruction> instructions)
+        => instructions.Select(ToInstructionResponse).ToList();
 
-    public static IReadOnlyList<GymZoneResponse> ToResponses(this IReadOnlyList<GymZone> gymZones)
-        => gymZones.Select(ToResponse).ToList();
+    public static IReadOnlyList<GymZoneResponse> ToGymZoneResponses(this IReadOnlyList<GymZone> gymZones)
+        => gymZones.Select(ToZoneResponse).ToList();
 
-    public static GymResponse ToResponse(this Gym gym)
+    public static GymResponse ToGymResponse(this Gym gym)
     {
         return new GymResponse
         {
@@ -29,7 +29,7 @@ public static class EquipmentResponseExtensions
         };
     }
 
-    public static EquipmentResponse ToResponse(this Equipment equipment)
+    public static EquipmentResponse ToEquipmentResponse(this Equipment equipment)
     {
         return new EquipmentResponse
         {
@@ -39,7 +39,7 @@ public static class EquipmentResponseExtensions
         };
     }
 
-    public static EquipmentInstructionResponse ToResponse(this EquipmentInstruction instruction)
+    public static EquipmentInstructionResponse ToInstructionResponse(this EquipmentInstruction instruction)
     {
         return new EquipmentInstructionResponse
         {
@@ -49,7 +49,7 @@ public static class EquipmentResponseExtensions
         };
     }
 
-    public static GymZoneResponse ToResponse(this GymZone gymZone)
+    public static GymZoneResponse ToZoneResponse(this GymZone gymZone)
     {
         return new GymZoneResponse()
         {

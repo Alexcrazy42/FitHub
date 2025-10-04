@@ -9,7 +9,7 @@ public class Gym : IEntity<GymId>
     private List<GymAdmin> admins = [];
     private List<GymZone> zones = [];
 
-    public Gym(GymId id, string name, string description)
+    private Gym(GymId id, string name, string description)
     {
         Id = id;
         Name = name;
@@ -31,5 +31,14 @@ public class Gym : IEntity<GymId>
     public void AddEquipments(IReadOnlyList<Equipment> newEquipments)
     {
         equipments.AddRange(newEquipments);
+    }
+
+    public void UpdateName(string name) => Name = name;
+
+    public void UpdateDescription(string description) => Description = description;
+
+    public static Gym Create(string name, string description)
+    {
+        return new Gym(GymId.New(), name, description);
     }
 }

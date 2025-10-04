@@ -1,9 +1,11 @@
 ﻿using FitHub.Application.Equipments.Gyms;
 using FitHub.Common.Entities;
+using FitHub.Contracts;
 using FitHub.Contracts.V1;
 using FitHub.Contracts.V1.Equipments;
 using FitHub.Contracts.V1.Equipments.Gyms;
 using FitHub.Domain.Equipments;
+using FitHub.Web.Common;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FitHub.Web.V1.Equipments;
@@ -18,6 +20,14 @@ public class GymController : ControllerBase
         this.gymService = gymService;
     }
 
+    [HttpGet(ApiRoutesV1.Gyms)]
+    public async Task<ListResponse<GymResponse>> GetGymsAsync([FromQuery] PagedRequest? request, CancellationToken ct)
+    {
+        var query = request.ToDomain();
+        var gymPagedResult = await gymService.GetGymsAsync(query, ct);
+        return gymPagedResult.ToResponse(EquipmentResponseExtensions.ToGymResponse);
+    }
+
     [HttpGet(ApiRoutesV1.GymById)]
     public async Task<GymResponse> GetById([FromRoute] Guid? id, CancellationToken ct)
     {
@@ -30,7 +40,7 @@ public class GymController : ControllerBase
             throw new NotFoundException("Зал не найден!");
         }
 
-        return gym.ToResponse();
+        return gym.ToGymResponse();
     }
 
     [HttpPost(ApiRoutesV1.Gyms)]
@@ -40,7 +50,7 @@ public class GymController : ControllerBase
 
         var gym = await gymService.CreateGymAsync(request, ct);
 
-        return gym.ToResponse();
+        return gym.ToGymResponse();
     }
 
 
@@ -51,6 +61,6 @@ public class GymController : ControllerBase
 
         var gym = await gymService.UpdateGymAsync(request, ct);
 
-        return gym.ToResponse();
+        return gym.ToGymResponse();
     }
 }

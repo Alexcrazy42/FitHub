@@ -1,4 +1,6 @@
-﻿using FitHub.Contracts.V1.Equipments;
+﻿using FitHub.Application.Common;
+using FitHub.Common.Entities;
+using FitHub.Common.Entities.Storage;
 using FitHub.Contracts.V1.Equipments.Gyms;
 using FitHub.Domain.Equipments;
 
@@ -7,10 +9,17 @@ namespace FitHub.Application.Equipments.Gyms;
 internal sealed class GymService : IGymService
 {
     private readonly IGymRepository gymRepository;
+    private readonly IUnitOfWork unitOfWork;
 
-    public GymService(IGymRepository gymRepository)
+    public GymService(IGymRepository gymRepository, IUnitOfWork unitOfWork)
     {
         this.gymRepository = gymRepository;
+        this.unitOfWork = unitOfWork;
+    }
+
+    public Task<PagedResult<Gym>> GetGymsAsync(PagedQuery pagedQuery, CancellationToken ct)
+    {
+        return gymRepository.GetGymsAsync(pagedQuery, ct);
     }
 
     public Task<Gym?> GetGymOrDefaultAsync(GymId id, CancellationToken ct = default)
@@ -18,13 +27,27 @@ internal sealed class GymService : IGymService
         return gymRepository.GetSingleOrDefaultAsync(x => x.Id == id, ct);
     }
 
-    public Task<Gym> CreateGymAsync(CreateGymRequest request, CancellationToken ct = default)
+    public async Task<Gym> CreateGymAsync(CreateGymRequest request, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        var gym = Gym.Create(request.Name.ValidateForNull(), request.Description.ValidateForNull());
+        await gymRepository.PendingAddAsync(gym, ct);
+        await unitOfWork.SaveChangesAsync(ct);
+        return gym;
     }
 
-    public Task<Gym> UpdateGymAsync(UpdateGymRequest request, CancellationToken ct = default)
+    public async Task<Gym> UpdateGymAsync(UpdateGymRequest request, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        var id = GymId.Parse(request.Id.ValidateForNull());
+        var gym = await gymRepository.GetSingleOrDefaultAsync(x => x.Id == id, ct);
+        NotFoundException.ThrowIfNull(gym, "Зал не найден!");
+        ApplyUpdateRequest(gym, request);
+        await unitOfWork.SaveChangesAsync(ct);
+        return gym;
+    }
+
+    private void ApplyUpdateRequest(Gym gym, UpdateGymRequest request)
+    {
+        gym.UpdateName(request.Name.ValidateForNull());
+        gym.UpdateDescription(request.Description.ValidateForNull());
     }
 }

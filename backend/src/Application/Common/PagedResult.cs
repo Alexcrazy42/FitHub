@@ -1,6 +1,6 @@
-﻿namespace FitHub.Contracts;
+﻿namespace FitHub.Application.Common;
 
-public class ListResponse<T>
+public class PagedResult<T>
 {
     /// <summary>
     /// Список элементов
@@ -27,11 +27,11 @@ public class ListResponse<T>
     /// </summary>
     public int? TotalPages => (int)Math.Ceiling((double)(TotalItems ?? 0) / PageSize ?? 1);
 
-    public static ListResponse<T> Create(IReadOnlyList<T> items) => new() { Items = items };
+    public static PagedResult<T> Create(IReadOnlyList<T> items) => new() { Items = items };
 
-    public static ListResponse<T> Create(IReadOnlyList<T> items, int totalItems, int currentPage, int pageSize)
+    public static PagedResult<T> Create(IReadOnlyList<T> items, int totalItems, int currentPage, int pageSize)
     {
-        return new ListResponse<T>
+        return new PagedResult<T>
         {
             Items = items,
             TotalItems = totalItems,

@@ -20,3 +20,11 @@ public sealed class ValidationException : CommonException
         where T : struct
         => value ?? throw new ValidationException(message ?? $"Параметр {paramName} не может быть null");
 }
+
+public static class ValidationExceptionExtenstion
+{
+    public static T ValidateForNull<T>([NotNull] this T? value, string? message = default, [CallerArgumentExpression("value")] string? paramName = default)
+    {
+        return value ?? throw new ValidationException(message ?? $"Параметр {paramName} не может быть null");
+    }
+}

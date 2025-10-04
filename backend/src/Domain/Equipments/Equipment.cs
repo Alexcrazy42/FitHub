@@ -25,10 +25,6 @@ public class Equipment : IEntity<EquipmentId>
     /// </summary>
     public string ImageUrl { get; private set; }
 
-    public BrandId? BrandId { get; private set; }
-
-    public Brand? Brand { get; set; }
-
     public DateOnly? InstructionAddBefore { get; private set; }
 
     public IReadOnlyList<EquipmentInstruction> Instructions => instructions;
@@ -40,26 +36,20 @@ public class Equipment : IEntity<EquipmentId>
 
     public IReadOnlyList<Gym> Gyms => gyms;
 
-    public void SetBrand(Brand newBrand)
-    {
-        BrandId = newBrand.Id;
-        Brand = newBrand;
-    }
-
     public void AddInstructions(IReadOnlyList<EquipmentInstruction> newInstructions)
     {
         instructions.AddRange(newInstructions);
         InstructionAddBefore = null;
     }
 
-    public void SetImageUrl(string imageUrl)
-    {
-        ImageUrl = imageUrl;
-    }
-
     public void SetInstructionAddBefore(DateOnly newValue)
     {
         InstructionAddBefore = newValue;
+    }
+
+    public void SetImageUrl(string imageUrl)
+    {
+        ImageUrl = imageUrl;
     }
 
     /// <summary>

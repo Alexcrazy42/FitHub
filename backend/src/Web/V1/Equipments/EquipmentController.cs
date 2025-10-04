@@ -28,7 +28,7 @@ public class EquipmentController : ControllerBase
     {
         var all = await repository.GetAllAsync(x => true, ct);
 
-        var responses = all.ToResponses();
+        var responses = all.ToEquipmentResponses();
 
         return ListResponse<EquipmentResponse>.Create(responses);
     }
@@ -44,7 +44,7 @@ public class EquipmentController : ControllerBase
             throw new NotFoundException("Тренажёр не найден");
         }
 
-        return entity.ToResponse();
+        return entity.ToEquipmentResponse();
     }
 
     [HttpPost(ApiRoutesV1.Equipments)]
@@ -54,7 +54,7 @@ public class EquipmentController : ControllerBase
 
         var equipment = await service.CreateAsync(request, ct);
 
-        return equipment.ToResponse();
+        return equipment.ToEquipmentResponse();
     }
 
 
@@ -65,7 +65,7 @@ public class EquipmentController : ControllerBase
 
         var equipment = await service.UpdateAsync(request, ct);
 
-        return equipment.ToResponse();
+        return equipment.ToEquipmentResponse();
     }
 
     [HttpDelete(ApiRoutesV1.EquipmentById)]

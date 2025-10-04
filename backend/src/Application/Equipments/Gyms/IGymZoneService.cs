@@ -7,4 +7,5 @@ public interface IGymZoneService
 {
     Task<GymZone> CreateGymZoneAsync(CreateGymZoneRequest request, CancellationToken ct);
     Task<GymZone> UpdateGymZoneAsync(UpdateGymZoneRequest request, CancellationToken ct);
+    Task DeleteAsync(GymZoneId id, CancellationToken ct);
 }

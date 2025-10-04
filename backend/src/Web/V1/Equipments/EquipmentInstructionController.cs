@@ -26,7 +26,7 @@ public class EquipmentInstructionController : ControllerBase
     {
         var all = await repository.GetAllAsync(x => true, ct);
 
-        var responses = all.ToResponses();
+        var responses = all.ToInstructionResponses();
 
         return ListResponse<EquipmentInstructionResponse>.Create(responses);
     }
@@ -38,7 +38,7 @@ public class EquipmentInstructionController : ControllerBase
 
         var entity = await service.CreateAsync(request, ct);
 
-        return entity.ToResponse();
+        return entity.ToInstructionResponse();
     }
 
     [HttpPut(ApiRoutesV1.EquipmentsInstructions)]
@@ -48,7 +48,7 @@ public class EquipmentInstructionController : ControllerBase
 
         var entity = await service.UpdateAsync(request, ct);
 
-        return entity.ToResponse();
+        return entity.ToInstructionResponse();
     }
 
     [HttpDelete(ApiRoutesV1.EquipmentInstructionById)]
