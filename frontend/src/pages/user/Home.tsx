@@ -15,10 +15,8 @@ import {
   Space,
   Badge,
 } from 'antd';
-import { SettingOutlined } from '@ant-design/icons';
-import { ColumnsType, TablePaginationConfig } from 'antd/es/table';
-import { FilterValue, SorterResult } from 'antd/es/table/interface';
-import { AnyObject } from 'antd/es/_util/type';
+import { SettingOutlined, SortAscendingOutlined } from '@ant-design/icons';
+import { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { Typography } from 'antd';
 const { Text } = Typography;
@@ -48,6 +46,11 @@ type OrderFilters = {
   paymentMethod?: Order['paymentMethod'][];
   minAmount?: number;
   maxAmount?: number;
+};
+
+type SortConfig = {
+  field: keyof Order;
+  direction: 'asc' | 'desc';
 };
 
 // Мок-данные (без изменений)
@@ -80,7 +83,7 @@ const columnLabels: Record<keyof Order, string> = {
   createdAt: 'Создан',
   updatedAt: 'Обновлён',
   shippingAddress: 'Адрес доставки',
-  paymentMethod: 'Способ оплаты',
+  paymentMethod: 'Способ оплата',
   itemsCount: 'Товаров',
   notes: 'Примечания',
 };
@@ -100,20 +103,26 @@ const paymentMethodLabels: Record<Order['paymentMethod'], string> = {
   bank_transfer: 'Банковский перевод',
 };
 
+// 🔥 ДОБАВЛЯЕМ ВОЗМОЖНЫЕ ПОЛЯ ДЛЯ СОРТИРОВКИ
+const sortableFields: { value: keyof Order; label: string }[] = [
+  { value: 'createdAt', label: 'Дата создания' },
+  { value: 'updatedAt', label: 'Дата обновления' },
+  { value: 'totalAmount', label: 'Сумма заказа' },
+  { value: 'orderNumber', label: 'Номер заказа' },
+];
+
 const fetchOrders = ({
   page,
   pageSize,
-  sortField,
-  sortOrder,
   searchQuery,
   filters,
+  sortConfig, // 🔥 ДОБАВЛЯЕМ СОРТИРОВКУ В ЗАПРОС
 }: {
   page: number;
   pageSize: number;
-  sortField?: keyof Order;
-  sortOrder?: 'ascend' | 'descend';
   searchQuery?: string;
   filters?: OrderFilters;
+  sortConfig?: SortConfig;
 }): Promise<{ data: Order[]; total: number }> => {
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -145,18 +154,24 @@ const fetchOrders = ({
         }
       }
 
-      if (sortField) {
+      // 🔥 ДОБАВЛЯЕМ СОРТИРОВКУ
+      if (sortConfig) {
         filtered.sort((a, b) => {
-          const aVal = a[sortField];
-          const bVal = b[sortField];
+          const aVal = a[sortConfig.field];
+          const bVal = b[sortConfig.field];
 
           if (typeof aVal === 'string' && typeof bVal === 'string') {
-            return sortOrder === 'descend'
+            return sortConfig.direction === 'desc'
               ? bVal.localeCompare(aVal)
               : aVal.localeCompare(bVal);
           }
           if (typeof aVal === 'number' && typeof bVal === 'number') {
-            return sortOrder === 'descend' ? bVal - aVal : aVal - bVal;
+            return sortConfig.direction === 'desc' ? bVal - aVal : aVal - bVal;
+          }
+          if (aVal instanceof Date && bVal instanceof Date) {
+            return sortConfig.direction === 'desc' 
+              ? bVal.getTime() - aVal.getTime()
+              : aVal.getTime() - bVal.getTime();
           }
           return 0;
         });
@@ -178,10 +193,8 @@ const UserHome: React.FC = () => {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [sortField, setSortField] = useState<keyof Order | undefined>(undefined);
-  const [sortOrder, setSortOrder] = useState<'ascend' | 'descend' | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filters, setFilters] = useState<OrderFilters>({});
+  const [appliedFilters, setAppliedFilters] = useState<OrderFilters>({});
   const [visibleColumns, setVisibleColumns] = useState<Record<keyof Order, boolean>>({
     id: false,
     orderNumber: true,
@@ -201,9 +214,55 @@ const UserHome: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [drawerVisible, setDrawerVisible] = useState(false);
 
+  const [tempSort, setTempSort] = useState<SortConfig>({
+    field: 'createdAt',
+    direction: 'desc'
+  });
+  const [appliedSort, setAppliedSort] = useState<SortConfig>({
+    field: 'createdAt',
+    direction: 'desc'
+  });
+
   const handleRowClick = (order: Order) => {
     setSelectedOrder(order);
     setDrawerVisible(true);
+  };
+
+  const buildQuery = (filters: OrderFilters, search: string, sortConfig: SortConfig) => {
+    const params = new URLSearchParams();
+
+    // Поиск
+    if (search) {
+      params.set('q', search);
+    }
+
+    // Статусы
+    if (filters.status && filters.status.length > 0) {
+      filters.status.forEach((status) => params.append('status', status));
+    }
+
+    if (filters.paymentMethod && filters.paymentMethod.length > 0) {
+      filters.paymentMethod.forEach((method) => params.append('paymentMethod', method));
+    }
+
+    if (filters.minAmount !== undefined) {
+      params.set('minAmount', filters.minAmount.toString());
+    }
+    if (filters.maxAmount !== undefined) {
+      params.set('maxAmount', filters.maxAmount.toString());
+    }
+
+    if (sortConfig) {
+      params.set('sortBy', sortConfig.field);
+      params.set('sortOrder', sortConfig.direction);
+    }
+
+    params.set('page', page.toString());
+    params.set('pageSize', pageSize.toString());
+
+    const queryString = params.toString();
+    console.log('Fake API request:', `/api/orders?${queryString}`);
+    return queryString;
   };
 
   // Закрытие Drawer
@@ -217,10 +276,9 @@ const UserHome: React.FC = () => {
     const response = await fetchOrders({
       page,
       pageSize,
-      sortField,
-      sortOrder,
       searchQuery,
-      filters,
+      filters: appliedFilters,
+      sortConfig: appliedSort, // 🔥 ПЕРЕДАЕМ ПРИМЕНЕННУЮ СОРТИРОВКУ
     });
     setOrders(response.data);
     setTotal(response.total);
@@ -229,35 +287,22 @@ const UserHome: React.FC = () => {
 
   useEffect(() => {
     loadOrders();
-  }, [page, pageSize, sortField, sortOrder, searchQuery, filters]);
-
-  const handleTableChange = (
-    _pagination: TablePaginationConfig,
-    filters: Record<string, FilterValue | null>,
-    sorter: SorterResult<AnyObject> | SorterResult<AnyObject>[]
-  ) => {
-    const sort = Array.isArray(sorter) ? sorter[0] : sorter;
-    if (sort.field) {
-      setSortField(sort.field as keyof Order);
-      setSortOrder(sort.order);
-    } else {
-      setSortField(undefined);
-      setSortOrder(undefined);
-    }
-
-    setFilters((prev) => ({
-      ...prev,
-      status: (filters.status as Order['status'][]) || undefined,
-      paymentMethod: (filters.paymentMethod as Order['paymentMethod'][]) || undefined,
-    }));
-  };
+  }, [page, pageSize, appliedFilters, appliedSort]); // 🔥 ДОБАВЛЯЕМ appliedSort В ЗАВИСИМОСТИ
 
   const toggleColumn = (key: keyof Order) => {
     setVisibleColumns((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const handleAmountChange = (field: 'minAmount' | 'maxAmount', value: number | null) => {
-    setFilters((prev) => ({ ...prev, [field]: value ?? undefined }));
+    setAppliedFilters((prev) => ({ ...prev, [field]: value ?? undefined }));
+  };
+
+  // 🔥 ФУНКЦИЯ ДЛЯ ПРИМЕНЕНИЯ ФИЛЬТРОВ И СОРТИРОВКИ
+  const applyFiltersAndSort = () => {
+    setAppliedSort(tempSort);
+    setPage(1); // Сбрасываем на первую страницу при применении
+    loadOrders();
+    buildQuery(appliedFilters, searchQuery, tempSort);
   };
 
   const columns: ColumnsType<Order> = useMemo(() => {
@@ -266,50 +311,36 @@ const UserHome: React.FC = () => {
         title: 'ID',
         dataIndex: 'id',
         key: 'id',
-        sorter: true,
         width: 120,
       },
       {
         title: 'Номер заказа',
         dataIndex: 'orderNumber',
         key: 'orderNumber',
-        sorter: true,
         width: 140,
       },
       {
         title: 'Покупатель',
         dataIndex: 'customerName',
         key: 'customerName',
-        sorter: true,
         width: 160,
       },
       {
         title: 'Email',
         dataIndex: 'email',
         key: 'email',
-        sorter: true,
         width: 200,
       },
       {
         title: 'Телефон',
         dataIndex: 'phone',
         key: 'phone',
-        sorter: true,
         width: 140,
       },
       {
         title: 'Статус',
         dataIndex: 'status',
         key: 'status',
-        sorter: true,
-        filters: [
-          { text: 'В ожидании', value: 'pending' },
-          { text: 'Подтверждён', value: 'confirmed' },
-          { text: 'Отправлен', value: 'shipped' },
-          { text: 'Доставлен', value: 'delivered' },
-          { text: 'Отменён', value: 'cancelled' },
-        ],
-        onFilter: () => true,
         width: 120,
         render: (status: Order['status']) => {
           const colorMap = {
@@ -326,7 +357,6 @@ const UserHome: React.FC = () => {
         title: 'Сумма',
         dataIndex: 'totalAmount',
         key: 'totalAmount',
-        sorter: true,
         width: 120,
         render: (amount: number, record) => `${amount} ${record.currency}`,
       },
@@ -334,7 +364,6 @@ const UserHome: React.FC = () => {
         title: 'Создан',
         dataIndex: 'createdAt',
         key: 'createdAt',
-        sorter: true,
         width: 160,
         render: (date: string) => dayjs(date).format('DD.MM.YYYY HH:mm'),
       },
@@ -342,7 +371,6 @@ const UserHome: React.FC = () => {
         title: 'Обновлён',
         dataIndex: 'updatedAt',
         key: 'updatedAt',
-        sorter: true,
         width: 160,
         render: (date: string) => dayjs(date).format('DD.MM.YYYY HH:mm'),
       },
@@ -350,20 +378,12 @@ const UserHome: React.FC = () => {
         title: 'Адрес доставки',
         dataIndex: 'shippingAddress',
         key: 'shippingAddress',
-        sorter: true,
         width: 200,
       },
       {
         title: 'Способ оплаты',
         dataIndex: 'paymentMethod',
         key: 'paymentMethod',
-        sorter: true,
-        filters: [
-          { text: 'Карта', value: 'card' },
-          { text: 'PayPal', value: 'paypal' },
-          { text: 'Наличные', value: 'cash' },
-          { text: 'Банковский перевод', value: 'bank_transfer' },
-        ],
         onFilter: () => true,
         width: 140,
         render: (method: Order['paymentMethod']) => paymentMethodLabels[method],
@@ -372,14 +392,12 @@ const UserHome: React.FC = () => {
         title: 'Товаров',
         dataIndex: 'itemsCount',
         key: 'itemsCount',
-        sorter: true,
         width: 80,
       },
       {
         title: 'Примечания',
         dataIndex: 'notes',
         key: 'notes',
-        sorter: true,
         width: 200,
       },
     ];
@@ -430,13 +448,13 @@ const UserHome: React.FC = () => {
           <div className="flex gap-2">
             <InputNumber
               placeholder="От суммы"
-              value={filters.minAmount ?? null}
+              value={appliedFilters.minAmount ?? null}
               onChange={(val) => handleAmountChange('minAmount', val)}
               className="w-full"
             />
             <InputNumber
               placeholder="До суммы"
-              value={filters.maxAmount ?? null}
+              value={appliedFilters.maxAmount ?? null}
               onChange={(val) => handleAmountChange('maxAmount', val)}
               className="w-full"
             />
@@ -445,8 +463,8 @@ const UserHome: React.FC = () => {
           <Select
             mode="multiple"
             placeholder="Статус"
-            value={filters.status}
-            onChange={(value) => setFilters((prev) => ({ ...prev, status: value }))}
+            value={appliedFilters.status}
+            onChange={(value) => setAppliedFilters((prev) => ({ ...prev, status: value }))}
             allowClear
             className="w-full"
           >
@@ -460,8 +478,8 @@ const UserHome: React.FC = () => {
           <Select
             mode="multiple"
             placeholder="Способ оплаты"
-            value={filters.paymentMethod}
-            onChange={(value) => setFilters((prev) => ({ ...prev, paymentMethod: value }))}
+            value={appliedFilters.paymentMethod}
+            onChange={(value) => setAppliedFilters((prev) => ({ ...prev, paymentMethod: value }))}
             allowClear
             className="w-full"
           >
@@ -470,6 +488,43 @@ const UserHome: React.FC = () => {
             <Option value="cash">Наличные</Option>
             <Option value="bank_transfer">Банковский перевод</Option>
           </Select>
+
+          {/* 🔥 ДОБАВЛЯЕМ ВЫБОР СОРТИРОВКИ */}
+          <div className="flex gap-2">
+            <Select
+              value={tempSort.field}
+              onChange={(value) => setTempSort(prev => ({ ...prev, field: value }))}
+              className="w-full"
+              placeholder="Сортировать по"
+            >
+              {sortableFields.map(field => (
+                <Option key={field.value} value={field.value}>
+                  {field.label}
+                </Option>
+              ))}
+            </Select>
+            
+            <Select
+              value={tempSort.direction}
+              onChange={(value) => setTempSort(prev => ({ ...prev, direction: value }))}
+              className="w-32"
+            >
+              <Option value="asc">По возрастанию</Option>
+              <Option value="desc">По убыванию</Option>
+            </Select>
+          </div>
+        </div>
+
+        {/* Кнопка применения */}
+        <div className="mt-4 flex justify-end">
+          <Button
+            type="primary"
+            icon={<SortAscendingOutlined />}
+            onClick={applyFiltersAndSort}
+            style={{ width: 200 }}
+          >
+            Применить
+          </Button>
         </div>
       </Card>
 
@@ -495,7 +550,6 @@ const UserHome: React.FC = () => {
         rowKey="id"
         loading={loading}
         pagination={false}
-        onChange={handleTableChange}
         scroll={{ x: 'max-content' }}
         onRow={(record) => ({
           onClick: () => handleRowClick(record),
