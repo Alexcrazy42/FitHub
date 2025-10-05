@@ -15,7 +15,7 @@ public class ApiRoutesV1
 
     #region GymZones
 
-    public const string GymZones = Root + "/gyms";
+    public const string GymZones = Root + "/gym-zones";
 
     public const string GymZoneById = GymZones + "/{id:guid}";
 

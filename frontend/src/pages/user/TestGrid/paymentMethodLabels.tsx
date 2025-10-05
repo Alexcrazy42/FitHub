@@ -1,9 +1,9 @@
-﻿import { Order } from './Home';
+﻿import { PaymentMethod } from './Home';
 
 
-export const paymentMethodLabels: Record<Order['paymentMethod'], string> = {
-  card: 'Карта',
-  paypal: 'PayPal',
-  cash: 'Наличные',
-  bank_transfer: 'Банковский перевод',
+export const paymentMethodLabels: Record<PaymentMethod, string> = {
+  Card: 'Карта',
+  Paypal: 'PayPal',
+  Cash: 'Наличные',
+  BankTransfer: 'Банковский перевод',
 };

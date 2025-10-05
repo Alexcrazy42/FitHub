@@ -13,7 +13,7 @@ import dayjs from 'dayjs';
 import { useNavigate } from 'react-router';
 import { Order } from './Home';
 import { paymentMethodLabels } from './paymentMethodLabels';
-import { statusLabels } from './statusLabels';
+import { orderStatusLabels } from './orderStatusLabels';
 
 const { Text } = Typography;
 
@@ -39,13 +39,13 @@ export const OrderDetailsDrawer: React.FC<OrderDetailsDrawerProps> = ({
           <Text strong>Заказ №{selectedOrder.orderNumber}</Text>
           <Badge
             status={
-              selectedOrder.status === 'delivered'
+              selectedOrder.status === 'Delivered'
                 ? 'success'
-                : selectedOrder.status === 'cancelled'
+                : selectedOrder.status === 'Cancelled'
                 ? 'error'
                 : 'processing'
             }
-            text={statusLabels[selectedOrder.status]}
+            text={orderStatusLabels[selectedOrder.status]}
           />
         </Space>
       }
@@ -68,16 +68,16 @@ export const OrderDetailsDrawer: React.FC<OrderDetailsDrawerProps> = ({
           <Descriptions.Item label="Статус">
             <Tag
               color={
-                selectedOrder.status === 'delivered'
+                selectedOrder.status === 'Delivered'
                   ? 'green'
-                  : selectedOrder.status === 'cancelled'
+                  : selectedOrder.status === 'Cancelled'
                   ? 'red'
-                  : selectedOrder.status === 'pending'
+                  : selectedOrder.status === 'Pending'
                   ? 'orange'
                   : 'blue'
               }
             >
-              {statusLabels[selectedOrder.status]}
+              {orderStatusLabels[selectedOrder.status]}
             </Tag>
           </Descriptions.Item>
           <Descriptions.Item label="Сумма заказа">

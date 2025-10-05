@@ -19,7 +19,7 @@ public class GymZoneController : ControllerBase
         this.gymZoneRepository = gymZoneRepository;
     }
 
-    [HttpGet(ApiRoutesV1.GymZoneById)]
+    [HttpGet(ApiRoutesV1.GymZones)]
     public async Task<ListResponse<GymZoneResponse>> GetAllAsync(CancellationToken ct)
     {
         var all = await gymZoneRepository.GetAllAsync(x => true, ct);

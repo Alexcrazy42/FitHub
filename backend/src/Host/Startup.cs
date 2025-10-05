@@ -34,6 +34,16 @@ public sealed class Startup
             var xmlFilename = $"{typeof(Web.ServiceRegistry).Assembly.GetName().Name}.xml";
             options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
         });
+
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowFrontend", policy =>
+            {
+                policy.WithOrigins("http://localhost:5173")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+            });
+        });
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -45,6 +55,7 @@ public sealed class Startup
         var isDev = env.IsDevelopment();
         app.UseExceptionAsProblemDetails(isDev);
 
+        app.UseCors("AllowFrontend");
         app.UseHttpsRedirection();
         app.UseRouting();
 
@@ -60,6 +71,8 @@ public sealed class Startup
             {
             });
         }
+
+
 
         app.UseEndpoints(configure =>
         {

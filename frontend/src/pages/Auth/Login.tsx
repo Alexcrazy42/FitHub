@@ -67,7 +67,7 @@ const Login: React.FC = () => {
                 onChange={() => setRole('user')}
                 className="h-4 w-4 focus:ring-blue-500"
                 style={{
-                  accentColor: '#3b82f6', // blue-500 — работает в обеих темах
+                  accentColor: '#3b82f6'
                 }}
               />
               <span className={`ml-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Пользователь</span>

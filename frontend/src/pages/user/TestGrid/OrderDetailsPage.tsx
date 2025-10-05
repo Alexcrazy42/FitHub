@@ -13,9 +13,9 @@ import {
 } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { Order } from './Home';
+import { Currency, Order, OrderStatus, PaymentMethod } from './Home';
 import { paymentMethodLabels } from './paymentMethodLabels';
-import { statusLabels } from './statusLabels';
+import { orderStatusLabels } from './orderStatusLabels';
 
 const { Title, Text } = Typography;
 
@@ -38,13 +38,13 @@ const OrderDetailsPage: React.FC = () => {
           customerName: `Покупатель ${i + 1}`,
           email: `customer${i + 1}@example.com`,
           phone: `+7 (999) ${String(i + 100).padStart(4, '0')}`,
-          status: ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'][i % 5] as Order['status'],
+          status: ['Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled'][i % 5] as OrderStatus,
           totalAmount: Math.floor(Math.random() * 1000) + 50,
-          currency: ['RUB', 'USD', 'EUR'][i % 3] as Order['currency'],
+          currency: ['RUB', 'USD', 'EUR'][i % 3] as Currency,
           createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
           updatedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
           shippingAddress: `Улица ${i + 1}, Город ${i % 10 + 1}`,
-          paymentMethod: ['card', 'paypal', 'cash', 'bank_transfer'][i % 4] as Order['paymentMethod'],
+          paymentMethod: ['Card', 'Paypal', 'Cash', 'BankTransfer'][i % 4] as PaymentMethod,
           itemsCount: Math.floor(Math.random() * 10) + 1,
           notes: i % 7 === 0 ? `Особое примечание к заказу ${i + 1}` : '',
         }));
@@ -93,13 +93,13 @@ const OrderDetailsPage: React.FC = () => {
             </Title>
             <Badge
               status={
-                order.status === 'delivered'
+                order.status === 'Delivered'
                   ? 'success'
-                  : order.status === 'cancelled'
+                  : order.status === 'Cancelled'
                   ? 'error'
                   : 'processing'
               }
-              text={statusLabels[order.status]}
+              text={orderStatusLabels[order.status]}
             />
           </Space>
         }
@@ -108,16 +108,16 @@ const OrderDetailsPage: React.FC = () => {
           <Descriptions.Item label="Статус">
             <Tag
               color={
-                order.status === 'delivered'
+                order.status === 'Delivered'
                   ? 'green'
-                  : order.status === 'cancelled'
+                  : order.status === 'Cancelled'
                   ? 'red'
-                  : order.status === 'pending'
+                  : order.status === 'Pending'
                   ? 'orange'
                   : 'blue'
               }
             >
-              {statusLabels[order.status]}
+              {orderStatusLabels[order.status]}
             </Tag>
           </Descriptions.Item>
           <Descriptions.Item label="Сумма заказа">
