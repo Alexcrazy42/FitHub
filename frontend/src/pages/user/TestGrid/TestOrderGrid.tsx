@@ -55,15 +55,27 @@ interface OrdersResponse {
 }
 
 type OrderFilters = {
-  status?: Order['status'][];
-  paymentMethod?: Order['paymentMethod'][];
+  status?: OrderStatus[];
+  paymentMethod?: PaymentMethod[];
   minAmount?: number;
   maxAmount?: number;
 };
 
+type Direction = 'Ascending' | 'Descending';
+
+export const Directions = {
+  Asc: 'Ascending' as Direction,
+  Desc: 'Descending' as Direction,
+} as const;
+
+export const DirectionLabels = {
+  [Directions.Asc]: 'По возрастанию',
+  [Directions.Desc]: 'По убыванию',
+} as const;
+
 type SortConfig = {
   field: keyof Order;
-  direction: 'Ascending' | 'Descending';
+  direction: Direction;
 };
 
 const columnLabels: Record<keyof Order, string> = {
@@ -90,7 +102,7 @@ const sortableFields: { value: keyof Order; label: string }[] = [
   { value: 'orderNumber', label: 'Номер заказа' },
 ];
 
-const UserHome: React.FC = () => {
+const TestOrderGrid: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [gridLoading, setGridLoading] = useState(false);
 
@@ -430,7 +442,8 @@ const UserHome: React.FC = () => {
               ))}
             </Select>
             
-            <Select
+
+            <Select 
               value={tempSort.direction}
               onChange={(value) => {
                 setTempSort(prev => ({ ...prev, direction: value }))}
@@ -438,8 +451,12 @@ const UserHome: React.FC = () => {
               className="w-32"
             >
               {/* <div value="123">123</div> value на div Работает, то есть можно вообще в любой это прокидывать*/} 
-              <Option value="Ascending">По возрастанию</Option>
-              <Option value="Descending">По убыванию</Option>
+              <Option value={Directions.Asc}>
+                {DirectionLabels[Directions.Asc]}
+              </Option>
+              <Option value={Directions.Desc}>
+                {DirectionLabels[Directions.Desc]}
+              </Option>
             </Select>
 
             
@@ -540,4 +557,4 @@ const UserHome: React.FC = () => {
   );
 };
 
-export default UserHome;
+export default TestOrderGrid;

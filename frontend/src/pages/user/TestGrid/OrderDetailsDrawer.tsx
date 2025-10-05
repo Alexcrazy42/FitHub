@@ -11,7 +11,7 @@ import {
 } from 'antd';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router';
-import { Order } from './Home';
+import { Order } from './TestOrderGrid';
 import { paymentMethodLabels } from './paymentMethodLabels';
 import { orderStatusLabels } from './orderStatusLabels';
 

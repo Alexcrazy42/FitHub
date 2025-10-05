@@ -13,7 +13,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = (userData: User) => {
     setUser(userData);
-    // В реальном приложении — сохранение токена и т.д.
   };
 
   const logout = () => {

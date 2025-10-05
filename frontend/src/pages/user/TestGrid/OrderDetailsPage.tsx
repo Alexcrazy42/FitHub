@@ -13,7 +13,7 @@ import {
 } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { Currency, Order, OrderStatus, PaymentMethod } from './Home';
+import { Currency, Order, OrderStatus, PaymentMethod } from '../TestGrid/TestOrderGrid';
 import { paymentMethodLabels } from './paymentMethodLabels';
 import { orderStatusLabels } from './orderStatusLabels';
 

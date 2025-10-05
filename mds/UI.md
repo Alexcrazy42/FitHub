@@ -60,3 +60,17 @@ SEO-оптимизация (метатеги, микроразметка).
 на бэке:
 1. простой enum (acs, desc) можно не заводить класс, а реально в enum это все хранить. только разделить на request/response и domain. при этом мы закладываем всегда что это может потом стать записью в бд, если это начнет разрастаться
 2. то, что потянется из бд и под это скорее всего нужен будет не просто Options.Value с текстом а модалка или еще что нибудь
+
+
+<Select
+    value={tempSort.field}
+    onChange={(value) => setTempSort(prev => ({ ...prev, field: value }))}
+    className="w-full"
+    placeholder="Сортировать по"
+>
+    {sortableFields.map(field => (
+    <Option key={field.value} value={field.value}>
+        {field.label}
+    </Option>
+    ))}
+</Select>

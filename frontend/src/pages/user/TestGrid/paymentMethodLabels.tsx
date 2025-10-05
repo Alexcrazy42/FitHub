@@ -1,5 +1,4 @@
-﻿import { PaymentMethod } from './Home';
-
+﻿import { PaymentMethod } from './TestOrderGrid';
 
 export const paymentMethodLabels: Record<PaymentMethod, string> = {
   Card: 'Карта',

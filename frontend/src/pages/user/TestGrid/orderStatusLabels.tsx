@@ -1,4 +1,4 @@
-﻿import { OrderStatus } from "./Home";
+﻿import { OrderStatus } from "./TestOrderGrid";
 
 export const orderStatusLabels: Record<OrderStatus, string> = {
   Pending: 'В ожидании',

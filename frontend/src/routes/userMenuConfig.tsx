@@ -1,7 +1,7 @@
-﻿import UserHome from '../pages/user/TestGrid/Home';
+﻿import TestOrderGrid from '../pages/user/TestGrid/TestOrderGrid';
 import UserProfile from '../pages/user/Profile/Profile'
 import { MenuItem } from './MenuItem';
-import { HistoryOutlined, HomeOutlined, LikeOutlined, OrderedListOutlined, UserOutlined } from '@ant-design/icons';
+import { CodeSandboxOutlined, HistoryOutlined, HomeOutlined, UserOutlined } from '@ant-design/icons';
 
 
 export const userMenuConfig : MenuItem[] = [
@@ -10,7 +10,7 @@ export const userMenuConfig : MenuItem[] = [
     label: 'Главная',
     icon: <HomeOutlined />,
     path: '/user/home',
-    element: <UserHome />
+    element: <UserProfile />
   },
   {
     key: '/user/profile',
@@ -21,21 +21,14 @@ export const userMenuConfig : MenuItem[] = [
   },
   {
     key: '/user/orders',
-    label: 'Мои заказы',
-    icon: <OrderedListOutlined />,
+    label: 'Песочница',
+    icon: <CodeSandboxOutlined />,
     children: [
       { key: '/user/orders/history', 
-        label: 'История', 
+        label: 'Заказы (тест)', 
         icon: <HistoryOutlined />, 
         path: '/user/orders/history',
-        element: <UserProfile />
-      },
-      { 
-        key: '/user/orders/favorites', 
-        label: 'Избранное', 
-        icon: <LikeOutlined />, 
-        path: '/user/orders/favorites',
-        element: <UserProfile /> 
+        element: <TestOrderGrid />
       }
     ],
   },
