@@ -9,7 +9,7 @@ public class PersonalTrainingConfiguration : IEntityTypeConfiguration<PersonalTr
     public void Configure(EntityTypeBuilder<PersonalTraining> builder)
     {
         builder.HasOne(x => x.Visitor)
-            .WithMany()
+            .WithMany(x => x.PersonalTrainings)
             .HasForeignKey(x => x.VisitorId);
 
         builder.HasOne(x => x.Trainer)

@@ -5,9 +5,6 @@ using FitHub.Common.Logging;
 using FitHub.Contracts.V1;
 using FitHub.Data;
 using FitHub.Web;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.OpenApi.Models;
-
 namespace FitHub.Host;
 
 public sealed class Startup
@@ -23,7 +20,7 @@ public sealed class Startup
     {
         services.AddBindedOptions<HostOptions>();
         services.AddData(configuration);
-        services.AddApplication();
+        services.AddApplication(configuration);
         services.AddWeb(configuration);
 
         services.AddExceptionAsProblemDetails();

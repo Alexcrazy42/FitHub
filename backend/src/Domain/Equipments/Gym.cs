@@ -22,6 +22,10 @@ public class Gym : IEntity<GymId>
 
     public string Description { get; private set; }
 
+    public string? ImageRelativePath { get; private set; }
+
+    public bool? InUploadProcess { get; set; }
+
     public IReadOnlyList<Equipment> Equipments => equipments;
 
     public IReadOnlyList<GymAdmin> Admins => admins;
@@ -32,6 +36,8 @@ public class Gym : IEntity<GymId>
     {
         equipments.AddRange(newEquipments);
     }
+
+    public void SetImageRelativePath(string? relativePath) => ImageRelativePath = relativePath;
 
     public void UpdateName(string name) => Name = name;
 

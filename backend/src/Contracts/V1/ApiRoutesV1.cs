@@ -9,7 +9,11 @@ public class ApiRoutesV1
 
     public const string Gyms = Root + "/gyms";
 
-    public const string GymById = Gyms + "/{id:guid}";
+    public const string GymById = Gyms + "/{id}";
+
+    public const string GymPhoto = Gyms + "/photos";
+
+    public const string GymPhotoById = Gyms + "/{id}/photos";
 
     #endregion
 
@@ -17,7 +21,7 @@ public class ApiRoutesV1
 
     public const string GymZones = Root + "/gym-zones";
 
-    public const string GymZoneById = GymZones + "/{id:guid}";
+    public const string GymZoneById = GymZones + "/{id}";
 
     #endregion
 
@@ -25,7 +29,7 @@ public class ApiRoutesV1
 
     public const string MuscleGroups = Root + "/muscle-groups";
 
-    public const string MuscleGroupById = MuscleGroups + "/{id:guid}";
+    public const string MuscleGroupById = MuscleGroups + "/{id}";
 
     #endregion
 
@@ -33,7 +37,7 @@ public class ApiRoutesV1
 
     public const string Equipments = Root + "/equipments";
 
-    public const string EquipmentById = Equipments + "/{id:guid}";
+    public const string EquipmentById = Equipments + "/{id}";
 
     #endregion
 
@@ -41,7 +45,7 @@ public class ApiRoutesV1
 
     public const string EquipmentsInstructions = Root + "/equipments-instructions";
 
-    public const string EquipmentInstructionById = EquipmentsInstructions + "/{id:guid}";
+    public const string EquipmentInstructionById = EquipmentsInstructions + "/{id}";
 
     #endregion
 
@@ -49,7 +53,7 @@ public class ApiRoutesV1
 
     public const string VideoTrainings = Root + "/video-trainings";
 
-    public const string VideoTrainingsById = VideoTrainings + "/{id:guid}";
+    public const string VideoTrainingsById = VideoTrainings + "/{id}";
 
     #endregion
 
@@ -57,7 +61,7 @@ public class ApiRoutesV1
 
     public const string BaseGroupTrainings = Root + "/base-group-trainings";
 
-    public const string BaseGroupTrainingsById = BaseGroupTrainings + "/{id:guid}";
+    public const string BaseGroupTrainingsById = BaseGroupTrainings + "/{id}";
 
     #endregion
 
@@ -65,7 +69,15 @@ public class ApiRoutesV1
 
     public const string TrainingTypes = Root + "/training-types";
 
-    public const string TrainingTypeById = TrainingTypes + "/{id:guid}";
+    public const string TrainingTypeById = TrainingTypes + "/{id}";
+
+    #endregion
+
+    #region Files
+
+    public const string Files = Root + "/files";
+
+    public const string FileByKey = Files + "/{key}";
 
     #endregion
 

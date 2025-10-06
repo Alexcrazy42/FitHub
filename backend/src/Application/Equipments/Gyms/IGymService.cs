@@ -14,4 +14,8 @@ public interface IGymService
     Task<Gym> CreateGymAsync(CreateGymRequest request, CancellationToken ct = default);
 
     Task<Gym> UpdateGymAsync(UpdateGymRequest request, CancellationToken ct = default);
+
+    Task<Gym> AddFileAsync(AddFileRequest request, CancellationToken ct = default);
+
+    Task<Gym> RemoveFileAsync(GymId id, CancellationToken ct = default);
 }

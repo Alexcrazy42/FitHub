@@ -15,6 +15,6 @@ public class GymConfiguration : IEntityTypeConfiguration<Gym>
             .WithMany(x => x.Gyms);
 
         builder.HasMany(x => x.Zones)
-            .WithMany();
+            .WithMany(x => x.Gyms);
     }
 }

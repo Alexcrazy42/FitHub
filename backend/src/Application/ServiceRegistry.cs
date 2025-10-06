@@ -1,13 +1,17 @@
-﻿using FitHub.Application.Users;
+﻿using Amazon.Runtime;
+using Amazon.S3;
+using FitHub.Application.Files;
+using FitHub.Application.Users;
 using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.AspNetCore.Auth;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FitHub.Application;
 
 public static class ServiceRegistry
 {
-    public static IServiceCollection AddApplication(this IServiceCollection services)
+    public static IServiceCollection AddApplication(this IServiceCollection services, IConfiguration configuration)
     {
         var applicationAssembly = typeof(Application.ServiceRegistry).Assembly;
 
@@ -28,7 +32,24 @@ public static class ServiceRegistry
 
         services.AddTransient<IIdentityUserService, IdentityUserService>();
         services.AddTransient<IAuthenticationService, IdentityUserService>();
+        services.AddFiles(configuration);
 
         return services;
+    }
+
+    public static void AddFiles(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddScoped<IFileService, FileService>();
+        services.AddSingleton<IAmazonS3>(sp => new AmazonS3Client(
+            new BasicAWSCredentials(configuration["AWS:AccessKey"], configuration["AWS:SecretKey"]),
+            new AmazonS3Config
+            {
+                ServiceURL = configuration["AWS:ServiceURL"],
+                ForcePathStyle = true,
+                UseHttp = true,
+                Timeout = TimeSpan.FromSeconds(20),
+                MaxErrorRetry = 3,
+            }
+        ));
     }
 }

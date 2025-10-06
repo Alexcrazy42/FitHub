@@ -13,7 +13,7 @@ public static class Program
         try
         {
             Log.Information("Запуск приложения");
-            //await MigrateDatabase(host);
+            await MigrateDatabase(host);
 
             // if (args.contains(MigrateAndExitKey))
             //{
