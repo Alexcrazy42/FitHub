@@ -128,8 +128,8 @@ public static class ServiceRegistry
 
                     context.Response.Cookies.Append(IAuthOptions.CookieName, tokenString, new CookieOptions
                     {
-                        HttpOnly = true,
-                        Secure = true,
+                        HttpOnly = false,
+                        Secure = false,
                         SameSite = SameSiteMode.Strict,
                         Expires = expiresAt,
                         Path = "/"

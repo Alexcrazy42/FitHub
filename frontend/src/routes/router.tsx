@@ -7,6 +7,7 @@ import Login from '../pages/Auth/Login';
 import { MenuItem } from './MenuItem';
 import { userMenuConfig } from './userMenuConfig';
 import OrderDetailsPage from '../pages/user/TestGrid/OrderDetailsPage';
+import { Register } from '../pages/Auth/Register';
 
 
 const getAdminRoutePath = (fullPath: string): string => {
@@ -50,20 +51,21 @@ const extractRoutesFromMenu = (items: MenuItem[], userType: UserType): { path: s
 
 export const routes: RouteObject[] = [
   { path: '/login', element: <Login /> },
+  { path: '/register', element: <Register /> },
   {
-    element: <ProtectedRoute allowedRoles={['admin', 'user']} />,
+    element: <ProtectedRoute allowedRoles={['GymAdmin', 'GymVisitor']} />,
     children: [
       {
         element: <DashboardLayout />,
         children: [
           {
             path: '/admin/*',
-            element: <ProtectedRoute allowedRoles={['admin']} />,
+            element: <ProtectedRoute allowedRoles={['GymAdmin']} />,
             children: extractRoutesFromMenu(adminMenuConfig, UserType.Admin)
           },
           {
             path: '/user/*',
-            element: <ProtectedRoute allowedRoles={['user']} />,
+            element: <ProtectedRoute allowedRoles={['GymVisitor']} />,
             children: [
               ...extractRoutesFromMenu(userMenuConfig, UserType.User),
               { path: 'home/:orderId/order', element: <OrderDetailsPage /> },

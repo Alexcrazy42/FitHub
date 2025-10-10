@@ -69,8 +69,7 @@ internal sealed class GymService : IGymService
         await unitOfWork.SaveChangesAsync(ct);
 
         await using var stream = file.OpenReadStream();
-
-
+        
         await fileService.UploadFileAsync(key, stream, file.ContentType);
 
         gym.InUploadProcess = null;

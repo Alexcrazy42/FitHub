@@ -38,7 +38,8 @@ public sealed class Startup
             {
                 policy.WithOrigins("http://localhost:5173")
                     .AllowAnyHeader()
-                    .AllowAnyMethod();
+                    .AllowAnyMethod()
+                    .AllowCredentials();
             });
         });
     }
@@ -51,10 +52,10 @@ public sealed class Startup
 
         var isDev = env.IsDevelopment();
         app.UseExceptionAsProblemDetails(isDev);
-
-        app.UseCors("AllowFrontend");
         app.UseHttpsRedirection();
         app.UseRouting();
+
+        app.UseCors("AllowFrontend");
 
         app.UseWeb(configuration);
 

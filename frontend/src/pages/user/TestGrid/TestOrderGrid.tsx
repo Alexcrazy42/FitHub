@@ -19,7 +19,7 @@ import dayjs from 'dayjs';
 import { OrderDetailsDrawer } from './OrderDetailsDrawer';
 import { orderStatusLabels } from './orderStatusLabels';
 import { paymentMethodLabels } from './paymentMethodLabels';
-import { apiService } from '../../../api/ApiService';
+import { useApiService } from '../../../api/useApiService';
 
 const { Option } = Select;
 
@@ -103,6 +103,7 @@ const sortableFields: { value: keyof Order; label: string }[] = [
 ];
 
 const TestOrderGrid: React.FC = () => {
+  const apiService = useApiService();
   const [orders, setOrders] = useState<Order[]>([]);
   const [gridLoading, setGridLoading] = useState(false);
 

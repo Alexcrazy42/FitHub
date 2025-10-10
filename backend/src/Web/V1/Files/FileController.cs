@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using FitHub.Application.Files;
+using FitHub.Common.Entities;
 using FitHub.Contracts.V1;
 using Microsoft.AspNetCore.Mvc;
 
@@ -36,7 +37,7 @@ public class FileController : ControllerBase
         }
         catch (FileNotFoundException)
         {
-            return NotFound($"File '{key}' not found.");
+            throw new NotFoundException("Файл не найден!");
         }
         catch (Exception ex)
         {

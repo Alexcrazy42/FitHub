@@ -15,14 +15,19 @@ type ApiResponse<T> = {
 
 export class ApiService {
     private api: AxiosInstance;
+    private onUnauthorized: () => void;
+    private onForbidden: () => void;
 
-    constructor(baseUrl: string) {
+    constructor(baseUrl: string, onUnauthorized: () => void, onForbidden: () => void) {
         this.api = axios.create({
             baseURL: baseUrl,
+            withCredentials: true,
             headers: {
                 'Content-Type': 'application/json',
             }
         });
+        this.onUnauthorized = onUnauthorized;
+        this.onForbidden = onForbidden;
 
         this.api.interceptors.request.use(
             (config) => {
@@ -62,7 +67,11 @@ export class ApiService {
             };
         } catch (error: unknown) {
             const axiosError = error as AxiosError<ProblemDetails>;
-            
+            if(axiosError.status === 401) {
+                this.onUnauthorized();
+            } else if(axiosError.status === 403) {
+                this.onForbidden();
+            }
             return {
                 success: false,
                 error: axiosError.response?.data || {
@@ -106,5 +115,3 @@ export class ApiService {
         return await this.query<T>(this.api.delete.bind(this.api), url, undefined, config);
     }
 }
-
-export const apiService = new ApiService("http://localhost:5209/api/");

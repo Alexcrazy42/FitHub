@@ -6,7 +6,7 @@ import { CodeSandboxOutlined, HistoryOutlined, HomeOutlined, UserOutlined } from
 
 export const userMenuConfig : MenuItem[] = [
   {
-    key: '/user/home',
+    key: '/user',
     label: 'Главная',
     icon: <HomeOutlined />,
     path: '/user/home',

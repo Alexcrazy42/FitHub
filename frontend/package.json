@@ -21,9 +21,10 @@
     "dayjs": "^1.11.13",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "react-hook-form": "^7.62.0",
+    "react-hook-form": "^7.65.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.9.3",
+    "react-toastify": "^11.0.5",
     "redux-persist": "^6.0.0",
     "yup": "^1.7.0"
   },
