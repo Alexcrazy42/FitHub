@@ -1,4 +1,5 @@
 ﻿using FitHub.Common.Entities;
+using FitHub.Domain.Files;
 using FitHub.Domain.Users;
 
 namespace FitHub.Domain.Equipments;
@@ -22,9 +23,6 @@ public class Gym : IEntity<GymId>
 
     public string Description { get; private set; }
 
-    public string? ImageRelativePath { get; private set; }
-
-    public bool? InUploadProcess { get; set; }
 
     public IReadOnlyList<Equipment> Equipments => equipments;
 
@@ -32,12 +30,8 @@ public class Gym : IEntity<GymId>
 
     public IReadOnlyList<GymZone> Zones => zones;
 
-    public void AddEquipments(IReadOnlyList<Equipment> newEquipments)
-    {
-        equipments.AddRange(newEquipments);
-    }
+    public IReadOnlyList<FileEntity> Files { get; private set; } = [];
 
-    public void SetImageRelativePath(string? relativePath) => ImageRelativePath = relativePath;
 
     public void UpdateName(string name) => Name = name;
 

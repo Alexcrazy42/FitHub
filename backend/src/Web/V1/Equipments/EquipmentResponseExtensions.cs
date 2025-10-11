@@ -25,8 +25,7 @@ public static class EquipmentResponseExtensions
         {
             Id = gym.Id.Value,
             Name = gym.Name,
-            Description = gym.Description,
-            ImageUrl = gym.ImageRelativePath
+            Description = gym.Description
         };
     }
 

@@ -77,7 +77,15 @@ public class ApiRoutesV1
 
     public const string Files = Root + "/files";
 
-    public const string FileByKey = Files + "/{key}";
+    public const string FileById = Files + "/{id}";
+
+    public const string FileGetPresignedUrl = Files + "/get-presigned-url";
+
+    public const string FileConfirmUpload = FileById + "/confirm-upload";
+
+    public const string FileMultipleConfirmUpload = Files + "/multiply-confirm-upload";
+
+    public const string FileMakeFilesActive = Files + "/make-files-active";
 
     #endregion
 

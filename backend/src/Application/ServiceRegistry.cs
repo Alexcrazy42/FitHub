@@ -39,7 +39,7 @@ public static class ServiceRegistry
 
     public static void AddFiles(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<IFileService, FileService>();
+        services.AddScoped<IS3FileService, S3FileService>();
         services.AddSingleton<IAmazonS3>(sp => new AmazonS3Client(
             new BasicAWSCredentials(configuration["AWS:AccessKey"], configuration["AWS:SecretKey"]),
             new AmazonS3Config
@@ -49,6 +49,7 @@ public static class ServiceRegistry
                 UseHttp = true,
                 Timeout = TimeSpan.FromSeconds(20),
                 MaxErrorRetry = 3,
+                AuthenticationRegion = "us-east-1",
             }
         ));
     }

@@ -2,48 +2,79 @@
 using FitHub.Application.Files;
 using FitHub.Common.Entities;
 using FitHub.Contracts.V1;
+using FitHub.Contracts.V1.Files;
+using FitHub.Domain.Files;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FitHub.Web.V1.Files;
 
 public class FileController : ControllerBase
 {
+    private readonly IS3FileService s3FileService;
     private readonly IFileService fileService;
 
-    public FileController(IFileService fileService)
+    public FileController(IS3FileService s3FileService, IFileService fileService)
     {
+        this.s3FileService = s3FileService;
         this.fileService = fileService;
     }
 
-    [HttpGet(ApiRoutesV1.FileByKey)]
-    public async Task<IActionResult> GetFile([FromRoute] string key)
+    [HttpGet(ApiRoutesV1.FileById)]
+    public async Task<IActionResult> GetFile([FromRoute] string? id, CancellationToken ct)
     {
-        try
+        if (String.IsNullOrEmpty(id))
         {
-            if (String.IsNullOrEmpty(key))
-            {
-                return BadRequest("File name is required.");
-            }
-
-            var fileStream = await fileService.DownloadFileAsync(key);
-
-            var contentType = GetContentType(key);
-
-            return File(
-                fileStream,
-                contentType,
-                fileDownloadName: null
-            );
+            throw new ValidationException("Не передан id файла!");
         }
-        catch (FileNotFoundException)
-        {
-            throw new NotFoundException("Файл не найден!");
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"Error downloading file: {ex.Message}");
-        }
+        var fileId = FileId.Parse(id);
+
+        var stream = await fileService.DownloadFile(fileId, ct);
+
+        var contentType = GetContentType(id);
+
+        return File(
+            stream,
+            contentType,
+            fileDownloadName: null
+        );
     }
+
+    [HttpPost(ApiRoutesV1.FileGetPresignedUrl)]
+    [Consumes("multipart/form-data")]
+    public async Task<PresignedUrlResponse> GetPresignedFile([FromForm] GetPresignedUrlRequest? request, CancellationToken ct)
+    {
+        var command = request.ToPresignedUrlCommand();
+        var result = await fileService.GetPresignedUrlAsync(command, ct);
+        return result.ToPresignedUrlResponse();
+    }
+
+    [HttpPost(ApiRoutesV1.FileConfirmUpload)]
+    public async Task<ActionResult> ConfirmUpload([FromRoute] string? id, CancellationToken ct)
+    {
+        var fileId = FileId.Parse(id);
+        await fileService.ConfirmUploadAsync([fileId], ct);
+        return NoContent();
+    }
+
+    [HttpPost(ApiRoutesV1.FileMultipleConfirmUpload)]
+    public async Task<ActionResult> MultiplyConfirm([FromBody] IReadOnlyList<string> ids, CancellationToken ct)
+    {
+        var fileIds = ids.Select(FileId.Parse).ToList();
+        await fileService.ConfirmUploadAsync(fileIds, ct);
+        return NoContent();
+    }
+
+    [HttpPost(ApiRoutesV1.FileMakeFilesActive)]
+    public async Task<ActionResult> MakeFilesActive([FromBody] MakeFileActiveRequest? request, CancellationToken ct)
+    {
+        var ids = request?.FileIds.Select(FileId.Parse).ToList() ?? throw new ValidationException("Файлы не могут быть пустыми!");
+        var entityType = ValidationException.ThrowIfNull(request.EntityType, "Не передан entityType").FromDto();
+        var entityId = ValidationException.ThrowIfNull(request.EntityId, "EntityId не может быть пустым!");
+
+        await fileService.MakeFilesActiveAsync(ids, entityId, entityType, ct);
+        return NoContent();
+    }
+
 
     private string GetContentType(string fileName)
     {

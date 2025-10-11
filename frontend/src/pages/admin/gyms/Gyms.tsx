@@ -6,6 +6,7 @@ import { ListResponse } from "../../../types/common";
 import { toast } from "react-toastify";
 import { useApiService } from "../../../api/useApiService";
 import { GymForm } from "./GymForm";
+import { getFileRoute } from "../../../api/files";
 
 export const Gyms: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -62,6 +63,7 @@ export const Gyms: React.FC = () => {
     if (selectedGym) {
       const response = await apiService.put<IGymResponse>(`v1/gyms`, values);
       if (response.success && response.data) {
+        console.log("Успешно обновлено!");
         toast.success("Спортзал успешно обновлен");
         fetchGyms();
         handleDrawerClose();
@@ -84,6 +86,11 @@ export const Gyms: React.FC = () => {
     if (size) {
       setPageSize(size);
     }
+  };
+
+  const handleRowClick = (gym: IGymResponse) => {
+      setSelectedGym(gym);
+      setDrawerVisible(true);
   };
 
   const handlePhotoUpload = async (gymId: string, file: File) => {
@@ -152,32 +159,15 @@ export const Gyms: React.FC = () => {
       render: (imageUrl: string | null) => (
         imageUrl ? (
           <img 
-            src={imageUrl} 
+            src={getFileRoute(imageUrl)} 
             alt="Gym" 
-            className="w-12 h-12 object-cover rounded"
+            className="w-30 object-cover rounded"
           />
         ) : (
           <span className="text-gray-400">Нет изображения</span>
         )
       ),
-    },
-    {
-      title: 'Действия',
-      key: 'actions',
-      width: 100,
-      render: (_: any, record: IGymResponse) => (
-        <Space>
-          <Button
-            type="primary"
-            icon={<EditOutlined />}
-            size="small"
-            onClick={() => handleEdit(record)}
-          >
-            Редактировать
-          </Button>
-        </Space>
-      ),
-    },
+    }
   ];
 
   return (
@@ -199,6 +189,10 @@ export const Gyms: React.FC = () => {
           pagination={false}
           scroll={{ x: 800 }}
           className="mb-4"
+          onRow={(record) => ({
+          onClick: () => handleRowClick(record),
+          style: { cursor: 'pointer' },
+        })}
         />
         
         <div className="flex justify-end">

@@ -1,127 +1,73 @@
-﻿using Amazon.S3;
-using Amazon.S3.Model;
-using Microsoft.Extensions.Configuration;
+﻿using FitHub.Common.Entities;
+using FitHub.Common.Entities.Storage;
+using FitHub.Domain.Files;
+using Microsoft.EntityFrameworkCore;
 
 namespace FitHub.Application.Files;
 
 public class FileService : IFileService
 {
-    private readonly IAmazonS3 s3Client;
-    private readonly string bucketName;
-    private readonly bool needToEnsureBucketExists;
+    private readonly IFileRepository fileRepository;
+    private readonly IS3FileService s3FileService;
+    private readonly IUnitOfWork unitOfWork;
 
-    public FileService(IAmazonS3 s3Client, IConfiguration configuration)
+    public FileService(IFileRepository fileRepository, IS3FileService s3FileService, IUnitOfWork unitOfWork)
     {
-        this.s3Client = s3Client;
-        bucketName = configuration["AWS:BucketName"]
-                      ?? throw new ArgumentException("BucketName is not configured.");
-
-        needToEnsureBucketExists = bool.Parse(configuration["AWS:NeedToEnsureBucketExists"] ?? throw new Exception(""));
+        this.fileRepository = fileRepository;
+        this.s3FileService = s3FileService;
+        this.unitOfWork = unitOfWork;
     }
 
-    public async Task EnsureBucketExistsAsync()
+    public async Task<Stream> DownloadFile(FileId id, CancellationToken ct)
     {
-        if (!needToEnsureBucketExists)
-        {
-            return;
-        }
-        try
-        {
-            var request = new GetBucketLocationRequest
-            {
-                BucketName = bucketName
-            };
-            await s3Client.GetBucketLocationAsync(request);
-        }
-        catch (AmazonS3Exception ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
-        {
-            var bucketRequest = new PutBucketRequest
-            {
-                BucketName = bucketName,
-                UseClientRegion = true
-            };
-            await s3Client.PutBucketAsync(bucketRequest);
-            Console.WriteLine($"Bucket '{bucketName}' created.");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error checking or creating bucket: {ex.Message}");
-            throw;
-        }
+        var file = await fileRepository.GetFirstOrDefaultAsync(x => x.Id == id, ct);
+        NotFoundException.ThrowIfNull(file, "Файл не найден!");
+
+        var decodedKey = Uri.UnescapeDataString(file.S3Key);
+        return await s3FileService.DownloadFileAsync(decodedKey);
     }
 
-    public async Task<string> UploadFileAsync(string key, Stream fileStream, string contentType)
+    public async Task<PresignedUrlResult> GetPresignedUrlAsync(GetPresignedUrlCommand command, CancellationToken ct)
     {
-        await EnsureBucketExistsAsync();
-        var request = new PutObjectRequest
-        {
-            BucketName = bucketName,
-            Key = key,
-            InputStream = fileStream,
-            ContentType = contentType
-        };
+        var fileId = FileId.New();
+        var fileName = command.File.FileName;
+        var objectKey = $"uploads/{fileId}/{fileName}";
 
-        var response = await s3Client.PutObjectAsync(request);
-        if (response.HttpStatusCode == System.Net.HttpStatusCode.OK)
-        {
-            return key;
-        }
+        var file = FileEntity.Create(fileId, fileName, objectKey, FileStatus.WaitingUpload);
 
-        throw new Exception($"Failed to upload file: {response.HttpStatusCode}");
+        await fileRepository.PendingAddAsync(file, ct);
+
+        var url = await s3FileService.GetPresignedUrlAsync(command, file.Id.ToString(), objectKey);
+
+        await unitOfWork.SaveChangesAsync(ct);
+        return url;
     }
 
-    public async Task<Stream> DownloadFileAsync(string key)
+    public async Task ConfirmUploadAsync(List<FileId> fileIds, CancellationToken ct)
     {
-        await EnsureBucketExistsAsync();
-        if (!await FileExistsAsync(key))
+        var files = await fileRepository.GetAllAsync(x => fileIds.Contains(x.Id), ct);
+        if (files.Count != fileIds.Count)
         {
-            throw new FileNotFoundException($"File with key '{key}' not found.");
+            throw new ValidationException("Не все переданные файлы были найдены!");
         }
 
-        var request = new GetObjectRequest
+        foreach (var file in files)
         {
-            BucketName = bucketName,
-            Key = key
-        };
-
-        var response = await s3Client.GetObjectAsync(request);
-        return response.ResponseStream;
+            file.SetStatus(FileStatus.WaitingForActive);
+        }
+        await unitOfWork.SaveChangesAsync(ct);
     }
 
-    public async Task<bool> DeleteFileAsync(string key)
+    public async Task MakeFilesActiveAsync(IReadOnlyList<FileId> fileIds, string entityId, EntityType entityType, CancellationToken ct)
     {
-        await EnsureBucketExistsAsync();
-        if (!await FileExistsAsync(key))
+        var files = await fileRepository.GetAllAsync(x => fileIds.Contains(x.Id), ct);
+
+        foreach (var file in files)
         {
-            return false;
+            file.SetStatus(FileStatus.Active);
+            file.SetEntity(entityId, entityType);
         }
 
-        var request = new DeleteObjectRequest
-        {
-            BucketName = bucketName,
-            Key = key
-        };
-
-        var response = await s3Client.DeleteObjectAsync(request);
-        return response.HttpStatusCode == System.Net.HttpStatusCode.NoContent;
-    }
-
-    public async Task<bool> FileExistsAsync(string key)
-    {
-        await EnsureBucketExistsAsync();
-        try
-        {
-            var request = new GetObjectMetadataRequest
-            {
-                BucketName = bucketName,
-                Key = key
-            };
-            await s3Client.GetObjectMetadataAsync(request);
-            return true;
-        }
-        catch (AmazonS3Exception ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
-        {
-            return false;
-        }
+        await unitOfWork.SaveChangesAsync(ct);
     }
 }

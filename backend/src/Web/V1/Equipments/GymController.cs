@@ -65,18 +65,18 @@ public class GymController : ControllerBase
         return gym.ToGymResponse();
     }
 
-    [HttpPost(ApiRoutesV1.GymPhoto)]
-    [Consumes("multipart/form-data")]
-    public async Task<GymResponse> AddPhotoAsync([FromForm] AddFileRequest request, CancellationToken ct)
-    {
-        var gym = await gymService.AddFileAsync(request, ct);
-        return gym.ToGymResponse();
-    }
-
-    [HttpDelete(ApiRoutesV1.GymPhotoById)]
-    public async Task DeletePhotoAsync([FromRoute] string? id, CancellationToken ct)
-    {
-        var gymId = GymId.Parse(id);
-        await gymService.RemoveFileAsync(gymId, ct);
-    }
+    // [HttpPost(ApiRoutesV1.GymPhoto)]
+    // [Consumes("multipart/form-data")]
+    // public async Task<GymResponse> AddPhotoAsync([FromForm] AddFileRequest request, CancellationToken ct)
+    // {
+    //     var gym = await gymService.AddFileAsync(request, ct);
+    //     return gym.ToGymResponse();
+    // }
+    //
+    // [HttpDelete(ApiRoutesV1.GymPhotoById)]
+    // public async Task DeletePhotoAsync([FromRoute] string? id, CancellationToken ct)
+    // {
+    //     var gymId = GymId.Parse(id);
+    //     await gymService.RemoveFileAsync(gymId, ct);
+    // }
 }

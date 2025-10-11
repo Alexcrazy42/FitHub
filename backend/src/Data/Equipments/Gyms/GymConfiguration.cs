@@ -1,4 +1,5 @@
 ﻿using FitHub.Domain.Equipments;
+using FitHub.Domain.Files;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -16,5 +17,7 @@ public class GymConfiguration : IEntityTypeConfiguration<Gym>
 
         builder.HasMany(x => x.Zones)
             .WithMany(x => x.Gyms);
+
+        builder.Ignore(x => x.Files);
     }
 }

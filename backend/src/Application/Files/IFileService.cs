@@ -1,10 +1,14 @@
-﻿namespace FitHub.Application.Files;
+﻿using FitHub.Domain.Files;
+
+namespace FitHub.Application.Files;
 
 public interface IFileService
 {
-    Task<string> UploadFileAsync(string key, Stream fileStream, string contentType);
-    Task<Stream> DownloadFileAsync(string key);
-    Task<bool> DeleteFileAsync(string key);
-    Task<bool> FileExistsAsync(string key);
-    Task EnsureBucketExistsAsync();
+    public Task<Stream> DownloadFile(FileId id, CancellationToken ct);
+
+    public Task<PresignedUrlResult> GetPresignedUrlAsync(GetPresignedUrlCommand command, CancellationToken ct);
+
+    public Task ConfirmUploadAsync(List<FileId> fileIds, CancellationToken ct);
+
+    public Task MakeFilesActiveAsync(IReadOnlyList<FileId> fileIds, string entityId, EntityType entityType, CancellationToken ct);
 }

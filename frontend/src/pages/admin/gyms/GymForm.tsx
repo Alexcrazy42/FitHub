@@ -3,6 +3,8 @@ import { Button, Space, Upload, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useForm } from "react-hook-form";
 import { IGymResponse, IUpdateGymRequest } from "../../../types/gyms";
+import { getFileRoute } from "../../../api/files";
+import GymImageUploader from "./GymImageUploader";
 
 interface GymFormProps {
   gym: IGymResponse;
@@ -81,11 +83,10 @@ export const GymForm: React.FC<GymFormProps> = ({
   };
 
   return (
+    <>
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      {/* Скрытое поле для id */}
       <input type="hidden" {...register("id")} />
 
-      {/* Поле названия */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Название *
@@ -100,7 +101,6 @@ export const GymForm: React.FC<GymFormProps> = ({
         )}
       </div>
 
-      {/* Поле описания */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Описание *
@@ -115,44 +115,7 @@ export const GymForm: React.FC<GymFormProps> = ({
           <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>
         )}
       </div>
-
-      {/* Загрузка изображения - отдельный блок */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Изображение
-        </label>
-        <Upload
-          name="image"
-          customRequest={customUploadRequest}
-          beforeUpload={beforeUpload}
-          showUploadList={false}
-          accept="image/*"
-          disabled={photoLoading}
-        >
-          <Button 
-            icon={<UploadOutlined />} 
-            loading={photoLoading}
-            disabled={photoLoading}
-          >
-            {photoLoading ? 'Загрузка...' : 'Загрузить изображение'}
-          </Button>
-        </Upload>
-        <p className="text-xs text-gray-500 mt-1">
-          Максимальный размер: 5MB. Форматы: JPG, PNG, WebP
-        </p>
-      </div>
-
-      {/* Текущее изображение */}
-      {gym.imageUrl && (
-        <div className="mb-4">
-          <p className="text-sm text-gray-600 mb-2">Текущее изображение:</p>
-          <img 
-            src={gym.imageUrl} 
-            alt="Current gym" 
-            className="w-32 h-32 object-cover rounded"
-          />
-        </div>
-      )}
+      
 
       {/* Кнопки */}
       <div className="flex space-x-2">
@@ -172,5 +135,8 @@ export const GymForm: React.FC<GymFormProps> = ({
         </Button>
       </div>
     </form>
+
+    <GymImageUploader gymId={gym.id} currentImageUrl={gym.imageUrl} />
+    </>
   );
 };
