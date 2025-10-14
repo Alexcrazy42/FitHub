@@ -9,13 +9,18 @@ export interface AuthContextType {
 }
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const userJson = localStorage.getItem('user');
+  const tempUser: User | null = userJson ? JSON.parse(userJson) : null;
+  const [user, setUser] = useState<User | null>(tempUser);
 
   const login = (userData: User) => {
+    const userString = JSON.stringify(userData);
+    localStorage.setItem('user', userString);
     setUser(userData);
   };
 
   const logout = () => {
+    localStorage.removeItem('user');
     setUser(null);
   };
 

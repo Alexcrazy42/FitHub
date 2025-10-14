@@ -4,20 +4,21 @@ using FitHub.Common.Entities;
 using FitHub.Common.Entities.Storage;
 using FitHub.Contracts.V1.Equipments.Gyms;
 using FitHub.Domain.Equipments;
+using FitHub.Domain.Files;
 
 namespace FitHub.Application.Equipments.Gyms;
 
 internal sealed class GymService : IGymService
 {
     private readonly IGymRepository gymRepository;
-    private readonly IS3FileService is3FileService;
     private readonly IUnitOfWork unitOfWork;
+    private readonly IFileRepository fileRepository;
 
-    public GymService(IGymRepository gymRepository, IUnitOfWork unitOfWork, IS3FileService is3FileService)
+    public GymService(IGymRepository gymRepository, IUnitOfWork unitOfWork, IFileRepository fileRepository)
     {
         this.gymRepository = gymRepository;
         this.unitOfWork = unitOfWork;
-        this.is3FileService = is3FileService;
+        this.fileRepository = fileRepository;
     }
 
     public Task<PagedResult<Gym>> GetGymsAsync(PagedQuery pagedQuery, CancellationToken ct)
@@ -25,9 +26,13 @@ internal sealed class GymService : IGymService
         return gymRepository.GetGymsAsync(pagedQuery, ct);
     }
 
-    public Task<Gym?> GetGymOrDefaultAsync(GymId id, CancellationToken ct = default)
+    public async Task<Gym?> GetGymOrDefaultAsync(GymId id, CancellationToken ct = default)
     {
-        return gymRepository.GetSingleOrDefaultAsync(x => x.Id == id, ct);
+        var gym = await gymRepository.GetSingleOrDefaultAsync(x => x.Id == id, ct);
+        NotFoundException.ThrowIfNull(gym, "Зал не найден!");
+        var files = await fileRepository.GetAllAsync(x => x.EntityId == gym.Id.ToString() && x.EntityType == EntityType.Gym, ct);
+        gym.SetFiles(files);
+        return gym;
     }
 
     public async Task<Gym> CreateGymAsync(CreateGymRequest request, CancellationToken ct = default)

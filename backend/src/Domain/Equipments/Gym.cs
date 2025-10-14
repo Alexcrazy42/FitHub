@@ -32,6 +32,8 @@ public class Gym : IEntity<GymId>
 
     public IReadOnlyList<FileEntity> Files { get; private set; } = [];
 
+    public void SetFiles(IReadOnlyList<FileEntity> files) => Files = files;
+
 
     public void UpdateName(string name) => Name = name;
 

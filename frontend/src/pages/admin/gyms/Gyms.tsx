@@ -1,6 +1,5 @@
 ﻿import React, { useEffect, useState } from "react";
-import { Table, Pagination, Drawer, Button, Space, Card } from "antd";
-import { EditOutlined } from "@ant-design/icons";
+import { Table, Pagination, Drawer, Button, Card } from "antd";
 import { IGymResponse, IUpdateGymRequest } from "../../../types/gyms";
 import { ListResponse } from "../../../types/common";
 import { toast } from "react-toastify";
@@ -45,41 +44,33 @@ export const Gyms: React.FC = () => {
     }
   };
 
-  const handleEdit = (gym: IGymResponse) => {
-    setSelectedGym(gym);
-    setDrawerVisible(true);
-  };
-
   const handleDrawerClose = () => {
     setDrawerVisible(false);
     setSelectedGym(null);
   };
 
-
-
   const handleSave = async (values: IUpdateGymRequest): Promise<IGymResponse> => {
-  try {
-    setFormLoading(true);
-    if (selectedGym) {
-      const response = await apiService.put<IGymResponse>(`v1/gyms`, values);
-      if (response.success && response.data) {
-        console.log("Успешно обновлено!");
-        toast.success("Спортзал успешно обновлен");
-        fetchGyms();
-        handleDrawerClose();
-        return response.data;
-      } else {
-        throw new Error(response.error?.detail || "Ошибка обновления");
+    try {
+      setFormLoading(true);
+      if (selectedGym) {
+        const response = await apiService.put<IGymResponse>(`v1/gyms`, values);
+        if (response.success && response.data) {
+          toast.success("Спортзал успешно обновлен");
+          fetchGyms();
+          handleDrawerClose();
+          return response.data;
+        } else {
+          throw new Error(response.error?.detail || "Ошибка обновления");
+        }
       }
+      throw new Error("Спортзал не выбран");
+    } catch (error) {
+      toast.error("Ошибка при сохранении");
+      throw error;
+    } finally {
+      setFormLoading(false);
     }
-    throw new Error("Спортзал не выбран");
-  } catch (error) {
-    toast.error("Ошибка при сохранении");
-    throw error;
-  } finally {
-    setFormLoading(false);
-  }
-};
+  };
 
   const handlePageChange = (page: number, size?: number) => {
     setCurrentPage(page);
@@ -93,33 +84,6 @@ export const Gyms: React.FC = () => {
       setDrawerVisible(true);
   };
 
-  const handlePhotoUpload = async (gymId: string, file: File) => {
-  try {
-    const formData = new FormData();
-    formData.append('file', file);
-    
-    const response = await apiService.post<IGymResponse>(
-      `v1/gyms/${gymId}/photo`,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }
-    );
-    
-    if (response.success && response.data) {
-      // Обновляем данные в списке
-      fetchGyms();
-      return response.data;
-    } else {
-      throw new Error(response.error?.detail || "Ошибка загрузки фото");
-    }
-  } catch (error) {
-    console.error('Ошибка загрузки фото:', error);
-    throw error;
-  }
-};
 
   useEffect(() => {
     fetchGyms();
@@ -127,15 +91,6 @@ export const Gyms: React.FC = () => {
 
   // Колонки таблицы
   const columns = [
-    // {
-    //   title: 'ID',
-    //   dataIndex: 'id',
-    //   key: 'id',
-    //   width: 100,
-    //   render: (id: string) => (
-    //     <span className="font-mono text-xs">{id.slice(0, 8)}...</span>
-    //   ),
-    // },
     {
       title: 'Название',
       dataIndex: 'name',
@@ -222,7 +177,6 @@ export const Gyms: React.FC = () => {
             <GymForm
               gym={selectedGym}
               onSave={handleSave}
-              onPhotoUpload={handlePhotoUpload}
               onCancel={handleDrawerClose}
               loading={formLoading}
             />

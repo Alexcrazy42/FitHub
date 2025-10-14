@@ -113,7 +113,6 @@ const Login: React.FC = () => {
         }
       }
     } catch (error) {
-      console.log(error);
       setError('Ошибка соединения с сервером');
     } finally {
       setIsLoading(false);

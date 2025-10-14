@@ -8,6 +8,7 @@ import { MenuItem } from './MenuItem';
 import { userMenuConfig } from './userMenuConfig';
 import OrderDetailsPage from '../pages/user/TestGrid/OrderDetailsPage';
 import { Register } from '../pages/Auth/Register';
+import AccessDenied from '../pages/AccessDenied';
 
 
 const getAdminRoutePath = (fullPath: string): string => {
@@ -52,6 +53,7 @@ const extractRoutesFromMenu = (items: MenuItem[], userType: UserType): { path: s
 export const routes: RouteObject[] = [
   { path: '/login', element: <Login /> },
   { path: '/register', element: <Register /> },
+  { path: '/access-denied', element: <AccessDenied /> },
   {
     element: <ProtectedRoute allowedRoles={['GymAdmin', 'GymVisitor']} />,
     children: [

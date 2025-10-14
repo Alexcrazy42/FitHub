@@ -1,15 +1,18 @@
-﻿import React, { useState } from "react";
+﻿import React, { useRef, useState } from "react";
 import { Button, Space, Upload, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useForm } from "react-hook-form";
 import { IGymResponse, IUpdateGymRequest } from "../../../types/gyms";
 import { getFileRoute } from "../../../api/files";
 import GymImageUploader from "./GymImageUploader";
+import ImageUploader, { ImageUploaderHandle } from "../../../components/ImageUploader/ImageUploader";
+import { EntityType, IMakeFilesActiveRequest } from "../../../types/files";
+import { useApiService } from "../../../api/useApiService";
+import { toast } from "react-toastify";
 
 interface GymFormProps {
   gym: IGymResponse;
   onSave: (values: IUpdateGymRequest) => Promise<IGymResponse>;
-  onPhotoUpload: (gymId: string, file: File) => Promise<void>;
   onCancel: () => void;
   loading: boolean;
 }
@@ -17,11 +20,9 @@ interface GymFormProps {
 export const GymForm: React.FC<GymFormProps> = ({
   gym,
   onSave,
-  onPhotoUpload,
   onCancel,
   loading,
 }) => {
-  const [photoLoading, setPhotoLoading] = useState(false);
   const {
     register,
     handleSubmit,
@@ -33,6 +34,10 @@ export const GymForm: React.FC<GymFormProps> = ({
       description: gym.description,
     },
   });
+  const uploaderRef = useRef<ImageUploaderHandle>(null);
+  const [uploadedFileId, setUploadedFileId] = useState<string | null>(null);
+  const [isWaitingToConfirmUpload, setIsWaitingToConfirmUpload] = useState<boolean>(false);
+  const apiService = useApiService();
 
   const onSubmit = async (data: IUpdateGymRequest) => {
     try {
@@ -42,45 +47,34 @@ export const GymForm: React.FC<GymFormProps> = ({
     }
   };
 
-  const handlePhotoUpload = async (file: File) => {
-    try {
-      setPhotoLoading(true);
-      await onPhotoUpload(gym.id, file);
-      message.success('Фотография успешно загружена');
-    } catch (error) {
-      console.error('Ошибка загрузки фото:', error);
-      message.error('Ошибка при загрузке фотографии');
-    } finally {
-      setPhotoLoading(false);
-    }
-    return false; // Prevent default upload behavior
+  const handleButtonClick = () => {
+    uploaderRef.current?.openFileDialog();
   };
 
-  const customUploadRequest = async (options: any) => {
-    const { file, onSuccess, onError } = options;
-    try {
-      await handlePhotoUpload(file);
-      onSuccess("ok");
-    } catch (error) {
-      onError(error);
-    }
+  const fileUploadedFromUploader = async (fileId: string): Promise<void> => {
+    setUploadedFileId(fileId);
   };
 
-  const beforeUpload = (file: File) => {
-    const isImage = file.type.startsWith('image/');
-    if (!isImage) {
-      message.error('Можно загружать только изображения!');
-      return false;
-    }
+  const handleRemoveImage = () => {
+    setUploadedFileId(null);
+    setIsWaitingToConfirmUpload(false);
+  }
 
-    const isLt5M = file.size / 1024 / 1024 < 5;
-    if (!isLt5M) {
-      message.error('Изображение должно быть меньше 5MB!');
-      return false;
-    }
-
-    return true;
-  };
+  const handleAttachImage = async () => {
+      if (!uploadedFileId) return;
+      try {
+        const makeFilesActiveRequest : IMakeFilesActiveRequest = {
+          fileIds : [uploadedFileId],
+          entityId: gym.id,
+          entityType: EntityType.Gym
+        }
+        await apiService.post(`/v1/files/make-files-active`, makeFilesActiveRequest);
+        toast.success("Изображение успешно привязано к залу!");
+      } catch (error) {
+        console.error(error);
+        toast.error("Не получилось привязать изображение!")
+      }
+    };
 
   return (
     <>
@@ -117,26 +111,65 @@ export const GymForm: React.FC<GymFormProps> = ({
       </div>
       
 
-      {/* Кнопки */}
       <div className="flex space-x-2">
         <Button 
           type="primary" 
           htmlType="submit" 
           loading={loading}
-          disabled={loading || photoLoading}
+          disabled={loading}
         >
           Сохранить
         </Button>
         <Button 
           onClick={onCancel}
-          disabled={loading || photoLoading}
+          disabled={loading}
         >
           Отмена
         </Button>
       </div>
     </form>
 
-    <GymImageUploader gymId={gym.id} currentImageUrl={gym.imageUrl} />
+    {gym.imageUrl && (
+        <div className="mb-4 mt-4">
+          <p className="text-sm text-gray-600 mb-2">Текущее изображение:</p>
+          <img
+            src={gym.imageUrl}
+            alt="Current gym"
+            className="w-32 h-32 object-cover rounded shadow-sm"
+          />
+        </div>
+      )}
+
+  {uploadedFileId && isWaitingToConfirmUpload && (
+    <div className="mb-4 mt-4 relative w-32 h-32">
+      {/* Кнопка-крестик */}
+      <button
+        onClick={() => handleRemoveImage()} // твоя функция удаления
+        className="absolute top-0 right-0 w-6 h-6 bg-white text-gray-700 rounded-full flex items-center justify-center shadow hover:bg-gray-100 transition-colors"
+      >
+        ×
+      </button>
+
+      <img
+        src={getFileRoute(uploadedFileId)}
+        alt="Current gym"
+        className="w-32 h-32 object-cover rounded shadow-sm"
+      />
+
+      <Button onClick={handleAttachImage}>
+        Привязать фото к залу
+      </Button>
+  </div>
+)}
+
+    {!uploadedFileId && !isWaitingToConfirmUpload && (
+      <Button type="primary" onClick={handleButtonClick}>
+        Выбрать фото
+      </Button>
+    )}
+  
+    
+    <ImageUploader ref={uploaderRef} maxFileCount={2} fileUpload={fileUploadedFromUploader} onSuccessCancel={()=>{setIsWaitingToConfirmUpload(true)}} />
     </>
   );
 };

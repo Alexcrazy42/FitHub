@@ -2,6 +2,7 @@
 import { useAuth } from '../context/useAuth';
 import { Result, Button, Space, Card } from 'antd';
 import { HomeOutlined, ArrowLeftOutlined, CustomerServiceOutlined } from '@ant-design/icons';
+import { roleRoutes } from '../types/auth';
 
 const NotFound: React.FC = () => {
   const { user } = useAuth();
@@ -9,7 +10,7 @@ const NotFound: React.FC = () => {
 
   const goHome = () => {
     if (user) {
-      navigate(`/${user.role}`);
+      navigate(`${roleRoutes[user.currentRole]}`);
     } else {
       navigate('/login');
     }
