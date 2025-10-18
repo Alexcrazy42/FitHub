@@ -5,31 +5,19 @@ namespace FitHub.Domain.Trainings;
 
 public class MuscleGroup : IEntity<MuscleGroupId>
 {
-    private IReadOnlyList<Equipment> equipments = [];
-
-    private MuscleGroup(MuscleGroupId id, string name, string imageUrl)
+    private MuscleGroup(MuscleGroupId id, string name)
     {
         Id = id;
         Name = name;
-        ImageUrl = imageUrl;
     }
 
     public MuscleGroupId Id { get; }
 
     public string Name { get; private set; }
 
-    public string ImageUrl { get; private set; }
-
     public MuscleGroupId? ParentId { get; private set; }
 
     public MuscleGroup? Parent { get; private set; }
-
-    public IReadOnlyList<Equipment> Equipments => equipments;
-
-    public void SetImageUrl(string imageUrl)
-    {
-        ImageUrl = imageUrl;
-    }
 
     public void SetParent(MuscleGroup parent)
     {

@@ -3,6 +3,7 @@ using System;
 using FitHub.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FitHub.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20251018102627_AddEntity")]
+    partial class AddEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -41,23 +44,23 @@ namespace FitHub.Data.Migrations
                     b.ToTable("equipment_gym", (string)null);
                 });
 
-            modelBuilder.Entity("EquipmentInstructionMuscleGroup", b =>
+            modelBuilder.Entity("EquipmentMuscleGroup", b =>
                 {
-                    b.Property<Guid>("EquipmentInstructionId")
+                    b.Property<Guid>("EquipmentsId")
                         .HasColumnType("uuid")
-                        .HasColumnName("equipment_instruction_id");
+                        .HasColumnName("equipments_id");
 
                     b.Property<Guid>("MuscleGroupsId")
                         .HasColumnType("uuid")
                         .HasColumnName("muscle_groups_id");
 
-                    b.HasKey("EquipmentInstructionId", "MuscleGroupsId")
-                        .HasName("pk_equipment_instruction_muscle_group");
+                    b.HasKey("EquipmentsId", "MuscleGroupsId")
+                        .HasName("pk_equipment_muscle_group");
 
                     b.HasIndex("MuscleGroupsId")
-                        .HasDatabaseName("ix_equipment_instruction_muscle_group_muscle_groups_id");
+                        .HasDatabaseName("ix_equipment_muscle_group_muscle_groups_id");
 
-                    b.ToTable("equipment_instruction_muscle_group", (string)null);
+                    b.ToTable("equipment_muscle_group", (string)null);
                 });
 
             modelBuilder.Entity("FitHub.Domain.Equipments.Equipment", b =>
@@ -67,13 +70,10 @@ namespace FitHub.Data.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("AdditionalDescroption")
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
                         .HasColumnType("text")
-                        .HasColumnName("additional_descroption");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text")
-                        .HasColumnName("description");
+                        .HasColumnName("image_url");
 
                     b.Property<DateOnly?>("InstructionAddBefore")
                         .HasColumnType("date")
@@ -97,22 +97,14 @@ namespace FitHub.Data.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("AdditionalDescription")
-                        .HasColumnType("text")
-                        .HasColumnName("additional_description");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text")
-                        .HasColumnName("description");
-
                     b.Property<Guid>("EquipmentId")
                         .HasColumnType("uuid")
                         .HasColumnName("equipment_id");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("VideoUrl")
                         .IsRequired()
                         .HasColumnType("text")
-                        .HasColumnName("name");
+                        .HasColumnName("video_url");
 
                     b.HasKey("Id")
                         .HasName("pk_equipment_instruction");
@@ -167,6 +159,37 @@ namespace FitHub.Data.Migrations
                         .HasName("pk_gym_zone");
 
                     b.ToTable("gym_zone", (string)null);
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Files.Entity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("entity_type");
+
+                    b.Property<int>("MaxFileCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("max_file_count");
+
+                    b.HasKey("Id")
+                        .HasName("pk_entity");
+
+                    b.ToTable("entity", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("6206cfea-d518-4b09-9257-0f790473545e"),
+                            EntityType = "Gym",
+                            MaxFileCount = 1
+                        });
                 });
 
             modelBuilder.Entity("FitHub.Domain.Files.FileEntity", b =>
@@ -294,6 +317,11 @@ namespace FitHub.Data.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("image_url");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text")
@@ -404,6 +432,10 @@ namespace FitHub.Data.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("uuid")
                         .HasColumnName("training_type_id");
+
+                    b.Property<string>("VideoUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("video_url");
 
                     b.HasKey("Id")
                         .HasName("pk_video_trainings");
@@ -607,21 +639,21 @@ namespace FitHub.Data.Migrations
                         .HasConstraintName("fk_equipment_gym_gym_gyms_id");
                 });
 
-            modelBuilder.Entity("EquipmentInstructionMuscleGroup", b =>
+            modelBuilder.Entity("EquipmentMuscleGroup", b =>
                 {
-                    b.HasOne("FitHub.Domain.Equipments.EquipmentInstruction", null)
+                    b.HasOne("FitHub.Domain.Equipments.Equipment", null)
                         .WithMany()
-                        .HasForeignKey("EquipmentInstructionId")
+                        .HasForeignKey("EquipmentsId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_equipment_instruction_muscle_group_equipment_instruction_eq");
+                        .HasConstraintName("fk_equipment_muscle_group_equipment_equipments_id");
 
                     b.HasOne("FitHub.Domain.Trainings.MuscleGroup", null)
                         .WithMany()
                         .HasForeignKey("MuscleGroupsId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_equipment_instruction_muscle_group_muscle_group_muscle_grou");
+                        .HasConstraintName("fk_equipment_muscle_group_muscle_group_muscle_groups_id");
                 });
 
             modelBuilder.Entity("FitHub.Domain.Equipments.EquipmentInstruction", b =>

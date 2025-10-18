@@ -89,6 +89,11 @@ public class ApiRoutesV1
 
     #endregion
 
+    #region Entities
+
+    public const string Entities = Root + "/entities";
+
+    #endregion
 
 
     public const string Login = Root + "/login";

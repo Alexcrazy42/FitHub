@@ -13,12 +13,14 @@ internal sealed class GymService : IGymService
     private readonly IGymRepository gymRepository;
     private readonly IUnitOfWork unitOfWork;
     private readonly IFileRepository fileRepository;
+    private readonly IFileService fileService;
 
-    public GymService(IGymRepository gymRepository, IUnitOfWork unitOfWork, IFileRepository fileRepository)
+    public GymService(IGymRepository gymRepository, IUnitOfWork unitOfWork, IFileRepository fileRepository, IFileService fileService)
     {
         this.gymRepository = gymRepository;
         this.unitOfWork = unitOfWork;
         this.fileRepository = fileRepository;
+        this.fileService = fileService;
     }
 
     public Task<PagedResult<Gym>> GetGymsAsync(PagedQuery pagedQuery, CancellationToken ct)
@@ -51,6 +53,15 @@ internal sealed class GymService : IGymService
         ApplyUpdateRequest(gym, request);
         await unitOfWork.SaveChangesAsync(ct);
         return gym;
+    }
+
+    public async Task DeleteAsync(GymId id, CancellationToken ct = default)
+    {
+        var gym = await gymRepository.GetSingleOrDefaultAsync(x => x.Id == id, ct);
+        NotFoundException.ThrowIfNull(gym, "Зал не найден!");
+        gymRepository.PendingRemove(gym, ct);
+        await fileService.MakeFileNotActivePendingAsync(EntityType.Gym, gym.Id.ToString(), ct);
+        await unitOfWork.SaveChangesAsync(ct);
     }
 
     private void ApplyUpdateRequest(Gym gym, UpdateGymRequest request)

@@ -2,9 +2,9 @@
 using FitHub.Common.AspNetCore;
 using FitHub.Common.Extensions.Configuration;
 using FitHub.Common.Logging;
-using FitHub.Contracts.V1;
 using FitHub.Data;
 using FitHub.Web;
+
 namespace FitHub.Host;
 
 public sealed class Startup

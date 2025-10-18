@@ -30,8 +30,6 @@ public class VideoTraining : IEntity<VideoTrainingId>
 
     public int DurationInMinutes { get; private set; }
 
-    public string? VideoUrl { get; private set; }
-
     public TrainingTypeId TrainingTypeId { get; private set; }
 
     public IReadOnlyList<MuscleGroup> MuscleGroups => muscleGroups;
@@ -50,10 +48,5 @@ public class VideoTraining : IEntity<VideoTrainingId>
         }
 
         Complexity = complexity;
-    }
-
-    public void SetVideoUrl(string videoUrl)
-    {
-        VideoUrl = videoUrl;
     }
 }

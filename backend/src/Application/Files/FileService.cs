@@ -78,4 +78,13 @@ public class FileService : IFileService
         fileRepository.PendingRemove(file, ct);
         await unitOfWork.SaveChangesAsync(ct);
     }
+
+    public async Task MakeFileNotActivePendingAsync(EntityType entityType, string entityId, CancellationToken ct)
+    {
+        var files = await fileRepository.GetAllAsync(x => x.EntityType == entityType && x.EntityId == entityId, ct);
+        foreach (var file in files)
+        {
+            file.SetStatus(FileStatus.NotActive);
+        }
+    }
 }

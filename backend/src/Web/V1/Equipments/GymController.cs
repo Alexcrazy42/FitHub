@@ -64,4 +64,11 @@ public class GymController : ControllerBase
 
         return gym.ToGymResponse();
     }
+
+    [HttpDelete(ApiRoutesV1.GymById)]
+    public async Task Delete([FromRoute] string? id, CancellationToken ct)
+    {
+        var gymId = GymId.Parse(id);
+        await gymService.DeleteAsync(gymId, ct);
+    }
 }

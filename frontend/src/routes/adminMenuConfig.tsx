@@ -1,7 +1,8 @@
-﻿import { HomeOutlined, OrderedListOutlined, RocketOutlined } from "@ant-design/icons";
+﻿import { HomeOutlined, RocketOutlined, ToolOutlined } from "@ant-design/icons";
 import AdminDashboard from "../pages/admin/Dashboard";
 import { MenuItem } from "./MenuItem";
 import { Gyms } from "../pages/admin/gyms/Gyms";
+import { Equipments } from "../pages/admin/equipments/Equipments";
 
 export const adminMenuConfig: MenuItem[] = [
   {
@@ -19,16 +20,10 @@ export const adminMenuConfig: MenuItem[] = [
     element: <Gyms />
   },
   {
-    key: 'orders',
-    label: 'Заказы',
-    icon: <OrderedListOutlined />,
-    children: [
-      {
-        key: 'orders-list',
-        label: 'Список заказов',
-        path: '/admin/orders/list',
-        element: <AdminDashboard />,
-      },
-    ],
-  },
+    key: 'equipments',
+    label: 'Тренажеры',
+    icon: <ToolOutlined />,
+    path: '/admin/equipments',
+    element: <Equipments />
+  }
 ];

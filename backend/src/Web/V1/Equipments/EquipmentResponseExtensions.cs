@@ -35,8 +35,7 @@ public static class EquipmentResponseExtensions
         return new EquipmentResponse
         {
             Id = equipment.Id.Value,
-            Name = equipment.Name,
-            ImageUrl = equipment.ImageUrl,
+            Name = equipment.Name
         };
     }
 
@@ -45,14 +44,13 @@ public static class EquipmentResponseExtensions
         return new EquipmentInstructionResponse
         {
             Id = instruction.Id.Value,
-            EquipmentId = instruction.Equipment.Id.Value,
-            VideoUrl = instruction.VideoUrl
+            EquipmentId = instruction.Equipment.Id.Value
         };
     }
 
     public static GymZoneResponse ToZoneResponse(this GymZone gymZone)
     {
-        return new GymZoneResponse()
+        return new GymZoneResponse
         {
             Id = gymZone.Id.Value,
             Name = gymZone.Name,

@@ -1,12 +1,13 @@
-﻿import React, { useRef, useState } from "react";
-import { Button } from "antd";
+﻿import React, { useRef, useState, useEffect } from "react";
+import { Button, Modal } from "antd";
 import { useForm } from "react-hook-form";
 import { IGymResponse, IUpdateGymRequest } from "../../../types/gyms";
 import { getFileRoute } from "../../../api/files";
 import ImageUploader, { ImageUploaderHandle } from "../../../components/ImageUploader/ImageUploader";
-import { EntityType, IMakeFilesActiveRequest } from "../../../types/files";
+import { EntityType, IEntity, IEntityType, IMakeFilesActiveRequest } from "../../../types/files";
 import { useApiService } from "../../../api/useApiService";
 import { toast } from "react-toastify";
+import { ExclamationCircleOutlined } from "@ant-design/icons";
 
 interface GymFormProps {
   gym: IGymResponse;
@@ -14,6 +15,7 @@ interface GymFormProps {
   onCancel: () => void;
   loading: boolean;
   refresh : (gym: IGymResponse) => Promise<IGymResponse>;
+  refreshAll : () => Promise<void>;
 }
 
 export const GymForm: React.FC<GymFormProps> = ({
@@ -21,7 +23,8 @@ export const GymForm: React.FC<GymFormProps> = ({
   onSave,
   onCancel,
   loading,
-  refresh
+  refresh,
+  refreshAll
 }) => {
   const {
     register,
@@ -38,6 +41,9 @@ export const GymForm: React.FC<GymFormProps> = ({
   const [uploadedFileId, setUploadedFileId] = useState<string | null>(null);
   const [isWaitingToConfirmUpload, setIsWaitingToConfirmUpload] = useState<boolean>(false);
   const apiService = useApiService();
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [modal, contextHolder] = Modal.useModal();
+  const [maxFileCount, setMaxFileCount] = useState(1);
 
   const onSubmit = async (data: IUpdateGymRequest) => {
     try {
@@ -92,6 +98,54 @@ export const GymForm: React.FC<GymFormProps> = ({
     }
   }
 
+  const deleteGym = async () => {
+    setDeleteLoading(true);
+    try {
+      const response = await apiService.delete(`v1/gyms/${gym.id}`);
+      if (response.success) {
+        toast.success("Зал успешно удалён!");
+        await refreshAll();
+        
+      } else {
+        const error = response.error?.detail ?? "Ошибка при удалении зала!";
+        toast.error(error);
+      }
+    } catch (err) {
+      toast.error("Ошибка при удалении зала!");
+    } finally {
+      setDeleteLoading(false);
+      onCancel();
+    }
+  };
+
+   const confirmDelete = () => {
+    modal.confirm({
+      title: "Вы уверены, что хотите удалить этот зал?",
+      icon: <ExclamationCircleOutlined />,
+      content: `Это действие необратимо. Зал "${gym.name}" будет удалён без возможности восстановления.`,
+      okText: "Удалить",
+      okType: "danger",
+      cancelText: "Отмена",
+      onOk: async () => {
+        await deleteGym(); // ✅ ждем завершения
+      },
+    });
+  };
+
+  const fetchMaxFileCount = async () => {
+    const response = await apiService.get<IEntity>(`/v1/entities?entityTypeDto=${EntityType.Gym}`);
+    if(response.success) {
+      const maxCount = response.data?.maxFileCount;
+      if(maxCount) {
+        setMaxFileCount(maxCount);
+      }
+    }
+  }
+
+  useEffect(() => {
+    fetchMaxFileCount();
+  }, []);
+
   return (
     <>
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -145,6 +199,7 @@ export const GymForm: React.FC<GymFormProps> = ({
       </div>
     </form>
 
+
     {gym.imageFileId && (
         <div className="mb-4 mt-4">
           <p className="text-sm text-gray-600 mb-2">Текущее изображение:</p>
@@ -186,8 +241,18 @@ export const GymForm: React.FC<GymFormProps> = ({
       </Button>
     )}
   
+  {contextHolder}
+  <Button
+      type="primary"
+      danger
+      loading={deleteLoading}
+      disabled={deleteLoading}
+      onClick={confirmDelete}
+    >
+      Удалить
+    </Button>
     
-    <ImageUploader ref={uploaderRef} maxFileCount={2} fileUpload={fileUploadedFromUploader} onSuccessCancel={()=>{setIsWaitingToConfirmUpload(true)}} />
+    <ImageUploader ref={uploaderRef} maxFileCount={maxFileCount} fileUpload={fileUploadedFromUploader} onSuccessCancel={()=>{setIsWaitingToConfirmUpload(true)}} />
     </>
   );
 };

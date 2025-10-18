@@ -27,7 +27,6 @@ public static class TrainingResponseExtensions
         {
             Id = muscleGroup.Id.Value,
             Name = muscleGroup.Name,
-            ImageUrl = muscleGroup.ImageUrl,
             ParentId = muscleGroup.ParentId?.Value
         };
     }
@@ -41,7 +40,6 @@ public static class TrainingResponseExtensions
             Description = videoTraining.Description,
             Complexity = videoTraining.Complexity,
             DurationInMinutes = videoTraining.DurationInMinutes,
-            VideoUrl = videoTraining.VideoUrl,
             TrainingType = videoTraining.TrainingType?.ToResponse(),
             MuscleGroups = videoTraining.MuscleGroups.ToResponses()
         };

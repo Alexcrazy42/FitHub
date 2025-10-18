@@ -10,5 +10,8 @@ public class EquipmentInstructionConfiguration : IEntityTypeConfiguration<Equipm
     {
         builder.HasOne(x => x.Equipment)
             .WithMany(x => x.Instructions);
+
+        builder.HasMany(x => x.MuscleGroups)
+            .WithMany();
     }
 }

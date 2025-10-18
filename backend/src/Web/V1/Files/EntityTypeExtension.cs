@@ -1,4 +1,5 @@
 ﻿using FitHub.Contracts.Common;
+using FitHub.Contracts.V1.Entities;
 using FitHub.Domain.Files;
 using FluentValidation;
 
@@ -15,5 +16,26 @@ public static class EntityTypeExtension
             default:
                 throw new ValidationException("Invalid entity type");
         }
+    }
+
+    public static EntityTypeDto ToDto(this EntityType entityType)
+    {
+        switch (entityType)
+        {
+            case EntityType.Gym:
+                return EntityTypeDto.Gym;
+            default:
+                throw new ValidationException("Invalid entity type");
+        }
+    }
+
+    public static EntityResponse ToEntityResponse(this Entity entity)
+    {
+        return new EntityResponse()
+        {
+            Id = entity.Id.ToString(),
+            MaxFileCount = entity.MaxFileCount,
+            Type = entity.EntityType.ToDto(),
+        };
     }
 }

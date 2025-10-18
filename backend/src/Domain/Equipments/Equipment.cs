@@ -5,56 +5,26 @@ namespace FitHub.Domain.Equipments;
 
 public class Equipment : IEntity<EquipmentId>
 {
-    private readonly List<MuscleGroup> muscleGroups = [];
     private readonly List<EquipmentInstruction> instructions = [];
     private readonly List<Gym> gyms = [];
 
-    public Equipment(EquipmentId id, string name, string imageUrl)
+    public Equipment(EquipmentId id, string name)
     {
         Id = id;
         Name = name;
-        ImageUrl = imageUrl;
     }
 
     public EquipmentId Id { get; }
 
     public string Name { get; private set; }
 
-    /// <summary>
-    /// Ссылка на фото
-    /// </summary>
-    public string ImageUrl { get; private set; }
+    public string? Description { get; private set; }
+
+    public string? AdditionalDescroption { get; private set; }
 
     public DateOnly? InstructionAddBefore { get; private set; }
 
     public IReadOnlyList<EquipmentInstruction> Instructions => instructions;
 
-    /// <summary>
-    /// Группы мышц
-    /// </summary>
-    public IReadOnlyList<MuscleGroup> MuscleGroups => muscleGroups;
-
     public IReadOnlyList<Gym> Gyms => gyms;
-
-    public void AddInstructions(IReadOnlyList<EquipmentInstruction> newInstructions)
-    {
-        instructions.AddRange(newInstructions);
-        InstructionAddBefore = null;
-    }
-
-    public void SetInstructionAddBefore(DateOnly newValue)
-    {
-        InstructionAddBefore = newValue;
-    }
-
-    public void SetImageUrl(string imageUrl)
-    {
-        ImageUrl = imageUrl;
-    }
-
-    /// <summary>
-    /// Добавить группы мышц для тренажера
-    /// </summary>
-    public void AddMuscleGroups(IReadOnlyList<MuscleGroup> newMuscleGroups)
-        => muscleGroups.AddRange(newMuscleGroups);
 }

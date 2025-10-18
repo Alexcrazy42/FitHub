@@ -5,4 +5,5 @@ public enum FileStatus
     WaitingUpload,
     WaitingForActive,
     Active,
+    NotActive
 }

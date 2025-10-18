@@ -13,3 +13,9 @@ export interface IMakeFilesActiveRequest {
     entityId: string;
     entityType: EntityType
 }
+
+export interface IEntity {
+    id: string;
+    type: EntityType;
+    maxFileCount: number;
+}

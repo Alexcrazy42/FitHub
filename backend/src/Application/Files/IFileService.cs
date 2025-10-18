@@ -13,4 +13,6 @@ public interface IFileService
     public Task MakeFilesActiveAsync(IReadOnlyList<FileId> fileIds, string entityId, EntityType entityType, CancellationToken ct);
 
     public Task DeleteFileAsync(FileId id, CancellationToken ct);
+
+    public Task MakeFileNotActivePendingAsync(EntityType entityType, string entityId, CancellationToken ct);
 }

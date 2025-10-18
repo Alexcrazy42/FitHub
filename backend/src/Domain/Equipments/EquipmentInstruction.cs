@@ -1,20 +1,26 @@
 ﻿using FitHub.Common.Entities;
+using FitHub.Domain.Trainings;
 
 namespace FitHub.Domain.Equipments;
 
 public class EquipmentInstruction : IEntity<EquipmentInstructionId>
 {
     private Equipment? equipment;
+    private List<MuscleGroup> muscleGroups = [];
 
-    public EquipmentInstruction(EquipmentInstructionId id, string videoUrl)
+    public EquipmentInstruction(EquipmentInstructionId id, string name)
     {
         Id = id;
-        VideoUrl = videoUrl;
+        Name = name;
     }
 
     public EquipmentInstructionId Id { get; }
 
-    public string VideoUrl { get; private set; }
+    public string Name { get; private set; }
+
+    public string? Description { get; private set; }
+
+    public string? AdditionalDescription { get; private set; }
 
     public Equipment Equipment
     {
@@ -22,13 +28,5 @@ public class EquipmentInstruction : IEntity<EquipmentInstructionId>
         set => equipment = value;
     }
 
-    public void SetVideoUrl(string videoUrl)
-    {
-        VideoUrl = videoUrl;
-    }
-
-    public void SetEquipment(Equipment newEquipment)
-    {
-        equipment = newEquipment;
-    }
+    public List<MuscleGroup> MuscleGroups => muscleGroups;
 }
