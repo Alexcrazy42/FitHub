@@ -70,4 +70,12 @@ public class FileService : IFileService
 
         await unitOfWork.SaveChangesAsync(ct);
     }
+
+    public async Task DeleteFileAsync(FileId id, CancellationToken ct)
+    {
+        var file = await fileRepository.GetFirstOrDefaultAsync(x => x.Id == id, ct);
+        NotFoundException.ThrowIfNull(file);
+        fileRepository.PendingRemove(file, ct);
+        await unitOfWork.SaveChangesAsync(ct);
+    }
 }

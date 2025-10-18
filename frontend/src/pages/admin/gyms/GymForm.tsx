@@ -1,10 +1,8 @@
 ﻿import React, { useRef, useState } from "react";
-import { Button, Space, Upload, message } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import { Button } from "antd";
 import { useForm } from "react-hook-form";
 import { IGymResponse, IUpdateGymRequest } from "../../../types/gyms";
 import { getFileRoute } from "../../../api/files";
-import GymImageUploader from "./GymImageUploader";
 import ImageUploader, { ImageUploaderHandle } from "../../../components/ImageUploader/ImageUploader";
 import { EntityType, IMakeFilesActiveRequest } from "../../../types/files";
 import { useApiService } from "../../../api/useApiService";
@@ -15,6 +13,7 @@ interface GymFormProps {
   onSave: (values: IUpdateGymRequest) => Promise<IGymResponse>;
   onCancel: () => void;
   loading: boolean;
+  refresh : (gym: IGymResponse) => Promise<IGymResponse>;
 }
 
 export const GymForm: React.FC<GymFormProps> = ({
@@ -22,6 +21,7 @@ export const GymForm: React.FC<GymFormProps> = ({
   onSave,
   onCancel,
   loading,
+  refresh
 }) => {
   const {
     register,
@@ -70,11 +70,27 @@ export const GymForm: React.FC<GymFormProps> = ({
         }
         await apiService.post(`/v1/files/make-files-active`, makeFilesActiveRequest);
         toast.success("Изображение успешно привязано к залу!");
+        setUploadedFileId(null);
+        setIsWaitingToConfirmUpload(false);
+        await refresh(gym);
       } catch (error) {
         console.error(error);
         toast.error("Не получилось привязать изображение!")
       }
-    };
+  };
+
+  const deleteGymPhoto = async () => {
+    if(gym.imageFileId) {
+      const response = await apiService.delete(`v1/files/${gym.imageFileId}`);
+      if(response.success) {
+        await refresh(gym);
+      } else {
+        toast.error("Ошибка при удалении файла!")
+      }
+    } else {
+      toast.error("Зал не содержит картинки!");
+    }
+  }
 
   return (
     <>
@@ -129,22 +145,24 @@ export const GymForm: React.FC<GymFormProps> = ({
       </div>
     </form>
 
-    {gym.imageUrl && (
+    {gym.imageFileId && (
         <div className="mb-4 mt-4">
           <p className="text-sm text-gray-600 mb-2">Текущее изображение:</p>
           <img
-            src={gym.imageUrl}
+            src={getFileRoute(gym.imageFileId)}
             alt="Current gym"
             className="w-32 h-32 object-cover rounded shadow-sm"
           />
+          <Button onClick={deleteGymPhoto}>
+            Удалить
+          </Button>
         </div>
       )}
 
-  {uploadedFileId && isWaitingToConfirmUpload && (
+  {uploadedFileId && isWaitingToConfirmUpload && !gym.imageFileId && (
     <div className="mb-4 mt-4 relative w-32 h-32">
-      {/* Кнопка-крестик */}
       <button
-        onClick={() => handleRemoveImage()} // твоя функция удаления
+        onClick={() => handleRemoveImage()}
         className="absolute top-0 right-0 w-6 h-6 bg-white text-gray-700 rounded-full flex items-center justify-center shadow hover:bg-gray-100 transition-colors"
       >
         ×
@@ -159,10 +177,10 @@ export const GymForm: React.FC<GymFormProps> = ({
       <Button onClick={handleAttachImage}>
         Привязать фото к залу
       </Button>
-  </div>
-)}
+    </div>
+    )}
 
-    {!uploadedFileId && !isWaitingToConfirmUpload && (
+    {!uploadedFileId && !isWaitingToConfirmUpload && !gym.imageFileId && (
       <Button type="primary" onClick={handleButtonClick}>
         Выбрать фото
       </Button>

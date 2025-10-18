@@ -10,12 +10,10 @@ namespace FitHub.Web.V1.Files;
 
 public class FileController : ControllerBase
 {
-    private readonly IS3FileService s3FileService;
     private readonly IFileService fileService;
 
-    public FileController(IS3FileService s3FileService, IFileService fileService)
+    public FileController(IFileService fileService)
     {
-        this.s3FileService = s3FileService;
         this.fileService = fileService;
     }
 
@@ -73,6 +71,13 @@ public class FileController : ControllerBase
 
         await fileService.MakeFilesActiveAsync(ids, entityId, entityType, ct);
         return NoContent();
+    }
+
+    [HttpDelete(ApiRoutesV1.FileById)]
+    public async Task Delete([FromRoute] string? id, CancellationToken ct)
+    {
+        var fileId = FileId.Parse(id);
+        await fileService.DeleteFileAsync(fileId, ct);
     }
 
 

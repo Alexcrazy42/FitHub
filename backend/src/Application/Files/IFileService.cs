@@ -11,4 +11,6 @@ public interface IFileService
     public Task ConfirmUploadAsync(List<FileId> fileIds, CancellationToken ct);
 
     public Task MakeFilesActiveAsync(IReadOnlyList<FileId> fileIds, string entityId, EntityType entityType, CancellationToken ct);
+
+    public Task DeleteFileAsync(FileId id, CancellationToken ct);
 }

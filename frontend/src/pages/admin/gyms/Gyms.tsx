@@ -1,27 +1,31 @@
 ﻿import React, { useEffect, useState } from "react";
-import { Table, Pagination, Drawer, Button, Card } from "antd";
-import { IGymResponse, IUpdateGymRequest } from "../../../types/gyms";
+import { Table, Pagination, Drawer, Button, Card, TabsProps, Tabs } from "antd";
+import { IGymResponse, IGymZoneResponse, IUpdateGymRequest, IUpdateGymZoneRequest } from "../../../types/gyms";
 import { ListResponse } from "../../../types/common";
 import { toast } from "react-toastify";
 import { useApiService } from "../../../api/useApiService";
 import { GymForm } from "./GymForm";
-import { getFileRoute } from "../../../api/files";
 
 export const Gyms: React.FC = () => {
-  const [loading, setLoading] = useState(false);
+  const [gymLoading, setGymZoneLoading] = useState(false);
   const [gyms, setGyms] = useState<IGymResponse[]>([]);
+  const [gymZones, setGymZones] = useState<IGymZoneResponse[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [totalItems, setTotalItems] = useState(0);
-  const [drawerVisible, setDrawerVisible] = useState(false);
+  const [totalGymCount, setTotalGymCount] = useState(0);
+  const [gymDrawerVisible, setGymDrawerVisible] = useState(false);
+  const [gymZoneDrawerVisible, setGymZoneDrawerVisible] = useState(false);
   const [selectedGym, setSelectedGym] = useState<IGymResponse | null>(null);
-  const [formLoading, setFormLoading] = useState(false);
+  const [selectedGymZone, setSelectedGymZone] = useState<IGymZoneResponse | null>(null);
+  const [gymFormLoading, setFormLoading] = useState(false);
+  const [gymZoneFormLoading, setGymFormLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('gyms');
   
   const apiService = useApiService();
 
   const fetchGyms = async () => {
     try {
-      setLoading(true);
+      setGymZoneLoading(true);
       const response = await apiService.get<ListResponse<IGymResponse>>(
         `v1/gyms?PageNumber=${currentPage}&PageSize=${pageSize}`
       );
@@ -30,26 +34,56 @@ export const Gyms: React.FC = () => {
         setGyms(response.data.items);
         const count = response.data.totalItems;
         if(count) {
-          setTotalItems(count);
+          setTotalGymCount(count);
         }
-        
-      } else {
-        toast.error(response.error?.detail || "Ошибка загрузки данных");
       }
     } catch (error) {
-      console.error('Ошибка запроса:', error);
       toast.error("Ошибка при загрузке спортзалов");
     } finally {
-      setLoading(false);
+      setGymZoneLoading(false);
     }
   };
 
-  const handleDrawerClose = () => {
-    setDrawerVisible(false);
+  const fetchGymZones = async () => {
+    try {
+      setGymZoneLoading(true);
+      const response = await apiService.get<ListResponse<IGymZoneResponse>>(`/v1/gym-zones`);
+      
+      if (response.success && response.data) {
+        setGymZones(response.data.items);
+      }
+    } catch (error) {
+      toast.error("Ошибка при загрузке зон");
+    } finally {
+      setGymZoneLoading(false);
+    }
+  };
+
+  const handleGymDrawerClose = () => {
+    setGymDrawerVisible(false);
     setSelectedGym(null);
   };
 
-  const handleSave = async (values: IUpdateGymRequest): Promise<IGymResponse> => {
+  const handleGymZoneDrawerClose = () => {
+    setGymZoneDrawerVisible(false);
+    setSelectedGymZone(null);
+  }
+
+  const getGym = async (gym : IGymResponse) : Promise<IGymResponse> => {
+    const response = await apiService.get<IGymResponse>(`v1/gyms/${gym.id}`);
+    if(response.success && response.data) {
+      return response.data;
+    }
+    return gym;
+  }
+
+  const refreshGym = async (gym : IGymResponse) : Promise<IGymResponse> => {
+    const currentGym = await getGym(gym);
+    setSelectedGym(currentGym);
+    return currentGym;
+  };
+
+  const handleGymSave = async (values: IUpdateGymRequest): Promise<IGymResponse> => {
     try {
       setFormLoading(true);
       if (selectedGym) {
@@ -57,7 +91,7 @@ export const Gyms: React.FC = () => {
         if (response.success && response.data) {
           toast.success("Спортзал успешно обновлен");
           fetchGyms();
-          handleDrawerClose();
+          handleGymDrawerClose();
           return response.data;
         } else {
           throw new Error(response.error?.detail || "Ошибка обновления");
@@ -72,25 +106,59 @@ export const Gyms: React.FC = () => {
     }
   };
 
-  const handlePageChange = (page: number, size?: number) => {
+  const handleGymZoneSave = async(values: IUpdateGymZoneRequest) : Promise<IGymZoneResponse> => {
+    try {
+      setFormLoading(true);
+      if (selectedGym) {
+        const response = await apiService.put<IGymZoneResponse>(`v1/gyms-zones`, values);
+        if (response.success && response.data) {
+          toast.success("Зона успешно обновлена");
+          fetchGymZones();
+          handleGymZoneDrawerClose();
+          return response.data;
+        } else {
+          throw new Error(response.error?.detail || "Ошибка обновления");
+        }
+      }
+      throw new Error("Зона не выбрана");
+    } catch (error) {
+      toast.error("Ошибка при сохранении");
+      throw error;
+    } finally {
+      setFormLoading(false);
+    }
+  }
+
+  const handleGymPageChange = (page: number, size?: number) => {
     setCurrentPage(page);
     if (size) {
       setPageSize(size);
     }
   };
 
-  const handleRowClick = (gym: IGymResponse) => {
-      setSelectedGym(gym);
-      setDrawerVisible(true);
+  const handleGymRowClick = async (gym: IGymResponse) => {
+      const currentGym = await getGym(gym);
+      setSelectedGym(currentGym);
+      setGymDrawerVisible(true);
   };
+
+  const handleGymZoneRowClick = async (gymZone : IGymZoneResponse) => {
+    setSelectedGymZone(gymZone);
+    setGymZoneDrawerVisible(true);
+  }
 
 
   useEffect(() => {
     fetchGyms();
   }, [currentPage, pageSize]);
 
-  // Колонки таблицы
-  const columns = [
+  useEffect(() => {
+    if(activeTab == 'zones') {
+      fetchGymZones();
+    }
+  }, [activeTab])
+
+  const gymTableColumns = [
     {
       title: 'Название',
       dataIndex: 'name',
@@ -106,82 +174,159 @@ export const Gyms: React.FC = () => {
       render: (description: string) => (
         <span className="text-gray-600">{description}</span>
       ),
+    }
+  ];
+
+  const gymZoneTableColumns = [
+    {
+      title: 'Название',
+      dataIndex: 'name',
+      key: 'name',
+      render: (name: string) => (
+        <span className="font-medium">{name}</span>
+      ),
     },
     {
-      title: 'Изображение',
-      dataIndex: 'imageUrl',
-      key: 'imageUrl',
-      render: (imageUrl: string | null) => (
-        imageUrl ? (
-          <img 
-            src={getFileRoute(imageUrl)} 
-            alt="Gym" 
-            className="w-30 object-cover rounded"
-          />
-        ) : (
-          <span className="text-gray-400">Нет изображения</span>
-        )
+      title: 'Описание',
+      dataIndex: 'description',
+      key: 'description',
+      render: (description: string) => (
+        <span className="text-gray-600">{description}</span>
       ),
     }
   ];
 
-  return (
-    <div className="p-6">
-      <Card 
-        title="Спортзалы" 
-        className="shadow-sm"
-        extra={
+  const items: TabsProps['items'] = [
+    {
+      key: 'gyms',
+      label: 'Залы',
+      children: (
+        <>
           <Button type="primary" onClick={fetchGyms}>
             Обновить
           </Button>
-        }
-      >
-        <Table
-          columns={columns}
-          dataSource={gyms}
-          rowKey="id"
-          loading={loading}
-          pagination={false}
-          scroll={{ x: 800 }}
-          className="mb-4"
-          onRow={(record) => ({
-          onClick: () => handleRowClick(record),
-          style: { cursor: 'pointer' },
-        })}
-        />
-        
-        <div className="flex justify-end">
-          <Pagination
-            current={currentPage}
-            pageSize={pageSize}
-            total={totalItems}
-            onChange={handlePageChange}
-            showSizeChanger
-            showQuickJumper
-            showTotal={(total, range) => 
-              `Показано ${range[0]}-${range[1]} из ${total} записей`
-            }
-            pageSizeOptions={['10', '20', '50', '100']}
+          <Table
+            columns={gymTableColumns}
+            dataSource={gyms}
+            rowKey="id"
+            loading={gymLoading}
+            pagination={false}
+            scroll={{ x: 800 }}
+            className="mb-4"
+            onRow={(record) => ({
+              onClick: () => handleGymRowClick(record),
+              style: { cursor: 'pointer' },
+            })}
           />
-        </div>
 
-        <Drawer
-          title={`Редактирование спортзала: ${selectedGym?.name}`}
-          placement="right"
-          onClose={handleDrawerClose}
-          open={drawerVisible}
-          width={600}
-          destroyOnClose
-        >
-          {selectedGym && (
-            <GymForm
-              gym={selectedGym}
-              onSave={handleSave}
-              onCancel={handleDrawerClose}
-              loading={formLoading}
+          <div className="flex justify-end">
+            <Pagination
+              current={currentPage}
+              pageSize={pageSize}
+              total={totalGymCount}
+              onChange={handleGymPageChange}
+              showSizeChanger
+              showQuickJumper
+              showTotal={(total, range) =>
+                `Показано ${range[0]}-${range[1]} из ${total} записей`
+              }
+              pageSizeOptions={['10', '20', '50', '100']}
             />
-          )}
-        </Drawer>
+          </div>
+
+          <Drawer
+            title={`Редактирование спортзала: ${selectedGym?.name}`}
+            placement="right"
+            onClose={handleGymDrawerClose}
+            open={gymDrawerVisible}
+            width={600}
+            destroyOnClose
+          >
+            {selectedGym && (
+              <GymForm
+                gym={selectedGym}
+                onSave={handleGymSave}
+                onCancel={handleGymDrawerClose}
+                loading={gymFormLoading}
+                refresh={refreshGym}
+              />
+            )}
+          </Drawer>
+        </>
+      ),
+    },
+    {
+      key: 'zones',
+      label: 'Зоны',
+      children: (
+        <>
+        <Button type="primary" onClick={fetchGyms}>
+            Обновить
+          </Button>
+          <Table
+            columns={gymZoneTableColumns}
+            dataSource={gymZones}
+            rowKey="id"
+            loading={gymLoading}
+            pagination={false}
+            scroll={{ x: 800 }}
+            className="mb-4"
+            onRow={(record) => ({
+              onClick: () => handleGymZoneRowClick(record),
+              style: { cursor: 'pointer' },
+            })}
+          />
+
+          <div className="flex justify-end">
+            <Pagination
+              current={currentPage}
+              pageSize={pageSize}
+              total={totalGymCount}
+              onChange={handleGymPageChange}
+              showSizeChanger
+              showQuickJumper
+              showTotal={(total, range) =>
+                `Показано ${range[0]}-${range[1]} из ${total} записей`
+              }
+              pageSizeOptions={['10', '20', '50', '100']}
+            />
+          </div>
+
+          {/* <Drawer
+            title={`Редактирование спортзала: ${selectedGym?.name}`}
+            placement="right"
+            onClose={handleGymDrawerClose}
+            open={gymDrawerVisible}
+            width={600}
+            destroyOnClose
+          >
+            {selectedGym && (
+              <GymForm
+                gym={selectedGym}
+                onSave={handleGymSave}
+                onCancel={handleGymDrawerClose}
+                loading={gymFormLoading}
+                refresh={refreshGym}
+              />
+            )}
+          </Drawer> */}
+        </>
+      ),
+    },
+  ];
+
+   return (
+    <div className="p-6">
+      <Card
+        title="Спортзалы"
+        className="shadow-sm"
+      >
+        <Tabs
+          activeKey={activeTab}
+          onChange={setActiveTab}
+          items={items}
+          type="card"
+        />
       </Card>
     </div>
   );
