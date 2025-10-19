@@ -27,12 +27,12 @@ public interface IPendingRepository<TEntity, TEntityId>
     /// <summary>
     /// Отложенно обновить сущность
     /// </summary>
-    void PendingUpdate(TEntity entity, CancellationToken cancellationToken = default);
+    void PendingUpdate(TEntity entity);
 
     /// <summary>
     /// Отложенно обновить сущности
     /// </summary>
-    void PendingUpdateRange(IReadOnlyCollection<TEntity> entities, CancellationToken cancellationToken = default);
+    void PendingUpdateRange(IReadOnlyCollection<TEntity> entities);
 
     /// <summary>
     /// Отложенно добавить сущность
@@ -47,10 +47,10 @@ public interface IPendingRepository<TEntity, TEntityId>
     /// <summary>
     /// Отложенно удалить сущность
     /// </summary>
-    void PendingRemove(TEntity entity, CancellationToken cancellationToken = default);
+    void PendingRemove(TEntity entity);
 
     /// <summary>
     /// Отложенно удалить сущности
     /// </summary>
-    void PendingRemoveRange(IReadOnlyList<TEntity> entities, CancellationToken cancellationToken = default);
+    void PendingRemoveRange(IReadOnlyList<TEntity> entities);
 }

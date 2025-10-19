@@ -43,7 +43,7 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
             "nick",
             "email@mail.ru",
             password,
-            IdentityUserType.GymAdmin | IdentityUserType.GymVisitor
+            IdentityUserType.GymAdmin | IdentityUserType.GymVisitor | IdentityUserType.CmsAdmin
         ));
 
         // var user = await userRepository.GetFirstOrDefaultAsync(x => x.Email == login || x.Nickname == login, cancellationToken);

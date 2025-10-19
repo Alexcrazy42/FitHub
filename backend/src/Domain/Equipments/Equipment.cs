@@ -7,11 +7,14 @@ public class Equipment : IEntity<EquipmentId>
 {
     private readonly List<EquipmentInstruction> instructions = [];
     private readonly List<Gym> gyms = [];
+    private Brand? brand;
 
-    public Equipment(EquipmentId id, string name)
+    private Equipment(EquipmentId id, string name, BrandId brandId, bool isActive)
     {
         Id = id;
         Name = name;
+        BrandId = brandId;
+        IsActive = isActive;
     }
 
     public EquipmentId Id { get; }
@@ -24,7 +27,42 @@ public class Equipment : IEntity<EquipmentId>
 
     public DateOnly? InstructionAddBefore { get; private set; }
 
+    public bool IsActive { get; private set; }
+
+    public BrandId BrandId { get; private set; }
+
+    public Brand Brand
+    {
+        get => UnexpectedException.ThrowIfNull(brand, "Брэнд неожиданно оказался null");
+        private set => brand = value;
+    }
+
     public IReadOnlyList<EquipmentInstruction> Instructions => instructions;
 
     public IReadOnlyList<Gym> Gyms => gyms;
+
+    public void SetName(string name) => Name = name;
+    public void SetDescription(string description) => Description = description;
+    public void SetAdditionalDescription(string description) => AdditionalDescroption = description;
+    public void SetInstructionAddBefore(DateOnly date) => InstructionAddBefore = date;
+    public void SetActive(bool isActive) => IsActive = isActive;
+
+    public void SetBrand(Brand newBrand)
+    {
+        Brand = newBrand;
+        BrandId = newBrand.Id;
+    }
+
+    public static Equipment Create(string name, BrandId brandId, bool isActive,
+        string? description = null,
+        string? additionalDescroption = null,
+        DateOnly? instructionAddBefore = null)
+    {
+        return new Equipment(EquipmentId.New(), name, brandId, isActive)
+        {
+            Description = description,
+            AdditionalDescroption = additionalDescroption,
+            InstructionAddBefore = instructionAddBefore
+        };
+    }
 }

@@ -95,6 +95,14 @@ public class ApiRoutesV1
 
     #endregion
 
+    #region Brands
+
+    public const string Brands = Root + "/brands";
+
+    public const string BrandsById = Brands + "/{id}";
+
+    #endregion
+
 
     public const string Login = Root + "/login";
 

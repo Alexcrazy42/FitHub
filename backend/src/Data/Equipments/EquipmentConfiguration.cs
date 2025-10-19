@@ -8,5 +8,12 @@ public class EquipmentConfiguration : IEntityTypeConfiguration<Equipment>
 {
     public void Configure(EntityTypeBuilder<Equipment> builder)
     {
+        builder.HasOne(x => x.Brand)
+            .WithMany()
+            .HasForeignKey(x => x.BrandId);
+
+        builder.HasMany(x => x.Instructions)
+            .WithOne(x => x.Equipment)
+            .HasForeignKey(x => x.EquipmentId);
     }
 }

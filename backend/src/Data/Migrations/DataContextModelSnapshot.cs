@@ -60,6 +60,29 @@ namespace FitHub.Data.Migrations
                     b.ToTable("equipment_instruction_muscle_group", (string)null);
                 });
 
+            modelBuilder.Entity("FitHub.Domain.Equipments.Brand", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_brand");
+
+                    b.ToTable("brand", (string)null);
+                });
+
             modelBuilder.Entity("FitHub.Domain.Equipments.Equipment", b =>
                 {
                     b.Property<Guid>("Id")
@@ -71,6 +94,11 @@ namespace FitHub.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("additional_descroption");
 
+                    b.Property<Guid>("BrandId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("brand_id");
+
                     b.Property<string>("Description")
                         .HasColumnType("text")
                         .HasColumnName("description");
@@ -79,6 +107,10 @@ namespace FitHub.Data.Migrations
                         .HasColumnType("date")
                         .HasColumnName("instruction_add_before");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text")
@@ -86,6 +118,9 @@ namespace FitHub.Data.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_equipment");
+
+                    b.HasIndex("BrandId")
+                        .HasDatabaseName("ix_equipment_brand_id");
 
                     b.ToTable("equipment", (string)null);
                 });
@@ -106,6 +141,7 @@ namespace FitHub.Data.Migrations
                         .HasColumnName("description");
 
                     b.Property<Guid>("EquipmentId")
+                        .HasMaxLength(255)
                         .HasColumnType("uuid")
                         .HasColumnName("equipment_id");
 
@@ -622,6 +658,18 @@ namespace FitHub.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_equipment_instruction_muscle_group_muscle_group_muscle_grou");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Equipments.Equipment", b =>
+                {
+                    b.HasOne("FitHub.Domain.Equipments.Brand", "Brand")
+                        .WithMany()
+                        .HasForeignKey("BrandId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_equipment_brand_brand_id");
+
+                    b.Navigation("Brand");
                 });
 
             modelBuilder.Entity("FitHub.Domain.Equipments.EquipmentInstruction", b =>

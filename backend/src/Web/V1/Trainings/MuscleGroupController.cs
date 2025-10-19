@@ -1,10 +1,12 @@
-﻿using FitHub.Application.Trainings.MuscleGroups;
+﻿using FitHub.Application.Common;
+using FitHub.Application.Trainings.MuscleGroups;
 using FitHub.Common.AspNetCore.Auth;
 using FitHub.Common.Entities;
 using FitHub.Contracts;
 using FitHub.Contracts.V1;
 using FitHub.Contracts.V1.Equipments.MuscleGroups;
 using FitHub.Domain.Trainings;
+using FitHub.Web.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,13 +26,11 @@ public class MuscleGroupController : ControllerBase
     }
 
     [HttpGet(ApiRoutesV1.MuscleGroups)]
-    public async Task<ListResponse<MuscleGroupResponse>> GetAllAsync(CancellationToken ct)
+    public async Task<ListResponse<MuscleGroupResponse>> GetAllAsync([FromBody] PagedRequest? pagedRequest, CancellationToken ct)
     {
-        var muscleGroups = await muscleGroupRepository.GetAllAsync(x => true, ct);
-
-        var responses = muscleGroups.ToResponses();
-
-        return ListResponse<MuscleGroupResponse>.Create(responses);
+        var query = pagedRequest.ToDomain();
+        var pagedResult = await muscleGroupService.GetAll(query, ct);
+        return pagedResult.ToResponse(TrainingResponseExtensions.ToMuscleGroupResponse);
     }
 
     [HttpPost(ApiRoutesV1.MuscleGroups)]
@@ -40,24 +40,21 @@ public class MuscleGroupController : ControllerBase
 
         var muscleGroup = await muscleGroupService.CreateMuscleGroupAsync(request, ct);
 
-        return muscleGroup.ToResponse();
+        return muscleGroup.ToMuscleGroupResponse();
     }
 
     [HttpPut(ApiRoutesV1.MuscleGroupById)]
     public async Task<MuscleGroupResponse> UpdateMuscleGroupAsync([FromBody] UpdateMuscleGroupRequest? request, CancellationToken ct)
     {
         request = ValidationException.ThrowIfNull(request, nameof(request));
-
         var muscleGroup = await muscleGroupService.UpdateMuscleGroupAsync(request, ct);
-
-        return muscleGroup.ToResponse();
+        return muscleGroup.ToMuscleGroupResponse();
     }
 
     [HttpDelete(ApiRoutesV1.MuscleGroupById)]
-    public async Task DeleteMuscleGroupAsync([FromRoute] Guid? id, CancellationToken ct)
+    public async Task DeleteMuscleGroupAsync([FromRoute] string? id, CancellationToken ct)
     {
         id = ValidationException.ThrowIfNull(id, "id cannot be null");
-
         await muscleGroupService.DeleteMuscleGroupAsync(MuscleGroupId.Parse(id), ct);
     }
 }

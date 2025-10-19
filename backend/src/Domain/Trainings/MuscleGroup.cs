@@ -19,8 +19,20 @@ public class MuscleGroup : IEntity<MuscleGroupId>
 
     public MuscleGroup? Parent { get; private set; }
 
+    public void SetName(string name) => Name = name;
+
     public void SetParent(MuscleGroup parent)
     {
         Parent = parent;
+        ParentId = parent.Id;
+    }
+
+    public static MuscleGroup Create(string name, MuscleGroup? parent)
+    {
+        return new MuscleGroup(MuscleGroupId.New(), name)
+        {
+            ParentId = parent?.Id,
+            Parent = parent
+        };
     }
 }

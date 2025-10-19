@@ -37,7 +37,7 @@ public class GymZoneService : IGymZoneService
     {
         var gymZone = await gymZoneRepository.GetSingleOrDefaultAsync(x => x.Id == id, ct);
         NotFoundException.ThrowIfNull(gymZone, "Зона зала не найдена!");
-        gymZoneRepository.PendingRemove(gymZone, ct);
+        gymZoneRepository.PendingRemove(gymZone);
         await unitOfWork.SaveChangesAsync(ct);
     }
 

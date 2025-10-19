@@ -5,6 +5,7 @@ using FitHub.Contracts;
 using FitHub.Contracts.V1;
 using FitHub.Contracts.V1.Equipments;
 using FitHub.Domain.Equipments;
+using FitHub.Web.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,17 +25,15 @@ public class EquipmentController : ControllerBase
     }
 
     [HttpGet(ApiRoutesV1.Equipments)]
-    public async Task<ListResponse<EquipmentResponse>> GetAllAsync(CancellationToken ct)
+    public async Task<ListResponse<EquipmentResponse>> GetAllAsync([FromQuery] PagedRequest? pagedRequest, CancellationToken ct)
     {
-        var all = await repository.GetAllAsync(x => true, ct);
-
-        var responses = all.ToEquipmentResponses();
-
-        return ListResponse<EquipmentResponse>.Create(responses);
+        var query = pagedRequest.ToDomain();
+        var pagedResult = await service.GetAllAsync(query, ct);
+        return pagedResult.ToResponse(EquipmentResponseExtensions.ToEquipmentResponse);
     }
 
     [HttpGet(ApiRoutesV1.EquipmentById)]
-    public async Task<EquipmentResponse> GetAsync([FromRoute] Guid? id, CancellationToken ct)
+    public async Task<EquipmentResponse> GetAsync([FromRoute] string? id, CancellationToken ct)
     {
         id = ValidationException.ThrowIfNull(id, "id cannot be null");
         var entity = await repository.GetFirstOrDefaultAsync(x => x.Id == EquipmentId.Parse(id), ct);

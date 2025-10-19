@@ -1,9 +1,11 @@
-﻿using FitHub.Application.Equipments.Instructions;
+﻿using FitHub.Application.Common;
+using FitHub.Application.Equipments.Instructions;
 using FitHub.Common.Entities;
 using FitHub.Contracts;
 using FitHub.Contracts.V1;
 using FitHub.Contracts.V1.Equipments.Instructions;
 using FitHub.Domain.Equipments;
+using FitHub.Web.Common;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FitHub.Web.V1.Equipments;
@@ -22,13 +24,11 @@ public class EquipmentInstructionController : ControllerBase
     }
 
     [HttpGet(ApiRoutesV1.EquipmentsInstructions)]
-    public async Task<ListResponse<EquipmentInstructionResponse>> GetAllAsync(CancellationToken ct)
+    public async Task<ListResponse<EquipmentInstructionResponse>> GetAllAsync([FromQuery] PagedRequest? request, CancellationToken ct)
     {
-        var all = await repository.GetAllAsync(x => true, ct);
-
-        var responses = all.ToInstructionResponses();
-
-        return ListResponse<EquipmentInstructionResponse>.Create(responses);
+        var query = request.ToDomain();
+        var pagedResult = await service.GetAll(query, ct);
+        return pagedResult.ToResponse(EquipmentResponseExtensions.ToFullInstructionResponse);
     }
 
     [HttpPost(ApiRoutesV1.EquipmentsInstructions)]
@@ -38,7 +38,7 @@ public class EquipmentInstructionController : ControllerBase
 
         var entity = await service.CreateAsync(request, ct);
 
-        return entity.ToInstructionResponse();
+        return entity.ToShortInstructionResponse();
     }
 
     [HttpPut(ApiRoutesV1.EquipmentsInstructions)]
@@ -48,7 +48,7 @@ public class EquipmentInstructionController : ControllerBase
 
         var entity = await service.UpdateAsync(request, ct);
 
-        return entity.ToInstructionResponse();
+        return entity.ToShortInstructionResponse();
     }
 
     [HttpDelete(ApiRoutesV1.EquipmentInstructionById)]

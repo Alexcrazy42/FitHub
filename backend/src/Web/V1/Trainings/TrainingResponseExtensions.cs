@@ -9,8 +9,8 @@ namespace FitHub.Web.V1.Trainings;
 
 public static class TrainingResponseExtensions
 {
-    public static IReadOnlyList<MuscleGroupResponse> ToResponses(this IReadOnlyList<MuscleGroup> muscleGroups)
-        => muscleGroups.Select(ToResponse).ToList();
+    public static IReadOnlyList<MuscleGroupResponse> ToMuscleGroupResponses(this IReadOnlyList<MuscleGroup> muscleGroups)
+        => muscleGroups.Select(ToMuscleGroupResponse).ToList();
 
     public static IReadOnlyList<VideoTrainingResponse> ToResponses(this IReadOnlyList<VideoTraining> videoTrainings)
         => videoTrainings.Select(ToResponse).ToList();
@@ -21,7 +21,7 @@ public static class TrainingResponseExtensions
     public static IReadOnlyList<BaseGroupTrainingResponse> ToResponses(this IReadOnlyList<BaseGroupTraining> baseGroupTrainings)
         => baseGroupTrainings.Select(ToResponse).ToList();
 
-    public static MuscleGroupResponse ToResponse(this MuscleGroup muscleGroup)
+    public static MuscleGroupResponse ToMuscleGroupResponse(this MuscleGroup muscleGroup)
     {
         return new MuscleGroupResponse()
         {
@@ -41,7 +41,7 @@ public static class TrainingResponseExtensions
             Complexity = videoTraining.Complexity,
             DurationInMinutes = videoTraining.DurationInMinutes,
             TrainingType = videoTraining.TrainingType?.ToResponse(),
-            MuscleGroups = videoTraining.MuscleGroups.ToResponses()
+            MuscleGroups = videoTraining.MuscleGroups.ToMuscleGroupResponses()
         };
     }
 

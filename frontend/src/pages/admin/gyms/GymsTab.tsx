@@ -215,7 +215,6 @@ export const GymsTab: React.FC = () => {
         confirmLoading={formLoading}
         okText="Создать"
         cancelText="Отмена"
-        destroyOnClose
       >
         <AntForm layout="vertical">
           <AntForm.Item

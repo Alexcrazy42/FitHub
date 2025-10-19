@@ -75,7 +75,7 @@ public class FileService : IFileService
     {
         var file = await fileRepository.GetFirstOrDefaultAsync(x => x.Id == id, ct);
         NotFoundException.ThrowIfNull(file);
-        fileRepository.PendingRemove(file, ct);
+        fileRepository.PendingRemove(file);
         await unitOfWork.SaveChangesAsync(ct);
     }
 

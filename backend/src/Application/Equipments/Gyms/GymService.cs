@@ -59,7 +59,7 @@ internal sealed class GymService : IGymService
     {
         var gym = await gymRepository.GetSingleOrDefaultAsync(x => x.Id == id, ct);
         NotFoundException.ThrowIfNull(gym, "Зал не найден!");
-        gymRepository.PendingRemove(gym, ct);
+        gymRepository.PendingRemove(gym);
         await fileService.MakeFileNotActivePendingAsync(EntityType.Gym, gym.Id.ToString(), ct);
         await unitOfWork.SaveChangesAsync(ct);
     }

@@ -2,9 +2,15 @@
 
 public sealed class UpdateEquipmentInstructionRequest
 {
-    public Guid? Id { get; set; }
+    public string? Id { get; set; }
 
-    public Guid? EquipmentId { get; set; } // TODO: хотим ли мы обновлять
+    public string? Name { get; set; }
 
-    public string? VideoUrl { get; set; }
+    public string? Description { get; set; }
+
+    public string? AdditionalDescription { get; set; }
+
+    public EquipmentInstructionTypeDto? EquipmentInstructionType { get; set; }
+
+    public List<string> MuscleGroupIds { get; set; } = [];
 }
