@@ -6,5 +6,5 @@ namespace FitHub.Application.Equipments.Brands;
 
 public interface IBrandRepository : IPendingRepository<Brand, BrandId>
 {
-    Task<PagedResult<Brand>> GetAll(PagedQuery query, CancellationToken ct);
+    Task<PagedResult<Brand>> GetAll(SearchBrandCommand command,  PagedQuery query, CancellationToken ct);
 }

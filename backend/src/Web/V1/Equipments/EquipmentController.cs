@@ -57,12 +57,13 @@ public class EquipmentController : ControllerBase
     }
 
 
-    [HttpPut(ApiRoutesV1.Equipments)]
-    public async Task<EquipmentResponse> UpdateAsync([FromBody] UpdateEquipmentRequest? request, CancellationToken ct)
+    [HttpPut(ApiRoutesV1.EquipmentById)]
+    public async Task<EquipmentResponse> UpdateAsync([FromRoute] string? id, [FromBody] UpdateEquipmentRequest? request, CancellationToken ct)
     {
         request = ValidationException.ThrowIfNull(request, "request cannot be null");
+        var entityId = EquipmentId.Parse(id);
 
-        var equipment = await service.UpdateAsync(request, ct);
+        var equipment = await service.UpdateAsync(entityId, request, ct);
 
         return equipment.ToEquipmentResponse();
     }

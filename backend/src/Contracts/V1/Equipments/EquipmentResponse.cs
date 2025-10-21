@@ -17,5 +17,7 @@ public sealed class EquipmentResponse
 
     public BrandResponse? Brand { get; set; }
 
+    public bool? IsActive { get; set; }
+
     public IReadOnlyList<EquipmentInstructionResponse> Instructions { get; set; } = [];
 }

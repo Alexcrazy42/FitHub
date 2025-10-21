@@ -19,6 +19,8 @@
     "antd": "^5.26.7",
     "axios": "^1.11.0",
     "dayjs": "^1.11.13",
+    "lodash.debounce": "^4.0.8",
+    "maplibre-gl": "^5.9.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-hook-form": "^7.65.0",

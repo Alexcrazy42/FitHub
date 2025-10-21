@@ -9,6 +9,7 @@ import { userMenuConfig } from './userMenuConfig';
 import OrderDetailsPage from '../pages/user/TestGrid/OrderDetailsPage';
 import { Register } from '../pages/Auth/Register';
 import AccessDenied from '../pages/AccessDenied';
+import { MapCard } from '../pages/Card';
 
 
 const getAdminRoutePath = (fullPath: string): string => {
@@ -54,6 +55,7 @@ export const routes: RouteObject[] = [
   { path: '/login', element: <Login /> },
   { path: '/register', element: <Register /> },
   { path: '/access-denied', element: <AccessDenied /> },
+  {path: "/card", element: <MapCard />},
   {
     element: <ProtectedRoute allowedRoles={['GymAdmin', 'GymVisitor']} />,
     children: [

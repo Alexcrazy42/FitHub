@@ -7,7 +7,11 @@ import { ListResponse } from "../../../types/common";
 import { GymZoneForm } from "./GymZoneForm";
 import { Controller, useForm } from "react-hook-form";
 
-export const GymZonesTab: React.FC = () => {
+interface GymsZonesTabProps {
+  activeTab: string;
+}
+
+export const GymZonesTab: React.FC<GymsZonesTabProps> = ({activeTab}) => {
   const apiService = useApiService();
   const [loading, setLoading] = useState(false);
   const [zones, setZones] = useState<IGymZoneResponse[]>([]);
@@ -99,8 +103,10 @@ export const GymZonesTab: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchZones();
-  }, []);
+    if(activeTab === "zones") {
+      fetchZones();
+    }
+  }, [activeTab]);
 
   return (
     <>

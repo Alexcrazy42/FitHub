@@ -12,7 +12,7 @@ public interface IEquipmentService
     Task<Equipment> GetByIdAsync(EquipmentId id, CancellationToken ct = default);
     Task<Equipment> CreateAsync(CreateEquipmentRequest request, CancellationToken ct = default);
 
-    Task<Equipment> UpdateAsync(UpdateEquipmentRequest request, CancellationToken ct = default);
+    Task<Equipment> UpdateAsync(EquipmentId id, UpdateEquipmentRequest request, CancellationToken ct = default);
 
     Task DeleteAsync(EquipmentId id, CancellationToken ct = default);
 }

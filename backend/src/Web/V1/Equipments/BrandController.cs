@@ -18,10 +18,11 @@ public class BrandController : ControllerBase
     }
 
     [HttpGet(ApiRoutesV1.Brands)]
-    public async Task<ListResponse<BrandResponse>> GetAll([FromQuery] PagedRequest? request, CancellationToken ct)
+    public async Task<ListResponse<BrandResponse>> GetAll([FromQuery] SearchBrandRequest? searchRequest, [FromQuery] PagedRequest? request, CancellationToken ct)
     {
         var query = request.ToDomain();
-        var pagedResult = await brandService.GetAllAsync(query, ct);
+        var search = searchRequest.ToSearchBrandCommand();
+        var pagedResult = await brandService.GetAllAsync(search, query, ct);
         return pagedResult.ToResponse(EquipmentResponseExtensions.ToBrandResponse);
     }
 
@@ -41,9 +42,10 @@ public class BrandController : ControllerBase
     }
 
     [HttpPut(ApiRoutesV1.BrandsById)]
-    public async Task<BrandResponse> Update([FromBody] UpdateBrandRequest? updateBrandRequest, CancellationToken ct)
+    public async Task<BrandResponse> Update([FromRoute] string? id, [FromBody] UpdateBrandRequest? updateBrandRequest, CancellationToken ct)
     {
-        var brand = await brandService.UpdateAsync(updateBrandRequest, ct);
+        var brandId = BrandId.Parse(id);
+        var brand = await brandService.UpdateAsync(brandId, updateBrandRequest, ct);
         return brand.ToBrandResponse();
     }
 

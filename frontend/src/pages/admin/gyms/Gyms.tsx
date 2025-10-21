@@ -10,12 +10,12 @@ export const Gyms: React.FC = () => {
     {
       key: "gyms",
       label: "Залы",
-      children: <GymsTab />,
+      children: <GymsTab activeTab={activeTab} />,
     },
     {
       key: "zones",
       label: "Зоны",
-      children: <GymZonesTab />,
+      children: <GymZonesTab activeTab={activeTab} />,
     },
   ];
 

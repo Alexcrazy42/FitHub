@@ -2,8 +2,6 @@
 
 public class UpdateEquipmentRequest
 {
-    public string? Id { get; set; }
-
     public string? BrandId { get; set; }
 
     public string? Name { get; set; }

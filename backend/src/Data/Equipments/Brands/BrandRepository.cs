@@ -12,9 +12,14 @@ public class BrandRepository : DefaultPendingRepository<Brand, BrandId, DataCont
     {
     }
 
-    public async Task<PagedResult<Brand>> GetAll(PagedQuery query, CancellationToken ct)
+    public async Task<PagedResult<Brand>> GetAll(SearchBrandCommand command, PagedQuery query, CancellationToken ct)
     {
         var dbQuery = ReadRaw();
+
+        if (command.Name is not null)
+        {
+            dbQuery = dbQuery.Where(b => b.Name.Contains(command.Name));
+        }
 
         var total = await dbQuery.CountAsync(ct);
 

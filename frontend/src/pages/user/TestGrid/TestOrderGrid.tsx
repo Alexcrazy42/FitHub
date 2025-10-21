@@ -195,8 +195,6 @@ const TestOrderGrid: React.FC = () => {
         searchParams.append('maxAmount', appliedFilters.maxAmount.toString());
       }
 
-      console.log('Final URL:', `/Test?${searchParams.toString()}`);
-
       // Вызов API с уже сериализованными параметрами
       const response = await apiService.get<OrdersResponse>(`/Test?${searchParams.toString()}`);
 

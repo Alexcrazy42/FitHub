@@ -43,9 +43,8 @@ public class EquipmentService : IEquipmentService
         return equipment;
     }
 
-    public async Task<Equipment> UpdateAsync(UpdateEquipmentRequest request, CancellationToken ct = default)
+    public async Task<Equipment> UpdateAsync(EquipmentId equipmentId, UpdateEquipmentRequest request, CancellationToken ct = default)
     {
-        var equipmentId = EquipmentId.Parse(request.Id);
         var equipment = await GetByIdAsync(equipmentId, ct);
         var brand = await brandService.GetByIdAsync(BrandId.Parse(request.BrandId), ct);
         if (equipment.BrandId.ToString() != request.BrandId)

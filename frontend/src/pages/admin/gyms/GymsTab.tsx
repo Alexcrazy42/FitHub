@@ -20,7 +20,11 @@ import { ListResponse } from "../../../types/common";
 import { GymForm } from "./GymForm";
 import { useForm, Controller } from "react-hook-form";
 
-export const GymsTab: React.FC = () => {
+interface GymsTabProps {
+  activeTab: string;
+}
+
+export const GymsTab: React.FC<GymsTabProps> = ({ activeTab }) => {
   const apiService = useApiService();
 
   const [loading, setLoading] = useState(false);
@@ -130,8 +134,10 @@ export const GymsTab: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchGyms();
-  }, [currentPage, pageSize]);
+    if(activeTab === "gyms") {
+      fetchGyms();
+    }
+  }, [activeTab, currentPage, pageSize]);
 
   return (
     <>

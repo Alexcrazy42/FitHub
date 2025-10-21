@@ -1,4 +1,5 @@
-﻿using FitHub.Common.Entities;
+﻿using FitHub.Application.Equipments.Brands;
+using FitHub.Common.Entities;
 using FitHub.Contracts.V1.Equipments;
 using FitHub.Contracts.V1.Equipments.Brands;
 using FitHub.Contracts.V1.Equipments.Gyms;
@@ -45,6 +46,7 @@ public static class EquipmentResponseExtensions
             Description = equipment.Description,
             AdditionalDescroption = equipment.AdditionalDescroption,
             InstructionAddBefore = equipment.InstructionAddBefore,
+            IsActive = equipment.IsActive,
             Brand = equipment.Brand?.ToBrandResponse(),
             Instructions = equipment.Instructions.ToShortInstructionResponses()
         };
@@ -93,6 +95,14 @@ public static class EquipmentResponseExtensions
             Id = brand.Id.Value.ToString(),
             Name = brand.Name,
             Description = brand.Description,
+        };
+    }
+
+    public static SearchBrandCommand ToSearchBrandCommand(this SearchBrandRequest? request)
+    {
+        return new SearchBrandCommand()
+        {
+            Name = request?.Name,
         };
     }
 }

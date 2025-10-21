@@ -17,15 +17,9 @@ public class BrandService : IBrandService
         this.unitOfWork = unitOfWork;
     }
 
-    public async Task<IReadOnlyList<Brand>> GetAllAsync(CancellationToken ct)
+    public Task<PagedResult<Brand>> GetAllAsync(SearchBrandCommand command, PagedQuery query, CancellationToken ct)
     {
-        var all = await brandRepository.GetAllAsync(x => true, ct);
-        return all;
-    }
-
-    public Task<PagedResult<Brand>> GetAllAsync(PagedQuery query, CancellationToken ct)
-    {
-        return brandRepository.GetAll(query, ct);
+        return brandRepository.GetAll(command, query, ct);
     }
 
     public async Task<Brand> GetByIdAsync(BrandId id, CancellationToken ct)
@@ -45,10 +39,9 @@ public class BrandService : IBrandService
         return brand;
     }
 
-    public async Task<Brand> UpdateAsync(UpdateBrandRequest? request, CancellationToken ct)
+    public async Task<Brand> UpdateAsync(BrandId id, UpdateBrandRequest? request, CancellationToken ct)
     {
-        var brandId = BrandId.Parse(request?.Id);
-        var brand = await GetByIdAsync(brandId, ct);
+        var brand = await GetByIdAsync(id, ct);
         ApplyUpdate(brand, request);
         await unitOfWork.SaveChangesAsync(ct);
         return brand;
