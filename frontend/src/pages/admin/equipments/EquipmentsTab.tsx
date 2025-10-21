@@ -10,14 +10,12 @@ import {
   Space,
   Tag,
   Switch,
-  Select,
   DatePicker,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import {
   IEquipmentResponse,
-  IBrandResponse,
   ICreateEquipmentRequest,
 } from "../../../types/equipments";
 import { useApiService } from "../../../api/useApiService";
@@ -38,7 +36,6 @@ interface EquipmentTabProps {
 
 export const EquipmentTab: React.FC<EquipmentTabProps> = ({ activeTab }) => {
   const [equipments, setEquipments] = useState<IEquipmentResponse[]>([]);
-  const [brands, setBrands] = useState<IBrandResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -51,7 +48,7 @@ export const EquipmentTab: React.FC<EquipmentTabProps> = ({ activeTab }) => {
     useState<IEquipmentResponse | null>(null);
 
   const apiService = useApiService();
-  const { control, handleSubmit, reset, setValue } =
+  const { control, handleSubmit, reset } =
     useForm<ICreateEquipmentRequest>();
 
   const fetchEquipments = async (page: number, pageSize: number) => {
@@ -64,15 +61,6 @@ export const EquipmentTab: React.FC<EquipmentTabProps> = ({ activeTab }) => {
       return { data: items, total };
     }
     return { data: [], total: 0 };
-  };
-
-  const fetchBrands = async () => {
-    const response = await apiService.get<ListResponse<IBrandResponse>>(
-      `/v1/brands?PageNumber=1&PageSize=1000`
-    );
-    if (response.success) {
-      setBrands(response.data?.items || []);
-    }
   };
 
   const loadEquipments = async () => {
@@ -88,7 +76,6 @@ export const EquipmentTab: React.FC<EquipmentTabProps> = ({ activeTab }) => {
   useEffect(() => {
     if (activeTab === "equipments") {
       loadEquipments();
-      fetchBrands();
     }
   }, [activeTab, page, pageSize]);
 
@@ -163,17 +150,19 @@ export const EquipmentTab: React.FC<EquipmentTabProps> = ({ activeTab }) => {
   };
 
   const openEditModal = (equipment: IEquipmentResponse) => {
-    setIsEditMode(true);
-    setEditingEquipment(equipment);
-    setIsModalOpen(true);
+  setIsEditMode(true);
+  setEditingEquipment(equipment);
+  setIsModalOpen(true);
 
-    setValue("brandId", equipment.brand.id);
-    setValue("name", equipment.name);
-    setValue("description", equipment.description);
-    setValue("additionalDescroption", equipment.additionalDescroption || "");
-    setValue("instructionAddBefore", equipment.instructionAddBefore || null);
-    setValue("isActive", equipment.isActive);
-  };
+  reset({
+    brandId: equipment.brand.id,
+    name: equipment.name,
+    description: equipment.description,
+    additionalDescroption: equipment.additionalDescroption || "",
+    instructionAddBefore: equipment.instructionAddBefore || null,
+    isActive: equipment.isActive,
+  });
+};
 
   const columns: ColumnsType<IEquipmentResponse> = [
     {
@@ -311,7 +300,11 @@ export const EquipmentTab: React.FC<EquipmentTabProps> = ({ activeTab }) => {
               rules={{ required: "Введите название" }}
               render={({ field, fieldState }) => (
                 <>
-                  <Input {...field} placeholder="Название оборудования" />
+                  <Input
+                    {...field}
+                    placeholder="Название оборудования"
+                    value={field.value ?? ""} // заменяем null на пустую строку
+                  />
                   {fieldState.error && (
                     <p className="text-red-500 text-sm mt-1">
                       {fieldState.error.message}
@@ -327,7 +320,7 @@ export const EquipmentTab: React.FC<EquipmentTabProps> = ({ activeTab }) => {
               name="description"
               control={control}
               render={({ field }) => (
-                <Input.TextArea {...field} placeholder="Описание" rows={3} />
+                <Input.TextArea {...field} value={field.value ?? ""} placeholder="Описание" rows={3} />
               )}
             />
           </Form.Item>
@@ -337,7 +330,7 @@ export const EquipmentTab: React.FC<EquipmentTabProps> = ({ activeTab }) => {
               name="additionalDescroption"
               control={control}
               render={({ field }) => (
-                <Input.TextArea {...field} placeholder="Доп. описание" rows={2} />
+                <Input.TextArea {...field} value={field.value ?? ""} placeholder="Доп. описание" rows={2} />
               )}
             />
           </Form.Item>
