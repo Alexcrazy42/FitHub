@@ -35,7 +35,8 @@ public class EntityExtension
     {
         return
         [
-            Entity.Create(EntityId.Parse("6206cfea-d518-4b09-9257-0f790473545e"), EntityType.Gym, 1)
+            Entity.Create(EntityId.Parse("6206cfea-d518-4b09-9257-0f790473545e"), EntityType.Gym, 1),
+            Entity.Create(EntityId.Parse("6206cfea-d518-4b09-9257-0f7904735451"), EntityType.Equipment, 5),
         ];
     }
 }

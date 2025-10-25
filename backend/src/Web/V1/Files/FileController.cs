@@ -1,6 +1,7 @@
-﻿using System.Net;
-using FitHub.Application.Files;
+﻿using FitHub.Application.Files;
 using FitHub.Common.Entities;
+using FitHub.Contracts;
+using FitHub.Contracts.Common;
 using FitHub.Contracts.V1;
 using FitHub.Contracts.V1.Files;
 using FitHub.Domain.Files;
@@ -35,6 +36,15 @@ public class FileController : ControllerBase
             contentType,
             fileDownloadName: null
         );
+    }
+
+    [HttpGet(ApiRoutesV1.Files)]
+    public async Task<ListResponse<FileResponse>> GetFiles([FromQuery] string? entityId, [FromQuery] EntityTypeDto? entityType, CancellationToken ct)
+    {
+        var entityIdRequired = ValidationException.ThrowIfNull(entityId, "EntityId is required!");
+        var entityTypeRequired =  ValidationException.ThrowIfNull(entityType, "Тип сущности обязателен!").FromDto();
+        var files = await fileService.GetFiles(entityTypeRequired, entityIdRequired, ct);
+        return ListResponse<FileResponse>.Create(files.Select(FileExtensions.ToFileResponse).ToList());
     }
 
     [HttpPost(ApiRoutesV1.FileGetPresignedUrl)]

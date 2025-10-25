@@ -6,6 +6,8 @@ public interface IFileService
 {
     public Task<Stream> DownloadFile(FileId id, CancellationToken ct);
 
+    public Task<IReadOnlyList<FileEntity>> GetFiles(EntityType entityType, string entityId, CancellationToken ct);
+
     public Task<PresignedUrlResult> GetPresignedUrlAsync(GetPresignedUrlCommand command, CancellationToken ct);
 
     public Task ConfirmUploadAsync(List<FileId> fileIds, CancellationToken ct);

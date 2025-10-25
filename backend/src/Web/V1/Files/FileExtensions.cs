@@ -1,7 +1,9 @@
 ﻿using FitHub.Application.Files;
 using FitHub.Common.Utilities.System;
 using FitHub.Contracts.V1.Files;
+using FitHub.Domain.Files;
 using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FitHub.Web.V1.Files;
 
@@ -27,6 +29,15 @@ public static class FileExtensions
             Url = result.Url,
             FileId = result.FileId,
             ObjectKey = result.ObjectKey
+        };
+    }
+
+    public static FileResponse ToFileResponse(this FileEntity fileEntity)
+    {
+        return new FileResponse()
+        {
+            Id = fileEntity.Id.ToString(),
+            FileName = fileEntity.FileName
         };
     }
 }

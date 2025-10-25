@@ -1,13 +1,13 @@
 ﻿import { Select, Spin } from "antd";
-import { Controller } from "react-hook-form";
-import { useState, useCallback } from "react";
+import { Control, Controller } from "react-hook-form";
+import { useState, useCallback, useEffect } from "react";
 import debounce from "lodash.debounce";
 import { ListResponse } from "../../../../types/common";
 import { IBrandResponse } from "../../../../types/equipments";
 import { useApiService } from "../../../../api/useApiService";
 
 export const BrandSelect: React.FC<{
-  control: any;
+  control: Control;
   name: string;
   initialLabel?: string;
 }> = ({ control, name, initialLabel }) => {
@@ -15,9 +15,16 @@ export const BrandSelect: React.FC<{
   const [fetching, setFetching] = useState(false);
   const apiService = useApiService();
 
+  useEffect(() => {
+    const initialValue = (control as any)._formValues?.[name];
+    if (initialLabel && initialValue) {
+      setOptions([{ label: initialLabel, value: initialValue }]);
+    }
+  }, [initialLabel, control, name]);
+
   const fetchBrands = useCallback(
     debounce(async (search: string) => {
-      if (search.length < 3) return setOptions([]);
+      if (search.length < 3) return;
       setFetching(true);
       try {
         const response = await apiService.get<ListResponse<IBrandResponse>>(
@@ -28,19 +35,18 @@ export const BrandSelect: React.FC<{
             label: b.name,
             value: b.id,
           }));
-          setOptions((prev) => {
-            const merged = [...prev, ...newOptions];
-            const unique = merged.filter(
+
+          setOptions(() => {
+            
+            const unique = newOptions.filter(
               (item, index, self) =>
                 index === self.findIndex((o) => o.value === item.value)
             );
             return unique;
           });
-        } else {
-          setOptions([]);
         }
       } catch {
-        setOptions([]);
+        // игнорируем ошибки
       } finally {
         setFetching(false);
       }
@@ -53,34 +59,21 @@ export const BrandSelect: React.FC<{
       name={name}
       control={control}
       render={({ field, fieldState }) => {
-        const allOptions = [
-          ...(field.value && initialLabel
-            ? [{ label: initialLabel, value: field.value }]
-            : []),
-          ...options,
-        ];
-
-        const uniqueOptions = allOptions.filter(
-          (item, index, self) =>
-            index === self.findIndex((o) => o.value === item.value)
-        );
-
         return (
           <>
             <Select
-              {...field}
               showSearch
               placeholder="Выберите бренд"
               notFoundContent={fetching ? <Spin size="small" /> : null}
-              options={uniqueOptions}
               filterOption={false}
+              options={options}
               onSearch={fetchBrands}
               onChange={(val) => field.onChange(val)}
+              value={field.value}
+              labelInValue={false}
             />
             {fieldState.error && (
-              <p className="text-red-500 text-sm mt-1">
-                {fieldState.error.message}
-              </p>
+              <p className="text-red-500 text-sm mt-1">{fieldState.error.message}</p>
             )}
           </>
         );

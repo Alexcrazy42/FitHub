@@ -14,9 +14,10 @@ import {
   Tag,
   Skeleton,
   Empty,
-  Carousel
+  Carousel,
+  Modal
 } from "antd";
-import { EditOutlined, SaveOutlined, CloseOutlined, ArrowLeftOutlined, RightOutlined, LeftOutlined } from "@ant-design/icons";
+import { EditOutlined, SaveOutlined, CloseOutlined, ArrowLeftOutlined, RightOutlined, LeftOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useForm, Controller } from "react-hook-form";
 import {
   IEquipmentResponse,
@@ -27,14 +28,22 @@ import dayjs from "dayjs";
 import { toast } from "react-toastify";
 import { BrandSelect } from "./components/BrandSelect";
 import ImageUploader, { ImageUploaderHandle } from "../../../components/ImageUploader/ImageUploader";
+import { CarouselRef } from "antd/es/carousel";
+import { EntityType, IEntity, IFileResponse, IMakeFilesActiveRequest } from "../../../types/files";
+import { getFileRoute } from "../../../api/files";
+import { ListResponse } from "../../../types/common";
 
 const { Title } = Typography;
+
+
+
+
 
 export const EquipmentPage: React.FC = () => {
   const { equipmentId } = useParams<{ equipmentId: string }>();
   const apiService = useApiService();
   const navigate = useNavigate();
-  const carouselRef = useRef<unknown>(null);
+  const carouselRef = useRef<CarouselRef>(null);
   const [equipment, setEquipment] = useState<IEquipmentResponse | null | undefined>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -44,6 +53,8 @@ export const EquipmentPage: React.FC = () => {
   const [maxFileCount, setMaxFileCount] = useState(1);
   const [isWaitingToConfirmUpload, setIsWaitingToConfirmUpload] = useState<boolean>(false);
   const [uploadedFileId, setUploadedFileId] = useState<string | null>(null);
+  const [files, setFiles] = useState<IFileResponse[]>([]);
+  const [fileCount, setFileCount] = useState(0);
 
 
   const fileUploadedFromUploader = async (fileId: string): Promise<void> => {
@@ -68,15 +79,80 @@ export const EquipmentPage: React.FC = () => {
         });
       }
     } catch {
-      message.error("Не удалось загрузить данные о тренажёре");
+      toast.error("Не удалось загрузить данные о тренажёре");
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchMaxFileCount = async () => {
+    const response = await apiService.get<IEntity>(`/v1/entities?entityTypeDto=${EntityType.Equipment}`);
+    if(response.success) {
+      const maxCount = response.data?.maxFileCount;
+      if(maxCount) {
+        setMaxFileCount(maxCount);
+      }
+    }
+  }
+
+  const fetchFiles = async () => {
+    if(equipmentId) {
+      const response = await apiService.get<ListResponse<IFileResponse>>(`/v1/files?entityId=${equipmentId}&entityType=${EntityType.Equipment}`);
+      if(response.success) {
+        setFiles(response.data?.items ?? []);
+      }
+    }
+  }
+
   useEffect(() => {
-    if (equipmentId) fetchEquipment();
+    if (equipmentId){
+      fetchEquipment();
+      fetchMaxFileCount();
+      fetchFiles();
+    } 
   }, [equipmentId]);
+
+  useEffect(() => {
+    if (files.length > fileCount && carouselRef.current) {
+      carouselRef.current.goTo(files.length - 1);
+    }
+    setFileCount(files.length);
+  }, [files.length]);
+
+  const handleAttachImage = async () => {
+        if (!uploadedFileId) return;
+        try {
+          const makeFilesActiveRequest : IMakeFilesActiveRequest = {
+            fileIds : [uploadedFileId],
+            entityId: equipment.id,
+            entityType: EntityType.Equipment
+          }
+          console.log(makeFilesActiveRequest);
+          const response = await apiService.post(`/v1/files/make-files-active`, makeFilesActiveRequest);
+          if(response.success) {
+            toast.success("Изображение успешно привязано к тренажеру!");
+            setUploadedFileId(null);
+            setIsWaitingToConfirmUpload(false);
+            await fetchFiles();
+            setTimeout(() => {
+              if (carouselRef.current) {
+                  carouselRef.current.goTo(files.length);
+                }
+              }, 100);
+          } else {
+            toast.error("Не получилось привязать изображение!")
+            setUploadedFileId(null);
+            setIsWaitingToConfirmUpload(false);
+          }
+        } catch (error) {
+          console.error(error);
+          toast.error("Не получилось привязать изображение!")
+        }
+    };
+
+  const handleAddPhotoClick = () => {
+    uploaderRef.current?.openFileDialog();
+  };
 
   const onSubmit = async (data: ICreateEquipmentRequest) => {
     try {
@@ -104,6 +180,16 @@ export const EquipmentPage: React.FC = () => {
       setSaving(false);
     }
   };
+
+  const handleRemoveFile = async (fileId : string) => {
+    const response = await apiService.delete(`v1/files/${fileId}`);
+    if(response.success) {
+      await fetchFiles();
+      toast.success("Файл успешно удален!");
+    } else {
+      toast.error("Ошибка при удалении файла!")
+    }
+  }
 
   if (loading) {
     return (
@@ -321,46 +407,94 @@ export const EquipmentPage: React.FC = () => {
             </Descriptions>
 
             
-              <Title level={4}>Фотографии оборудования</Title>
-              
-              <div className="relative w-full max-w-3xl mx-auto">
+            <Title level={4}>Фотографии оборудования {files.length} шт.</Title>
+            
+            <div className="relative w-full max-w-3xl mx-auto">
               <div className="relative">
-                <Carousel ref={carouselRef}>
-                  {Array.from({ length: 5 }).map((_, index) => (
-                    <div key={index} className="flex justify-center">
+                <div className="absolute top-2 right-2 z-20">
+                  <Button type="primary" onClick={handleAddPhotoClick}>
+                    Добавить фото
+                  </Button>
+                </div>
+                <Carousel ref={carouselRef} dots={false}>
+                  {files.map((file, index) => (
+                    <div key={index} className="relative flex flex-col items-center">
                       <img
-                        src="http://localhost:5209/api/v1/files/0199f6ea-ee4d-7740-8e92-15a67df28913"
-                        alt={`Фото ${index + 1}`}
+                        src={getFileRoute(file.id)}
+                        alt={file.fileName}
                         style={{ maxHeight: "400px", objectFit: "contain", width: "100%" }}
                       />
+                      
+                      <div className="mt-2 text-center text-lg font-medium block w-full">
+                        <span className="text-center text-lg font-medium">
+                          {file.fileName}
+                        </span>
+                        <Button
+                          type="link"
+                          danger
+                          icon={<DeleteOutlined />}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleRemoveFile(file.id)
+                          }}
+                        />
+                      </div>
                     </div>
                   ))}
                 </Carousel>
 
-                {/* Кнопка Назад */}
-                <Button
-                  type="primary"
-                  shape="circle"
-                  icon={<LeftOutlined />}
-                  onClick={() => carouselRef.current.prev()}
-                  className="absolute top-1/2 -translate-y-1/2 -left-4 z-10"
-                >
-                  
-                </Button>
+                {files.length > 0 && (
+                  <div className="flex justify-between items-center w-full px-4">
+                    <Button
+                      type="primary"
+                      shape="circle"
+                      icon={<LeftOutlined />}
+                      onClick={() => carouselRef.current?.prev()}
+                      className="absolute top-1/2 -translate-y-1/2 -left-4 z-10"
+                    >
+                      
+                    </Button>
 
-                {/* Кнопка Вперед */}
-                <Button
-                  type="primary"
-                  shape="circle"
-                  icon={<RightOutlined />}
-                  onClick={() => carouselRef.current.next()}
-                  className="absolute top-1/2 -translate-y-1/2 -right-4 z-10"
-                />
+                    <Button
+                      type="primary"
+                      shape="circle"
+                      icon={<RightOutlined />}
+                      onClick={() => carouselRef.current?.next()}
+                      className="absolute top-1/2 -translate-y-1/2 -right-4 z-10"
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
+
+            {uploadedFileId && isWaitingToConfirmUpload && (
+              <Modal
+                open={true}
+                onCancel={() => setIsWaitingToConfirmUpload(false)} // или свой метод закрытия
+                footer={null}
+                centered
+                closable={true}
+                width={400}
+              >
+                <div className="flex flex-col items-center gap-4">
+                  <div>
+                    <img
+                      src={getFileRoute(uploadedFileId)}
+                      alt="Тренажер"
+                      className="w-64 h-64 object-cover rounded shadow-sm"
+                    />
+                  </div>
+
+                  <Button type="primary" onClick={handleAttachImage}>
+                    Привязать к тренажеру
+                  </Button>
+                </div>
+              </Modal>
+            )}
+
             <ImageUploader ref={uploaderRef} maxFileCount={maxFileCount} fileUpload={fileUploadedFromUploader} onSuccessCancel={()=>{setIsWaitingToConfirmUpload(true)}} />
-            
             </>
           )}
         </Card>

@@ -13,6 +13,8 @@ public static class EntityTypeExtension
         {
             case EntityTypeDto.Gym:
                 return EntityType.Gym;
+            case EntityTypeDto.Equipment:
+                return EntityType.Equipment;
             default:
                 throw new ValidationException("Invalid entity type");
         }
@@ -24,6 +26,8 @@ public static class EntityTypeExtension
         {
             case EntityType.Gym:
                 return EntityTypeDto.Gym;
+            case EntityType.Equipment:
+                return EntityTypeDto.Equipment;
             default:
                 throw new ValidationException("Invalid entity type");
         }

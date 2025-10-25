@@ -5,7 +5,8 @@
 }
 
 export enum EntityType {
-    Gym = "Gym"
+    Gym = "Gym",
+    Equipment = "Equipment"
 }
 
 export interface IMakeFilesActiveRequest {
@@ -18,4 +19,9 @@ export interface IEntity {
     id: string;
     type: EntityType;
     maxFileCount: number;
+}
+
+export interface IFileResponse {
+    id: string;
+    fileName: string;
 }

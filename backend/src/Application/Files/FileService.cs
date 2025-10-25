@@ -27,6 +27,15 @@ public class FileService : IFileService
         return await s3FileService.DownloadFileAsync(decodedKey);
     }
 
+    public async Task<IReadOnlyList<FileEntity>> GetFiles(EntityType entityType, string entityId, CancellationToken ct)
+    {
+        var files = await fileRepository.GetAllAsync(x =>
+            x.EntityType == entityType
+            && x.EntityId == entityId
+            && x.Status == FileStatus.Active, ct);
+        return files;
+    }
+
     public async Task<PresignedUrlResult> GetPresignedUrlAsync(GetPresignedUrlCommand command, CancellationToken ct)
     {
         var fileId = FileId.New();

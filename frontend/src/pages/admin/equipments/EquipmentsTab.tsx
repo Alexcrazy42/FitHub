@@ -314,7 +314,8 @@ export const EquipmentTab: React.FC<EquipmentTabProps> = ({ activeTab }) => {
       >
         <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
           <Form.Item label="Бренд" required>
-            <BrandSelect control={control} 
+            <BrandSelect 
+              control={control} 
               name="brandId"
               initialLabel={editingEquipment?.brand?.name}
             />

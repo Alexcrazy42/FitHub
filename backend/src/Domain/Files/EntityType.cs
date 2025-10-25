@@ -2,5 +2,6 @@
 
 public enum EntityType
 {
-    Gym
+    Gym,
+    Equipment
 }
