@@ -1,5 +1,6 @@
 ﻿using FitHub.Application.Common;
 using FitHub.Application.Equipments;
+using FitHub.Common.Entities;
 using FitHub.Common.EntityFramework;
 using FitHub.Domain.Equipments;
 using Microsoft.EntityFrameworkCore;
@@ -30,5 +31,15 @@ public class EquipmentRepository : DefaultPendingRepository<Equipment, Equipment
 
         var items = await dbQuery.ToListAsync(ct);
         return PagedResult<Equipment>.Create(items, totalItems, pagedQuery.PageNumber, pagedQuery.PageSize);
+    }
+
+    public async Task<Equipment> GetAsync(EquipmentId id, CancellationToken ct = default)
+    {
+        var entity = await ReadRaw()
+            .Include(x => x.Brand)
+            .Include(x => x.Instructions)
+            .FirstOrDefaultAsync(x => x.Id == id, ct);
+        NotFoundException.ThrowIfNull(entity, "Тренажер не найден!");
+        return entity;
     }
 }

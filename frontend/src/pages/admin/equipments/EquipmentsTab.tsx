@@ -23,12 +23,12 @@ import { ListResponse } from "../../../types/common";
 import { useForm, Controller } from "react-hook-form";
 import {
   ExclamationCircleOutlined,
-  EditOutlined,
   DeleteOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
 import { toast } from "react-toastify";
 import { BrandSelect } from "./components/BrandSelect";
+import { useNavigate } from "react-router-dom";
 
 interface EquipmentTabProps {
   activeTab: string;
@@ -41,6 +41,7 @@ export const EquipmentTab: React.FC<EquipmentTabProps> = ({ activeTab }) => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [modal, contextHolder] = Modal.useModal();
+  const navigate = useNavigate();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -49,7 +50,11 @@ export const EquipmentTab: React.FC<EquipmentTabProps> = ({ activeTab }) => {
 
   const apiService = useApiService();
   const { control, handleSubmit, reset } =
-    useForm<ICreateEquipmentRequest>();
+    useForm<ICreateEquipmentRequest>({
+      defaultValues: {
+        isActive: true
+      }
+    });
 
   const fetchEquipments = async (page: number, pageSize: number) => {
     const response = await apiService.get<ListResponse<IEquipmentResponse>>(
@@ -83,9 +88,7 @@ export const EquipmentTab: React.FC<EquipmentTabProps> = ({ activeTab }) => {
     try {
       const payload: ICreateEquipmentRequest = {
         ...data,
-        instructionAddBefore: data.instructionAddBefore
-          ? dayjs(data.instructionAddBefore).format("YYYY-MM-DD")
-          : null,
+        //instructionAddBefore: data.instructionAddBefore,
       };
 
       if (isEditMode && editingEquipment) {
@@ -122,6 +125,10 @@ export const EquipmentTab: React.FC<EquipmentTabProps> = ({ activeTab }) => {
     }
   };
 
+  const handleRowClick = (record: IEquipmentResponse) => {
+    navigate(`/admin/equipments/${record.id}`)
+  }
+
   const handleDeleteEquipment = async (equipment: IEquipmentResponse) => {
     modal.confirm({
       title: `Удалить оборудование "${equipment.name}"?`,
@@ -154,14 +161,14 @@ export const EquipmentTab: React.FC<EquipmentTabProps> = ({ activeTab }) => {
   setEditingEquipment(equipment);
   setIsModalOpen(true);
 
-  reset({
-    brandId: equipment.brand.id,
-    name: equipment.name,
-    description: equipment.description,
-    additionalDescroption: equipment.additionalDescroption || "",
-    instructionAddBefore: equipment.instructionAddBefore || null,
-    isActive: equipment.isActive,
-  });
+    reset({
+      brandId: equipment.brand.id,
+      name: equipment.name,
+      description: equipment.description,
+      additionalDescroption: equipment.additionalDescroption || "",
+      instructionAddBefore: equipment.instructionAddBefore || null,
+      isActive: equipment.isActive,
+    });
 };
 
   const columns: ColumnsType<IEquipmentResponse> = [
@@ -200,7 +207,7 @@ export const EquipmentTab: React.FC<EquipmentTabProps> = ({ activeTab }) => {
         value ? (
           <Tag color="green">Активно</Tag>
         ) : (
-          <Tag color="default">Неактивно</Tag>
+          <Tag color="red">Неактивно</Tag>
         ),
     },
     {
@@ -210,19 +217,26 @@ export const EquipmentTab: React.FC<EquipmentTabProps> = ({ activeTab }) => {
       align: "center",
       render: (_, record) => (
         <Space>
-          <Button
+          {/* <Button
             type="link"
             icon={<EditOutlined />}
-            onClick={() => openEditModal(record)}
+            onClick={(e) =>{
+              e.stopPropagation();
+              openEditModal(record)
+            }}
           >
             Редактировать
-          </Button>
+          </Button> */}
           {contextHolder}
           <Button
             type="link"
             danger
             icon={<DeleteOutlined />}
-            onClick={() => handleDeleteEquipment(record)}
+            onClick={(e) =>{
+              e.preventDefault();
+              e.stopPropagation();
+              setTimeout(() => handleDeleteEquipment(record), 0);
+            }}
           >
             Удалить
           </Button>
@@ -242,7 +256,14 @@ export const EquipmentTab: React.FC<EquipmentTabProps> = ({ activeTab }) => {
             setIsModalOpen(true);
             setIsEditMode(false);
             setEditingEquipment(null);
-            reset();
+            reset({
+              brandId: null,
+              name: "",
+              description: "",
+              additionalDescroption: "",
+              instructionAddBefore: null,
+              isActive: false
+            });
           }}
         >
           Добавить тренажер
@@ -261,6 +282,10 @@ export const EquipmentTab: React.FC<EquipmentTabProps> = ({ activeTab }) => {
             pagination={false}
             rowKey="id"
             bordered
+            onRow={(record) => ({
+              onClick: () => handleRowClick(record),
+              style: { cursor: "pointer" },
+            })}
           />
           <div className="flex justify-end mt-4">
             <Pagination
@@ -277,7 +302,6 @@ export const EquipmentTab: React.FC<EquipmentTabProps> = ({ activeTab }) => {
         </>
       )}
 
-      {/* Modal для создания / редактирования */}
       <Modal
         title={isEditMode ? "Редактировать оборудование" : "Добавить оборудование"}
         open={isModalOpen}
@@ -290,7 +314,10 @@ export const EquipmentTab: React.FC<EquipmentTabProps> = ({ activeTab }) => {
       >
         <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
           <Form.Item label="Бренд" required>
-            <BrandSelect control={control} name="brandId" apiService={apiService} />
+            <BrandSelect control={control} 
+              name="brandId"
+              initialLabel={editingEquipment?.brand?.name}
+            />
           </Form.Item>
 
           <Form.Item label="Название" required>
@@ -335,14 +362,14 @@ export const EquipmentTab: React.FC<EquipmentTabProps> = ({ activeTab }) => {
             />
           </Form.Item>
 
-          <Form.Item label="Инструкция до">
+          <Form.Item label="Инструкция будет добавлена до">
             <Controller
               name="instructionAddBefore"
               control={control}
               render={({ field }) => (
                 <DatePicker
                   {...field}
-                  format="YYYY-MM-DD"
+                  format="DD-MM-YYYY"
                   value={field.value ? dayjs(field.value) : null}
                   onChange={(date) =>
                     field.onChange(date ? date.format("YYYY-MM-DD") : null)

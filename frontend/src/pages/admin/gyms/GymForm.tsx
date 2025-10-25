@@ -166,7 +166,7 @@ export const GymForm: React.FC<GymFormProps> = ({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-700 mb-1">а
           Описание *
         </label>
         <textarea
@@ -183,7 +183,7 @@ export const GymForm: React.FC<GymFormProps> = ({
 
       <div className="flex space-x-2">
         <Button 
-          type="primary" 
+          type="primary"
           htmlType="submit" 
           loading={loading}
           disabled={loading}

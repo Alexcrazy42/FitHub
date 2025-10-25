@@ -35,8 +35,8 @@ public class EquipmentController : ControllerBase
     [HttpGet(ApiRoutesV1.EquipmentById)]
     public async Task<EquipmentResponse> GetAsync([FromRoute] string? id, CancellationToken ct)
     {
-        id = ValidationException.ThrowIfNull(id, "id cannot be null");
-        var entity = await repository.GetFirstOrDefaultAsync(x => x.Id == EquipmentId.Parse(id), ct);
+        var equipmentId = EquipmentId.Parse(id);
+        var entity = await service.GetByIdAsync(equipmentId, ct);
 
         if (entity is null)
         {

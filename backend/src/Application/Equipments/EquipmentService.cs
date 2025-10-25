@@ -29,8 +29,7 @@ public class EquipmentService : IEquipmentService
 
     public async Task<Equipment> GetByIdAsync(EquipmentId id, CancellationToken ct = default)
     {
-        var equipment = await equipmentRepository.GetFirstOrDefaultAsync(x => x.Id == id, ct);
-        NotFoundException.ThrowIfNull(equipment, "Тренажер не был найден!");
+        var equipment = await equipmentRepository.GetAsync(id, ct);
         return equipment;
     }
 
