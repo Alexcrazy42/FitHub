@@ -30,7 +30,7 @@ export interface IEquipmentResponse {
   name: string;
   description: string;
   additionalDescroption: string | null;
-  instructionAddBefore?: string | null;
+  instructionAddBefore?: Date | null;
   isActive: boolean;
   brand: IBrandResponse;
 }
@@ -40,6 +40,6 @@ export interface ICreateEquipmentRequest {
   name?: string | null;
   description?: string | null;
   additionalDescroption?: string | null;
-  instructionAddBefore?: string | null;
+  instructionAddBefore?: Date | null;
   isActive?: boolean | null;
 }

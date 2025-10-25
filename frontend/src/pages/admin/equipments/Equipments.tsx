@@ -1,7 +1,6 @@
 ﻿import React, { useState } from "react";
 import { Card, Tabs, TabsProps } from "antd";
 import { BrandTab } from "./BrandTab";
-import { EquipmentInstructionTab } from "./EquipmentInstructionTab";
 import { MuscleGroupsTab } from "./MuscleGroupsTab";
 import { EquipmentTab } from "./EquipmentsTab";
 
@@ -18,11 +17,6 @@ export const Equipments: React.FC = () => {
       key: "brands",
       label: "Брэнды",
       children: <BrandTab activeTab={activeTab} />, // <— передаем сюда активную вкладку
-    },
-    {
-      key: "instructions",
-      label: "Инструкции",
-      children: <EquipmentInstructionTab />,
     },
     {
       key: "muscleGroups",
