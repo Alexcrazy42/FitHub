@@ -27,7 +27,8 @@ public static class TrainingResponseExtensions
         {
             Id = muscleGroup.Id.Value,
             Name = muscleGroup.Name,
-            ParentId = muscleGroup.ParentId?.Value
+            ParentId = muscleGroup.ParentId?.ToString(),
+            Childrens = muscleGroup.Childrens.Select(ToMuscleGroupResponse).ToList()
         };
     }
 
@@ -49,7 +50,7 @@ public static class TrainingResponseExtensions
     {
         return new TrainingTypeResponse
         {
-            Id = trainingType.Id.Value,
+            Id = trainingType.Id.ToString(),
             Name = trainingType.Name,
         };
     }

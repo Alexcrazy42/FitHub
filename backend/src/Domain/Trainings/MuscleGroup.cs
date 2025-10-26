@@ -5,6 +5,8 @@ namespace FitHub.Domain.Trainings;
 
 public class MuscleGroup : IEntity<MuscleGroupId>
 {
+    private List<MuscleGroup> childrens = [];
+
     private MuscleGroup(MuscleGroupId id, string name)
     {
         Id = id;
@@ -18,6 +20,8 @@ public class MuscleGroup : IEntity<MuscleGroupId>
     public MuscleGroupId? ParentId { get; private set; }
 
     public MuscleGroup? Parent { get; private set; }
+
+    public IReadOnlyList<MuscleGroup> Childrens => childrens;
 
     public void SetName(string name) => Name = name;
 

@@ -16,17 +16,14 @@ namespace FitHub.Web.V1.Trainings;
 public class MuscleGroupController : ControllerBase
 {
     private readonly IMuscleGroupService muscleGroupService;
-    private readonly IMuscleGroupRepository muscleGroupRepository;
 
-    public MuscleGroupController(IMuscleGroupService muscleGroupService,
-        IMuscleGroupRepository muscleGroupRepository)
+    public MuscleGroupController(IMuscleGroupService muscleGroupService)
     {
         this.muscleGroupService = muscleGroupService;
-        this.muscleGroupRepository = muscleGroupRepository;
     }
 
     [HttpGet(ApiRoutesV1.MuscleGroups)]
-    public async Task<ListResponse<MuscleGroupResponse>> GetAllAsync([FromBody] PagedRequest? pagedRequest, CancellationToken ct)
+    public async Task<ListResponse<MuscleGroupResponse>> GetAllAsync([FromQuery] PagedRequest? pagedRequest, CancellationToken ct)
     {
         var query = pagedRequest.ToDomain();
         var pagedResult = await muscleGroupService.GetAll(query, ct);
@@ -44,10 +41,11 @@ public class MuscleGroupController : ControllerBase
     }
 
     [HttpPut(ApiRoutesV1.MuscleGroupById)]
-    public async Task<MuscleGroupResponse> UpdateMuscleGroupAsync([FromBody] UpdateMuscleGroupRequest? request, CancellationToken ct)
+    public async Task<MuscleGroupResponse> UpdateMuscleGroupAsync([FromRoute] string? id, [FromBody] CreateMuscleGroupRequest? request, CancellationToken ct)
     {
+        var muscleGroupId = MuscleGroupId.Parse(id);
         request = ValidationException.ThrowIfNull(request, nameof(request));
-        var muscleGroup = await muscleGroupService.UpdateMuscleGroupAsync(request, ct);
+        var muscleGroup = await muscleGroupService.UpdateMuscleGroupAsync(muscleGroupId, request, ct);
         return muscleGroup.ToMuscleGroupResponse();
     }
 

@@ -4,7 +4,6 @@ import {
   Card,
   Typography,
   Descriptions,
-  message,
   Button,
   Form,
   Input,
@@ -32,10 +31,7 @@ import { CarouselRef } from "antd/es/carousel";
 import { EntityType, IEntity, IFileResponse, IMakeFilesActiveRequest } from "../../../types/files";
 import { getFileRoute } from "../../../api/files";
 import { ListResponse } from "../../../types/common";
-
 const { Title } = Typography;
-
-
 
 
 
@@ -120,35 +116,34 @@ export const EquipmentPage: React.FC = () => {
   }, [files.length]);
 
   const handleAttachImage = async () => {
-        if (!uploadedFileId) return;
-        try {
-          const makeFilesActiveRequest : IMakeFilesActiveRequest = {
-            fileIds : [uploadedFileId],
-            entityId: equipment.id,
-            entityType: EntityType.Equipment
-          }
-          console.log(makeFilesActiveRequest);
-          const response = await apiService.post(`/v1/files/make-files-active`, makeFilesActiveRequest);
-          if(response.success) {
-            toast.success("Изображение успешно привязано к тренажеру!");
-            setUploadedFileId(null);
-            setIsWaitingToConfirmUpload(false);
-            await fetchFiles();
-            setTimeout(() => {
-              if (carouselRef.current) {
-                  carouselRef.current.goTo(files.length);
-                }
-              }, 100);
-          } else {
-            toast.error("Не получилось привязать изображение!")
-            setUploadedFileId(null);
-            setIsWaitingToConfirmUpload(false);
-          }
-        } catch (error) {
-          console.error(error);
-          toast.error("Не получилось привязать изображение!")
+      if (!uploadedFileId) return;
+      try {
+        const makeFilesActiveRequest : IMakeFilesActiveRequest = {
+          fileIds : [uploadedFileId],
+          entityId: equipment.id,
+          entityType: EntityType.Equipment
         }
-    };
+        const response = await apiService.post(`/v1/files/make-files-active`, makeFilesActiveRequest);
+        if(response.success) {
+          toast.success("Изображение успешно привязано к тренажеру!");
+          setUploadedFileId(null);
+          setIsWaitingToConfirmUpload(false);
+          await fetchFiles();
+          setTimeout(() => {
+            if (carouselRef.current) {
+                carouselRef.current.goTo(files.length);
+              }
+            }, 100);
+        } else {
+          toast.error("Не получилось привязать изображение!")
+          setUploadedFileId(null);
+          setIsWaitingToConfirmUpload(false);
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("Не получилось привязать изображение!")
+      }
+  };
 
   const handleAddPhotoClick = () => {
     uploaderRef.current?.openFileDialog();
@@ -157,20 +152,16 @@ export const EquipmentPage: React.FC = () => {
   const onSubmit = async (data: ICreateEquipmentRequest) => {
     try {
       setSaving(true);
-      const payload: ICreateEquipmentRequest = {
-        ...data,
-        instructionAddBefore: data.instructionAddBefore
-      };
 
       const response = await apiService.put<IEquipmentResponse>(
         `/v1/equipments/${equipmentId}`,
-        payload
+        data
       );
 
       if (response.success) {
         toast.success("Данные успешно обновлены!");
-        setIsEditing(false);
         await fetchEquipment();
+        setIsEditing(false);
       } else {
         toast.error(response.error?.detail || "Ошибка при обновлении");
       }
@@ -256,8 +247,8 @@ export const EquipmentPage: React.FC = () => {
                   brandId: equipment.brand.id,
                   name: equipment.name,
                   description: equipment.description,
-                  additionalDescroption: equipment.additionalDescroption || "",
-                  instructionAddBefore: equipment.instructionAddBefore || null,
+                  additionalDescroption: equipment.additionalDescroption,
+                  instructionAddBefore: equipment.instructionAddBefore,
                   isActive: equipment.isActive,
                 });
                 setIsEditing(false);
@@ -280,7 +271,6 @@ export const EquipmentPage: React.FC = () => {
             icon={<EditOutlined />}
             onClick={() => setIsEditing(true)}
           >
-            Редактировать
           </Button>
         )}
       </div>
@@ -447,7 +437,7 @@ export const EquipmentPage: React.FC = () => {
                 {files.length > 0 && (
                   <div className="flex justify-between items-center w-full px-4">
                     <Button
-                      type="primary"
+                      type="link"
                       shape="circle"
                       icon={<LeftOutlined />}
                       onClick={() => carouselRef.current?.prev()}
@@ -457,7 +447,7 @@ export const EquipmentPage: React.FC = () => {
                     </Button>
 
                     <Button
-                      type="primary"
+                      type="link"
                       shape="circle"
                       icon={<RightOutlined />}
                       onClick={() => carouselRef.current?.next()}

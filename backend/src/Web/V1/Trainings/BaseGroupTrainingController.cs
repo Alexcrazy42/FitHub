@@ -39,7 +39,7 @@ public class BaseGroupTrainingController : ControllerBase
 
     [HttpGet(ApiRoutesV1.BaseGroupTrainingsById)]
 
-    public async Task<BaseGroupTrainingResponse> GetByIdAsync([FromRoute] Guid? id, CancellationToken ct)
+    public async Task<BaseGroupTrainingResponse> GetByIdAsync([FromRoute] string? id, CancellationToken ct)
     {
         id = ValidationException.ThrowIfNull(id, "id cannot be null");
         var entityId = BaseGroupTrainingId.Parse(id);
@@ -47,7 +47,7 @@ public class BaseGroupTrainingController : ControllerBase
 
         if (entity is null)
         {
-            throw new NotFoundException($"Базовая групповая тренировка не найдена!");
+            throw new NotFoundException("Базовая групповая тренировка не найдена!");
         }
 
         return entity.ToResponse();
@@ -83,7 +83,6 @@ public class BaseGroupTrainingController : ControllerBase
     {
         id = ValidationException.ThrowIfNull(id, "id cannot be null");
         var entityId = BaseGroupTrainingId.Parse(id);
-
         await service.DeleteAsync(entityId, ct);
     }
 }

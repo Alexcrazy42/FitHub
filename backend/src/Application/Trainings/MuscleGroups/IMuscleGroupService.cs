@@ -14,7 +14,7 @@ public interface IMuscleGroupService
     Task<MuscleGroup> GetById(MuscleGroupId id, CancellationToken ct);
     Task<MuscleGroup> CreateMuscleGroupAsync(CreateMuscleGroupRequest request, CancellationToken ct = default);
 
-    Task<MuscleGroup> UpdateMuscleGroupAsync(UpdateMuscleGroupRequest request, CancellationToken ct = default);
+    Task<MuscleGroup> UpdateMuscleGroupAsync(MuscleGroupId id, CreateMuscleGroupRequest request, CancellationToken ct = default);
 
     Task DeleteMuscleGroupAsync(MuscleGroupId id, CancellationToken ct = default);
 }

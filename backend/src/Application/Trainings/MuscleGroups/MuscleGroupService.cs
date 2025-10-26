@@ -40,7 +40,11 @@ public class MuscleGroupService : IMuscleGroupService
         MuscleGroup? parent = null;
         if (request.ParentId is not null)
         {
-            var parentMuscleGroup = await muscleGroupRepository.GetFirstOrDefaultAsync(x => x.Id == MuscleGroupId.Parse(request.ParentId), ct);
+            var parentMuscleGroup = await GetById(MuscleGroupId.Parse(request.ParentId), ct);
+            if (parentMuscleGroup.ParentId is not null)
+            {
+                throw new ValidationException("Нельзя привязать группу мышцы к группе, которая сама является дочерней!");
+            }
             parent = parentMuscleGroup;
         }
 
@@ -50,14 +54,13 @@ public class MuscleGroupService : IMuscleGroupService
         return muscleGroup;
     }
 
-    public async Task<MuscleGroup> UpdateMuscleGroupAsync(UpdateMuscleGroupRequest request, CancellationToken ct)
+    public async Task<MuscleGroup> UpdateMuscleGroupAsync(MuscleGroupId id, CreateMuscleGroupRequest request, CancellationToken ct)
     {
-        var muscleGroupId = MuscleGroupId.Parse(request.Id);
-        var entity = await GetById(muscleGroupId, ct);
+        var entity = await GetById(id, ct);
         MuscleGroup? parent = null;
         if (request.ParentId is not null)
         {
-            var parentMuscleGroup = await muscleGroupRepository.GetFirstOrDefaultAsync(x => x.Id == MuscleGroupId.Parse(request.ParentId), ct);
+            var parentMuscleGroup = await GetById(MuscleGroupId.Parse(request.ParentId), ct);
             parent = parentMuscleGroup;
         }
 
@@ -74,7 +77,7 @@ public class MuscleGroupService : IMuscleGroupService
         await unitOfWork.SaveChangesAsync(ct);
     }
 
-    private void ApplyChanges(MuscleGroup muscleGroup, UpdateMuscleGroupRequest request, MuscleGroup? parent)
+    private void ApplyChanges(MuscleGroup muscleGroup, CreateMuscleGroupRequest request, MuscleGroup? parent)
     {
         if (parent is not null)
         {

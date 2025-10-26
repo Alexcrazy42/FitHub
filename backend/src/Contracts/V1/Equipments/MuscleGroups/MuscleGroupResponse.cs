@@ -6,7 +6,9 @@ public sealed class MuscleGroupResponse
 
     public string? Name { get; set; }
 
-    public string? ImageUrl { get; set; }
+    public string? ImageId { get; set; }
 
-    public Guid? ParentId { get; set; }
+    public List<MuscleGroupResponse> Childrens { get; set; } = [];
+
+    public string? ParentId { get; set; }
 }

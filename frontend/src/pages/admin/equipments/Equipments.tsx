@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+﻿import React, { act, useState } from "react";
 import { Card, Tabs, TabsProps } from "antd";
 import { BrandTab } from "./BrandTab";
 import { MuscleGroupsTab } from "./MuscleGroupsTab";
@@ -21,7 +21,7 @@ export const Equipments: React.FC = () => {
     {
       key: "muscleGroups",
       label: "Мышцы",
-      children: <MuscleGroupsTab />,
+      children: <MuscleGroupsTab activeTab={activeTab} />,
     },
   ];
 
