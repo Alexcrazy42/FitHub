@@ -1,8 +1,9 @@
-﻿import { HomeOutlined, RocketOutlined, ToolOutlined } from "@ant-design/icons";
+﻿import { FireOutlined, HomeOutlined, RocketOutlined, ToolOutlined } from "@ant-design/icons";
 import AdminDashboard from "../pages/admin/Dashboard";
 import { MenuItem } from "./MenuItem";
 import { Gyms } from "../pages/admin/gyms/Gyms";
 import { Equipments } from "../pages/admin/equipments/Equipments";
+import { Trainings } from "../pages/admin/trainings/Trainings";
 
 export const adminMenuConfig: MenuItem[] = [
   {
@@ -25,5 +26,12 @@ export const adminMenuConfig: MenuItem[] = [
     icon: <ToolOutlined />,
     path: '/admin/equipments',
     element: <Equipments />
-  }
+  },
+  {
+    key: 'trainings',
+    label: 'Тренировки',
+    icon: <FireOutlined />,
+    path: '/admin/trainings',
+    element: <Trainings />
+  },
 ];
