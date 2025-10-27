@@ -55,18 +55,19 @@ public class TrainingTypeController : ControllerBase
         return entity.ToResponse();
     }
 
-    [HttpPut(ApiRoutesV1.TrainingTypes)]
-    public async Task<TrainingTypeResponse> UpdateAsync([FromBody] UpdateTrainingTypeRequest? request, CancellationToken ct)
+    [HttpPut(ApiRoutesV1.TrainingTypeById)]
+    public async Task<TrainingTypeResponse> UpdateAsync([FromRoute] string? id, [FromBody] CreateTrainingTypeRequest? request, CancellationToken ct)
     {
         request = ValidationException.ThrowIfNull(request, "request cannot be null");
+        var entityId = TrainingTypeId.Parse(id);
 
-        var entity = await service.UpdateAsync(request, ct);
+        var entity = await service.UpdateAsync(entityId, request, ct);
 
         return entity.ToResponse();
     }
 
     [HttpDelete(ApiRoutesV1.TrainingTypeById)]
-    public async Task Delete([FromRoute] Guid? id, CancellationToken ct)
+    public async Task Delete([FromRoute] string? id, CancellationToken ct)
     {
         id = ValidationException.ThrowIfNull(id, "id cannot be null");
         var entityId = TrainingTypeId.Parse(id);

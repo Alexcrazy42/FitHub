@@ -1,10 +1,12 @@
-﻿using FitHub.Application.Trainings.BaseGroupTrainings;
+﻿using System.Collections.Specialized;
+using FitHub.Application.Trainings.BaseGroupTrainings;
 using FitHub.Common.AspNetCore.Auth;
 using FitHub.Common.Entities;
 using FitHub.Contracts;
 using FitHub.Contracts.V1;
 using FitHub.Contracts.V1.Trainings.BaseGroupTrainings;
 using FitHub.Domain.Trainings;
+using FitHub.Web.Common;
 using FitHub.Web.Validation;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
@@ -27,53 +29,49 @@ public class BaseGroupTrainingController : ControllerBase
     }
 
     [HttpGet(ApiRoutesV1.BaseGroupTrainings)]
-    public async Task<ListResponse<BaseGroupTrainingResponse>> GetAllAsync(CancellationToken ct)
+    public async Task<ListResponse<BaseGroupTrainingResponse>> GetAllAsync([FromQuery] PagedRequest? paged, CancellationToken ct)
     {
-        var all = await repository.GetAllAsync(x => true, ct);
-
-        var responses = all.ToResponses();
-
-        return ListResponse<BaseGroupTrainingResponse>.Create(responses);
+        var pagedQuery = paged.ToDomain();
+        var all = await service.GetAsync(pagedQuery, ct);
+        return all.ToResponse(TrainingResponseExtensions.ToResponse);
     }
 
 
     [HttpGet(ApiRoutesV1.BaseGroupTrainingsById)]
-
     public async Task<BaseGroupTrainingResponse> GetByIdAsync([FromRoute] string? id, CancellationToken ct)
     {
         id = ValidationException.ThrowIfNull(id, "id cannot be null");
         var entityId = BaseGroupTrainingId.Parse(id);
-        var entity = await repository.GetOrDefaultAsync(entityId, ct);
-
-        if (entity is null)
-        {
-            throw new NotFoundException("Базовая групповая тренировка не найдена!");
-        }
-
+        var entity = await service.GetByIdAsync(entityId, ct);
         return entity.ToResponse();
     }
 
     [HttpPost(ApiRoutesV1.BaseGroupTrainings)]
     public async Task<BaseGroupTrainingResponse> CreateAsync(
-        [FromBody] CreateBaseGroupTrainingRequest request,
+        [FromBody] CreateBaseGroupTrainingRequest? request,
         [FromServices] IValidator<CreateBaseGroupTrainingRequest>? validator,
         CancellationToken ct)
     {
-        await validator.HandleValidationAsync(request, ct);
-
         request = ValidationException.ThrowIfNull(request, "request cannot be null");
+
+        await validator.HandleValidationAsync(request, ct);
 
         var entity = await service.CreateAsync(request, ct);
 
         return entity.ToResponse();
     }
 
-    [HttpPut(ApiRoutesV1.BaseGroupTrainings)]
-    public async Task<BaseGroupTrainingResponse> UpdateAsync([FromBody] UpdateBaseGroupTrainingRequest request, CancellationToken ct)
+    [HttpPut(ApiRoutesV1.BaseGroupTrainingsById)]
+    public async Task<BaseGroupTrainingResponse> UpdateAsync([FromRoute] string? id, [FromBody] CreateBaseGroupTrainingRequest? request,
+        [FromServices] IValidator<CreateBaseGroupTrainingRequest>? validator,
+        CancellationToken ct)
     {
         request = ValidationException.ThrowIfNull(request, "request cannot be null");
+        await validator.HandleValidationAsync(request, ct);
 
-        var entity = await service.UpdateAsync(request, ct);
+        var entityId = BaseGroupTrainingId.Parse(id);
+
+        var entity = await service.UpdateAsync(entityId, request, ct);
 
         return entity.ToResponse();
     }

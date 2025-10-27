@@ -2,13 +2,13 @@
 using System.Text.Json;
 using FitHub.Common.Utilities.System;
 using FitHub.RabbitMQ.Configuration;
+using FitHub.RabbitMQ.Contracts;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using FitHub.RabbitMQ.Contracts;
 
 namespace FitHub.RabbitMQ.Consumers;
 

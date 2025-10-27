@@ -7,14 +7,16 @@ public class BaseGroupTraining : IEntity<BaseGroupTrainingId>
     private const int MinComplexityValue = 1;
     private const int MaxComplexityValue = 3;
     private const int MinNameLength = 10;
+    private List<TrainingType> trainingTypes = [];
 
-    public BaseGroupTraining(BaseGroupTrainingId id, string name, string description, int durationInMinutes, int complexity)
+    private BaseGroupTraining(BaseGroupTrainingId id, string name, string description, int durationInMinutes, int complexity, bool isActive)
     {
         Id = id;
         Name = name;
         Description = description;
         DurationInMinutes = durationInMinutes;
         Complexity = complexity;
+        IsActive = isActive;
     }
 
     public BaseGroupTrainingId Id { get; }
@@ -27,15 +29,39 @@ public class BaseGroupTraining : IEntity<BaseGroupTrainingId>
 
     public int Complexity { get; private set; }
 
-    public TrainingTypeId? TypeId { get; private set; }
+    public bool IsActive { get; private set; }
 
-    public TrainingType? Type { get; }
+    public bool IsDeleted { get; private set; }
 
+    public IReadOnlyList<TrainingType> TrainingTypes => trainingTypes;
+
+    public void SetTrainingTypes(List<TrainingType> newTrainingTypes)
+        => trainingTypes = newTrainingTypes;
 
     public void SetName(string name)
     {
         ValidateName(name);
         Name = name;
+    }
+
+    public void SetDescription(string description)
+    {
+        Description = description;
+    }
+
+    public void SetDurationInMinutes(int durationInMinutes)
+    {
+        DurationInMinutes = durationInMinutes;
+    }
+
+    public void SetIsActive(bool isActive)
+    {
+        IsActive = isActive;
+    }
+
+    public void SetIsDeleted(bool isDeleted)
+    {
+        IsDeleted = isDeleted;
     }
 
     public static void ValidateName(string? name)
@@ -63,5 +89,15 @@ public class BaseGroupTraining : IEntity<BaseGroupTrainingId>
         {
             throw new CommonException($"Сложность тренировки должна быть от {MinComplexityValue} до {MaxComplexityValue}");
         }
+    }
+
+    public static BaseGroupTraining Create(string name, string description, int durationInMinutes, int complexity, bool isActive)
+    {
+        ValidateName(name);
+        ValidateComplexity(complexity);
+        return new BaseGroupTraining(BaseGroupTrainingId.New(), name, description, durationInMinutes, complexity, isActive)
+        {
+            IsDeleted = false
+        };
     }
 }

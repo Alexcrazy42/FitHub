@@ -4,11 +4,11 @@ namespace FitHub.Web.V1.Test.Models;
 
 public class Order
 {
-    public string Id { get; set; } = string.Empty;
-    public string OrderNumber { get; set; } = string.Empty;
-    public string CustomerName { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty;
-    public string Phone { get; set; } = string.Empty;
+    public string Id { get; set; } = String.Empty;
+    public string OrderNumber { get; set; } = String.Empty;
+    public string CustomerName { get; set; } = String.Empty;
+    public string Email { get; set; } = String.Empty;
+    public string Phone { get; set; } = String.Empty;
 
     public OrderStatus Status { get; set; }
 
@@ -18,7 +18,7 @@ public class Order
 
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
-    public string ShippingAddress { get; set; } = string.Empty;
+    public string ShippingAddress { get; set; } = String.Empty;
 
     public PaymentMethod PaymentMethod { get; set; }
 

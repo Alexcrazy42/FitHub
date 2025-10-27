@@ -42,7 +42,7 @@ public class FileController : ControllerBase
     public async Task<ListResponse<FileResponse>> GetFiles([FromQuery] string? entityId, [FromQuery] EntityTypeDto? entityType, CancellationToken ct)
     {
         var entityIdRequired = ValidationException.ThrowIfNull(entityId, "EntityId is required!");
-        var entityTypeRequired =  ValidationException.ThrowIfNull(entityType, "Тип сущности обязателен!").FromDto();
+        var entityTypeRequired = ValidationException.ThrowIfNull(entityType, "Тип сущности обязателен!").FromDto();
         var files = await fileService.GetFiles(entityTypeRequired, entityIdRequired, ct);
         return ListResponse<FileResponse>.Create(files.Select(FileExtensions.ToFileResponse).ToList());
     }

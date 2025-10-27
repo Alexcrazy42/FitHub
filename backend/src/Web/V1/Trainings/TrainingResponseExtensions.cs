@@ -64,7 +64,8 @@ public static class TrainingResponseExtensions
             Description = baseGroupTraining.Description,
             DurationInMinutes = baseGroupTraining.DurationInMinutes,
             Complexity = baseGroupTraining.Complexity,
-            Type = baseGroupTraining.Type?.ToResponse()
+            TrainingTypes = baseGroupTraining.TrainingTypes.Select(ToResponse).ToList(),
+            IsActive = baseGroupTraining.IsActive
         };
     }
 }

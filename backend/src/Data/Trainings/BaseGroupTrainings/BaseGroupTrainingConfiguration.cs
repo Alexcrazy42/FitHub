@@ -8,5 +8,13 @@ public class BaseGroupTrainingConfiguration : IEntityTypeConfiguration<BaseGroup
 {
     public void Configure(EntityTypeBuilder<BaseGroupTraining> builder)
     {
+        builder.HasMany(x => x.TrainingTypes)
+            .WithMany();
+
+        builder.Property(x => x.IsActive)
+            .HasDefaultValue(true);
+
+        builder.Property(x => x.IsDeleted)
+            .HasDefaultValue(false);
     }
 }

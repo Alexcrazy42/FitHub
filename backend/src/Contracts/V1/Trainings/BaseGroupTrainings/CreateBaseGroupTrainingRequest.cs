@@ -10,5 +10,7 @@ public sealed class CreateBaseGroupTrainingRequest
 
     public int? Complexity { get; set; }
 
-    public Guid? TrainingTypeId { get; set; }
+    public bool? IsActive { get; set; }
+
+    public List<string> TrainingTypeIds { get; set; } = [];
 }

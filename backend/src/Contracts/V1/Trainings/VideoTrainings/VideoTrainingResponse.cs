@@ -5,7 +5,7 @@ namespace FitHub.Contracts.V1.Trainings.VideoTrainings;
 
 public sealed class VideoTrainingResponse
 {
-    public Guid? Id { get; set;  }
+    public Guid? Id { get; set; }
 
     public string? Name { get; set; }
 

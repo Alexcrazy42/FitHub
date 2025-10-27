@@ -14,5 +14,7 @@ public sealed class BaseGroupTrainingResponse
 
     public int? Complexity { get; set; }
 
-    public TrainingTypeResponse? Type { get; set; }
+    public bool? IsActive { get; set; }
+
+    public List<TrainingTypeResponse> TrainingTypes { get; set; } = [];
 }

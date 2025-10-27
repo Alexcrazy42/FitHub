@@ -10,3 +10,33 @@ export interface ICreateMuscleGroup {
     name: string;
     parentId: string | null;
 }
+
+export interface ITrainingType {
+    id: string | null;
+    name: string | null;
+}
+
+export interface ICreateTrainingType {
+    name: string;
+}
+
+export interface IBaseGroupTraining {
+    id: string | null;
+    name: string | null;
+    description : string | null;
+    durationInMinutes : number | null;
+    complexity : number | null;
+    isActive: boolean | null;
+    trainingTypes : ITrainingType[];
+}
+
+
+export interface ICreateBaseGroupTraining {
+    id: string;
+    name: string;
+    description : string;
+    durationInMinutes : number;
+    complexity : number;
+    isActive : boolean;
+    trainingTypeIds : string[]
+}

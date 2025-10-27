@@ -4,7 +4,7 @@ namespace FitHub.Domain.Trainings;
 
 public class TrainingType : IEntity<TrainingTypeId>
 {
-    public TrainingType(TrainingTypeId id, string name)
+    private TrainingType(TrainingTypeId id, string name)
     {
         Id = id;
         Name = name;
@@ -13,4 +13,14 @@ public class TrainingType : IEntity<TrainingTypeId>
     public TrainingTypeId Id { get; }
 
     public string Name { get; private set; }
+
+    public void SetName(string name)
+    {
+        Name = name;
+    }
+
+    public static TrainingType Create(string name)
+    {
+        return new TrainingType(TrainingTypeId.New(), name);
+    }
 }

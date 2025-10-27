@@ -18,7 +18,7 @@ public class S3FileService : IS3FileService
         bucketName = configuration["AWS:BucketName"]
                       ?? throw new ArgumentException("BucketName is not configured.");
 
-        needToEnsureBucketExists = bool.Parse(configuration["AWS:NeedToEnsureBucketExists"] ?? throw new Exception(""));
+        needToEnsureBucketExists = Boolean.Parse(configuration["AWS:NeedToEnsureBucketExists"] ?? throw new Exception(""));
     }
 
     public async Task EnsureBucketExistsAsync()

@@ -7,7 +7,7 @@ public interface ITrainingTypeService
 {
     Task<TrainingType> CreateAsync(CreateTrainingTypeRequest request, CancellationToken ct = default);
 
-    Task<TrainingType> UpdateAsync(UpdateTrainingTypeRequest request, CancellationToken ct = default);
+    Task<TrainingType> UpdateAsync(TrainingTypeId id, CreateTrainingTypeRequest request, CancellationToken ct = default);
 
     Task DeleteAsync(TrainingTypeId id, CancellationToken ct = default);
 }

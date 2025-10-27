@@ -30,5 +30,5 @@ public class IdentityUser : IEntity<IdentityUserId>
     /// </summary>
     public string PasswordHash { get; protected set; }
 
-    public IdentityUserType UserType { get; protected set;  }
+    public IdentityUserType UserType { get; protected set; }
 }
