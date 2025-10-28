@@ -1,13 +1,20 @@
 ﻿import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
-type ProblemDetails = {
+export type ValidationError = {
+  message: string;
+  propertyName: string;
+};
+
+export type ProblemDetails = {
     detail: string;
     status: number;
     title: string;
     type: string;
+    traceId?: string;
+    errors?: ValidationError[];
 }
 
-type ApiResponse<T> = {
+export type ApiResponse<T> = {
     success: boolean;
     data?: T | null;
     error?: ProblemDetails | null;
@@ -67,19 +74,26 @@ export class ApiService {
             };
         } catch (error: unknown) {
             const axiosError = error as AxiosError<ProblemDetails>;
-            if(axiosError.status === 401) {
+            const status = axiosError.response?.status;
+            const problem = axiosError.response?.data;
+            if (status === 401) {
                 this.onUnauthorized();
-            } else if(axiosError.status === 403) {
+            } else if (status === 403) {
                 this.onForbidden();
             }
+
+            const problemDetails: ProblemDetails = {
+                type: problem?.type ?? 'unknown_error',
+                title: problem?.title ?? 'Request failed',
+                status: status ?? 500,
+                detail: problem?.detail ?? axiosError.message,
+                traceId: problem?.traceId,
+                errors: problem?.errors ?? [],
+            };
+
             return {
                 success: false,
-                error: axiosError.response?.data || {
-                    detail: axiosError.message,
-                    status: axiosError.response?.status || 500,
-                    title: 'Request failed',
-                    type: 'unknown_error'
-                }
+                error: problemDetails,
             };
         }
     }
