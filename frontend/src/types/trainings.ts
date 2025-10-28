@@ -32,7 +32,6 @@ export interface IBaseGroupTraining {
 
 
 export interface ICreateBaseGroupTraining {
-    id: string;
     name: string;
     description : string;
     durationInMinutes : number;
