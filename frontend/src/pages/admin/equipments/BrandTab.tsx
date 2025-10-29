@@ -196,6 +196,13 @@ export const BrandTab: React.FC<BrandTabProps> = ({ activeTab }) => {
           Добавить бренд
         </Button>
       </div>
+      <Button
+          onClick={() => {
+            loadBrands()
+          }}
+        >
+          Обновить
+        </Button>
 
       {loading ? (
         <div className="flex justify-center items-center py-10">

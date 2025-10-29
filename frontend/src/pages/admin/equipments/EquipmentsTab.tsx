@@ -269,6 +269,9 @@ export const EquipmentTab: React.FC<EquipmentTabProps> = ({ activeTab }) => {
           Добавить тренажер
         </Button>
       </div>
+      <Button onClick={loadEquipments}>
+        Обновить
+      </Button>
 
       {loading ? (
         <div className="flex justify-center items-center py-10">

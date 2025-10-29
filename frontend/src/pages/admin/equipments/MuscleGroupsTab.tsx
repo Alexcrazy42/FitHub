@@ -196,6 +196,9 @@ export const MuscleGroupsTab: React.FC<MuscleGroupsTabProps> = ({ activeTab }) =
           Добавить группу
         </Button>
       </div>
+      <Button onClick={fetchMuscleGroups}>
+        Обновить
+      </Button>
 
       <Table
         rowKey="id"

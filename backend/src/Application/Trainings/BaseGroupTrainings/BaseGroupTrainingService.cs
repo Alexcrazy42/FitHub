@@ -64,6 +64,7 @@ public class BaseGroupTrainingService : IBaseGroupTrainingService
     {
         var entity = await GetByIdAsync(id, ct);
         entity.SetIsDeleted(true);
+        entity.SetTrainingTypes([]);
         await unitOfWork.SaveChangesAsync(ct);
     }
 
@@ -74,5 +75,6 @@ public class BaseGroupTrainingService : IBaseGroupTrainingService
         entity.SetDurationInMinutes(ValidationException.ThrowIfNull(request.DurationInMinutes));
         entity.SetComplexity(ValidationException.ThrowIfNull(request.Complexity));
         entity.SetTrainingTypes(trainingTypes);
+        entity.SetIsActive(ValidationException.ThrowIfNull(request.IsActive));
     }
 }
