@@ -58,14 +58,14 @@ export const routes: RouteObject[] = [
   { path: '/access-denied', element: <AccessDenied /> },
   {path: "/card", element: <MapCard />},
   {
-    element: <ProtectedRoute allowedRoles={['GymAdmin', 'GymVisitor']} />,
+    element: <ProtectedRoute allowedRoles={['CmsAdmin', 'GymVisitor']} />,
     children: [
       {
         element: <DashboardLayout />,
         children: [
           {
             path: '/admin/*',
-            element: <ProtectedRoute allowedRoles={['GymAdmin']} />,
+            element: <ProtectedRoute allowedRoles={['CmsAdmin']} />,
             children: [
               ...extractRoutesFromMenu(adminMenuConfig, UserType.Admin),
               {path: 'equipments/:equipmentId', element: <EquipmentPage />}

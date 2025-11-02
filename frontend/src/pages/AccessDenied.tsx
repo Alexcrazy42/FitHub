@@ -11,7 +11,7 @@ const { user } = useAuth();
 
   const handleGoHome = () => {
       if (user) {
-        navigate(`/${roleRoutes[user.currentRole]}`);
+        navigate(`${roleRoutes[user.currentRole]}`);
       } else {
         navigate('/login');
       }

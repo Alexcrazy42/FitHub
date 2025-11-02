@@ -40,13 +40,12 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
     {
         return Task.FromResult<IdentityUser?>(new IdentityUser(
             IdentityUserId.Parse(Guid.NewGuid()),
-            "nick",
             "email@mail.ru",
             password,
-            IdentityUserType.GymAdmin | IdentityUserType.GymVisitor | IdentityUserType.CmsAdmin
+            IdentityUserType.CmsAdmin
         ));
 
-        // var user = await userRepository.GetFirstOrDefaultAsync(x => x.Email == login || x.Nickname == login, cancellationToken);
+        //var user = await GetByEmailAsync(login, cancellationToken);
         //
         // if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
         // {

@@ -3,5 +3,6 @@
 public enum EntityType
 {
     Gym,
-    Equipment
+    Equipment,
+    BaseGroupTraining
 }

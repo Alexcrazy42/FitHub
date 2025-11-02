@@ -1,8 +1,10 @@
 ﻿using FitHub.Application.Common;
+using FitHub.Application.Files;
 using FitHub.Application.Trainings.TrainingTypes;
 using FitHub.Common.Entities;
 using FitHub.Common.Entities.Storage;
 using FitHub.Contracts.V1.Trainings.BaseGroupTrainings;
+using FitHub.Domain.Files;
 using FitHub.Domain.Trainings;
 
 namespace FitHub.Application.Trainings.BaseGroupTrainings;
@@ -12,14 +14,23 @@ public class BaseGroupTrainingService : IBaseGroupTrainingService
     private readonly IBaseGroupTrainingRepository baseGroupTrainingRepository;
     private readonly ITrainingTypeRepository trainingTypeRepository;
     private readonly IUnitOfWork unitOfWork;
+    private readonly IFileService fileService;
+    private readonly IFileRepository fileRepository;
+    private readonly IBaseGroupTrainingPhotoRepository photoRepository;
 
     public BaseGroupTrainingService(IBaseGroupTrainingRepository baseGroupTrainingRepository,
         ITrainingTypeRepository trainingTypeRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IFileService fileService,
+        IBaseGroupTrainingPhotoRepository photoRepository,
+        IFileRepository fileRepository)
     {
         this.baseGroupTrainingRepository = baseGroupTrainingRepository;
         this.trainingTypeRepository = trainingTypeRepository;
         this.unitOfWork = unitOfWork;
+        this.fileService = fileService;
+        this.photoRepository = photoRepository;
+        this.fileRepository = fileRepository;
     }
 
     public Task<PagedResult<BaseGroupTraining>> GetAsync(PagedQuery pagedQuery, CancellationToken ct = default)
@@ -60,6 +71,35 @@ public class BaseGroupTrainingService : IBaseGroupTrainingService
         return entity;
     }
 
+    public async Task AttachPhotosAsync(AttachPhotosRequest request, CancellationToken ct = default)
+    {
+        var trainingId = BaseGroupTrainingId.Parse(request.BaseGroupTrainingId);
+        var training = await GetByIdAsync(trainingId, ct);
+        ValidateAbilityAddMorePhotos(training);
+
+        var fileId = FileId.Parse(request.FileId);
+        var file = await fileService.GetFile(fileId, ct);
+
+        var photo = BaseGroupTrainingPhoto.Create(training, file);
+
+        file.SetEntity(trainingId.ToString(), EntityType.BaseGroupTraining);
+
+        await photoRepository.PendingAddAsync(photo, ct);
+        await unitOfWork.SaveChangesAsync(ct);
+    }
+
+    public async Task DeattachPhotoAsync(FileId fileId, CancellationToken ct = default)
+    {
+        var file = await fileService.GetFile(fileId, ct);
+
+        var photo = await photoRepository.GetFirstOrDefaultAsync(x => x.FileId == file.Id, ct);
+        NotFoundException.ThrowIfNull(photo, "Фото не найдено!");
+
+        fileRepository.PendingRemove(file);
+        photoRepository.PendingRemove(photo);
+        await unitOfWork.SaveChangesAsync(ct);
+    }
+
     public async Task DeleteAsync(BaseGroupTrainingId id, CancellationToken ct)
     {
         var entity = await GetByIdAsync(id, ct);
@@ -76,5 +116,14 @@ public class BaseGroupTrainingService : IBaseGroupTrainingService
         entity.SetComplexity(ValidationException.ThrowIfNull(request.Complexity));
         entity.SetTrainingTypes(trainingTypes);
         entity.SetIsActive(ValidationException.ThrowIfNull(request.IsActive));
+    }
+
+    private void ValidateAbilityAddMorePhotos(BaseGroupTraining training)
+    {
+        var entity = EntityExtension.GetAll().First(x => x.EntityType == EntityType.BaseGroupTraining);
+        if (training.Photos.Count >= entity.MaxFileCount)
+        {
+            throw new ValidationException($"Нельзя добавить больше {entity.MaxFileCount} фотографий!");
+        }
     }
 }

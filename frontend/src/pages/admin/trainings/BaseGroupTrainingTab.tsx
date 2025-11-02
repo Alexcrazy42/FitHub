@@ -1,5 +1,6 @@
-﻿import { useEffect, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import {
+  IAttachPhoto,
   IBaseGroupTraining,
   ICreateBaseGroupTraining,
   ITrainingType,
@@ -24,6 +25,9 @@ import { useForm, Controller } from "react-hook-form";
 import { ValidationError } from "../../../api/ApiService";
 import { toast } from "react-toastify";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
+import ImageUploader, { ImageUploaderHandle } from "../../../components/ImageUploader/ImageUploader";
+import { EntityType, IEntity } from "../../../types/files";
+import { getFileRoute } from "../../../api/files";
 
 interface BaseGroupTrainingTabProps {
   activeTab: string;
@@ -47,9 +51,11 @@ export const BaseGroupTrainingTab: React.FC<BaseGroupTrainingTabProps> = ({
     null
   );
   const [submitting, setSubmitting] = useState(false);
-  const [trainingTypesOptions, setTrainingTypesOptions] = useState<
-    ITrainingType[]
-  >([]);
+  const [trainingTypesOptions, setTrainingTypesOptions] = useState<ITrainingType[]>([]);
+  const uploaderRef = useRef<ImageUploaderHandle>(null);
+  const [maxFileCount, setMaxFileCount] = useState(1);
+  const [uploadedFileId, setUploadedFileId] = useState<string | null>(null);
+  const [isWaitingToConfirmUpload, setIsWaitingToConfirmUpload] = useState<boolean>(false);
 
   const apiService = useApiService();
 
@@ -87,6 +93,33 @@ export const BaseGroupTrainingTab: React.FC<BaseGroupTrainingTabProps> = ({
     }
   };
 
+  const fetchOne = async (id : string) => {
+    try {
+      const response = await apiService.get<IBaseGroupTraining>(
+        `/v1/base-group-trainings/${id}`
+      );
+      if (response.success) {
+        setEditingItem(response.data);
+      }
+    } catch {
+      toast.error("Неизвестная ошибка");
+    }
+  }
+
+  const fetchMaxFileCount = async () => {
+      const response = await apiService.get<IEntity>(`/v1/entities?entityTypeDto=${EntityType.BaseGroupTraining}`);
+      if(response.success) {
+        const maxCount = response.data?.maxFileCount;
+        if(maxCount) {
+          setMaxFileCount(maxCount);
+        }
+      }
+  }
+
+  const fileUploadedFromUploader = async (fileId: string): Promise<void> => {
+    setUploadedFileId(fileId);
+  };
+  
   const fetchTrainingTypes = async () => {
     try {
       const resp = await apiService.get<ListResponse<ITrainingType>>(
@@ -106,6 +139,7 @@ export const BaseGroupTrainingTab: React.FC<BaseGroupTrainingTabProps> = ({
     if (activeTab === "trainings") {
       fetch();
       fetchTrainingTypes();
+      fetchMaxFileCount();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, page, pageSize]);
@@ -125,14 +159,54 @@ export const BaseGroupTrainingTab: React.FC<BaseGroupTrainingTabProps> = ({
     }
   }
 
+  const deletePhoto = async () => {
+      if(editingItem?.photoId) {
+        const response = await apiService.delete(`/v1/base-group-trainings/photos?fileId=${editingItem.photoId}`);
+        if(response.success) {
+          await fetchOne(editingItem.id)
+        } else {
+          toast.error("Ошибка при удалении файла!")
+        }
+      } else {
+        toast.error("Не содержит фотографии!");
+      }
+  }
+
+  const handleAttachImage = async () => {
+    if (!uploadedFileId) return;
+    try {
+      const request : IAttachPhoto = {
+        fileId: uploadedFileId,
+        baseGroupTrainingId: editingItem?.id
+      }
+      await apiService.post(`/v1/base-group-trainings/photos`, request);
+      toast.success("Изображение успешно привязано!");
+      setUploadedFileId(null);
+      setIsWaitingToConfirmUpload(false);
+      await fetchOne(editingItem?.id);
+    } catch (error) {
+      console.error(error);
+      toast.error("Не получилось привязать изображение!")
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setUploadedFileId(null);
+    setIsWaitingToConfirmUpload(false);
+  }
+
+  const handleButtonClick = () => {
+    uploaderRef.current?.openFileDialog();
+  };
+
   const openCreateModal = () => {
     clearErrors();
     reset();
     setModalVisible(true);
   };
 
-  const openEditDrawer = (item: IBaseGroupTraining) => {
-    setEditingItem(item);
+  const openEditDrawer = async (item: IBaseGroupTraining) => {
+    await fetchOne(item.id);
     clearErrors();
     reset({
       name: item.name,
@@ -347,7 +421,6 @@ export const BaseGroupTrainingTab: React.FC<BaseGroupTrainingTabProps> = ({
         </form>
       </Modal>
 
-      {/* Drawer редактирования */}
       <Drawer
         title={
           editingItem ? `Редактировать: ${editingItem.name}` : "Редактирование"
@@ -375,7 +448,51 @@ export const BaseGroupTrainingTab: React.FC<BaseGroupTrainingTabProps> = ({
             </div>
           </div>
         </form>
+
+
+        {editingItem?.photoId && (
+          <div className="mb-4 mt-4">
+            <p className="text-sm text-gray-600 mb-2">Текущее изображение:</p>
+            <img
+              src={getFileRoute(editingItem?.photoId)}
+              alt="Фото"
+              className="w-32 h-32 object-cover rounded shadow-sm"
+            />
+            <Button onClick={deletePhoto}>
+              Удалить
+            </Button>
+          </div>
+        )}
+        
+        {uploadedFileId && isWaitingToConfirmUpload && !editingItem?.photoId && (
+          <div className="mb-4 mt-4 relative w-32 h-32">
+            <button
+              onClick={() => handleRemoveImage()}
+              className="absolute top-0 right-0 w-6 h-6 bg-white text-gray-700 rounded-full flex items-center justify-center shadow hover:bg-gray-100 transition-colors"
+            >
+              ×
+            </button>
+      
+            <img
+              src={getFileRoute(uploadedFileId)}
+              alt="Фото"
+              className="w-32 h-32 object-cover rounded shadow-sm"
+            />
+      
+            <Button onClick={handleAttachImage}>
+              Привязать фото
+            </Button>
+          </div>
+          )}
+      
+        {!uploadedFileId && !isWaitingToConfirmUpload && !editingItem?.photoId && (
+          <Button type="primary" onClick={handleButtonClick}>
+            Выбрать фото
+          </Button>
+        )}
       </Drawer>
+
+      <ImageUploader ref={uploaderRef} maxFileCount={maxFileCount} fileUpload={fileUploadedFromUploader} onSuccessCancel={()=>{setIsWaitingToConfirmUpload(true)}} />
     </div>
   );
 };

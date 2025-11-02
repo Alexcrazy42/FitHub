@@ -136,8 +136,7 @@ public static class ServiceRegistry
                     });
                     var response = new LoginResponse
                     {
-                        Login = identityUser.Email,
-                        Name = identityUser.Nickname,
+                        Email = identityUser.Email,
                         UserId = identityUser.Id.Value.ToString(),
                         LoginExpirationAt = expiresAt,
                         RoleNames = identityUser.UserType.ToRoleNames()

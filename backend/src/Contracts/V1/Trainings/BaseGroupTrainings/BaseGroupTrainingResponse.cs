@@ -17,4 +17,6 @@ public sealed class BaseGroupTrainingResponse
     public bool? IsActive { get; set; }
 
     public List<TrainingTypeResponse> TrainingTypes { get; set; } = [];
+
+    public string? PhotoId { get; set; }
 }

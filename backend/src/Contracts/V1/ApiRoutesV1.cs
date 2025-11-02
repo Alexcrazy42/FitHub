@@ -65,6 +65,14 @@ public class ApiRoutesV1
 
     #endregion
 
+    #region BaseGroupTrainingPhotos
+
+    public const string BaseGroupTrainingPhotos = BaseGroupTrainings + "/photos";
+
+    public const string BaseGroupTrainingPhotoById = BaseGroupTrainingPhotos + "/{id}";
+
+    #endregion
+
     #region TrainingTypes
 
     public const string TrainingTypes = Root + "/training-types";

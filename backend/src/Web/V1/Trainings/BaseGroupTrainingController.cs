@@ -1,10 +1,12 @@
 ﻿using System.Collections.Specialized;
+using FitHub.Application.Files;
 using FitHub.Application.Trainings.BaseGroupTrainings;
 using FitHub.Common.AspNetCore.Auth;
 using FitHub.Common.Entities;
 using FitHub.Contracts;
 using FitHub.Contracts.V1;
 using FitHub.Contracts.V1.Trainings.BaseGroupTrainings;
+using FitHub.Domain.Files;
 using FitHub.Domain.Trainings;
 using FitHub.Web.Common;
 using FitHub.Web.Validation;
@@ -16,7 +18,7 @@ using ValidationException = FitHub.Common.Entities.ValidationException;
 namespace FitHub.Web.V1.Trainings;
 
 [ApiController]
-[Authorize(Policy = AuthorizationPolicies.GymAdminOnly)]
+[Authorize(Policy = AuthorizationPolicies.CmsAdminOnly)]
 public class BaseGroupTrainingController : ControllerBase
 {
     private readonly IBaseGroupTrainingService service;
@@ -59,6 +61,21 @@ public class BaseGroupTrainingController : ControllerBase
         var entity = await service.CreateAsync(request, ct);
 
         return entity.ToResponse();
+    }
+
+    [HttpPost(ApiRoutesV1.BaseGroupTrainingPhotos)]
+    public async Task AttachPhotos([FromBody] AttachPhotosRequest? request, CancellationToken ct)
+    {
+        ValidationException.ThrowIfNull(request, "request cannot be null");
+        await service.AttachPhotosAsync(request, ct);
+    }
+
+    [HttpDelete(ApiRoutesV1.BaseGroupTrainingPhotos)]
+    public async Task DeattachPhoto([FromQuery] string? fileId, CancellationToken ct)
+    {
+        fileId = ValidationException.ThrowIfNull(fileId, "fileId cannot be null");
+        var parsedFileId = FileId.Parse(fileId);
+        await service.DeattachPhotoAsync(parsedFileId, ct);
     }
 
     [HttpPut(ApiRoutesV1.BaseGroupTrainingsById)]

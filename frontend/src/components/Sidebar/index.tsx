@@ -48,7 +48,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, isDark = false }) => {
   const {user} = useAuth();
 
   let menuConfig: MenuItem[] = [];
-  if (user?.currentRole === 'GymAdmin') {
+  if (user?.currentRole === 'CmsAdmin') {
     menuConfig = adminMenuConfig;
   } else if (user?.currentRole === 'GymVisitor') {
     menuConfig = userMenuConfig;

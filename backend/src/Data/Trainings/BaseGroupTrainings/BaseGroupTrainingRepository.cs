@@ -32,6 +32,7 @@ public class BaseGroupTrainingRepository : DefaultPendingRepository<BaseGroupTra
     {
         var entity = await ReadRaw()
             .Include(x => x.TrainingTypes)
+            .Include(x => x.Photos)
             .Where(x => !x.IsDeleted)
             .FirstOrDefaultAsync(x => x.Id == id, ct);
 

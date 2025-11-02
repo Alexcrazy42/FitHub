@@ -65,7 +65,8 @@ public static class TrainingResponseExtensions
             DurationInMinutes = baseGroupTraining.DurationInMinutes,
             Complexity = baseGroupTraining.Complexity,
             TrainingTypes = baseGroupTraining.TrainingTypes.Select(ToResponse).ToList(),
-            IsActive = baseGroupTraining.IsActive
+            IsActive = baseGroupTraining.IsActive,
+            PhotoId = baseGroupTraining.Photos.FirstOrDefault()?.FileId.ToString()
         };
     }
 }

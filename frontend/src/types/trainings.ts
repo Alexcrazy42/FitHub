@@ -21,13 +21,14 @@ export interface ICreateTrainingType {
 }
 
 export interface IBaseGroupTraining {
-    id: string | null;
+    id: string;
     name: string | null;
     description : string | null;
     durationInMinutes : number | null;
     complexity : number | null;
     isActive: boolean | null;
     trainingTypes : ITrainingType[];
+    photoId : string | null;
 }
 
 
@@ -38,4 +39,9 @@ export interface ICreateBaseGroupTraining {
     complexity : number;
     isActive : boolean;
     trainingTypeIds : string[]
+}
+
+export interface IAttachPhoto {
+    baseGroupTrainingId : string;
+    fileId : string;
 }

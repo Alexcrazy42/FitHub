@@ -6,7 +6,8 @@
 
 export enum EntityType {
     Gym = "Gym",
-    Equipment = "Equipment"
+    Equipment = "Equipment",
+    BaseGroupTraining = "BaseGroupTraining"
 }
 
 export interface IMakeFilesActiveRequest {

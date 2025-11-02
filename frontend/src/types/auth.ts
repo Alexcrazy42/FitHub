@@ -1,21 +1,24 @@
-﻿export type UserRole = 'GymVisitor' | 'GymAdmin';
+﻿export type UserRole = 'GymVisitor' | 'GymAdmin' | 'Trainer' | 'CmsAdmin';
 
 export const roleMapping: Record<UserRole, string> = {
   'GymVisitor': "Посетитель",
-  'GymAdmin': "Администратор"
+  'GymAdmin': "Администратор",
+  "Trainer": "Тренер",
+  "CmsAdmin": "Cms администратор"
 };
 
 
 export const roleRoutes: Record<UserRole, string> = {
   'GymVisitor': '/user',
-  'GymAdmin': '/admin'
+  'GymAdmin': '/gym-admin',
+  'Trainer': '/trainer',
+  'CmsAdmin': '/admin'
 };
 
 export interface User {
   id: string;
-  name: string;
   email?: string;
-  loginExpirationAt?: string;
+  loginExpirationAt?: Date;
   roles: UserRole[];
   currentRole: UserRole;
 }
@@ -26,9 +29,8 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  login: string;
+  email: string;
   userId: string;
-  name: string;
   loginExpirationAt: Date;
   roleNames: UserRole[]
 }

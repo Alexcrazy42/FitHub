@@ -6,14 +6,13 @@ namespace FitHub.Domain.Users;
 public class User : IdentityUser, IAuditableEntity
 {
 
-    private User(IdentityUserId id, string surname, string name, string email, string nickname, string passwordHash, IdentityUserType userType)
-        : base(id, nickname, email, passwordHash, userType)
+    private User(IdentityUserId id, string surname, string name, string email, string passwordHash, IdentityUserType userType)
+        : base(id, email, passwordHash, userType)
     {
         Id = id;
         Surname = surname;
         Name = name;
         Email = email;
-        Nickname = nickname;
         PasswordHash = passwordHash;
         LastSeenAt = DateTimeOffset.Now;
         UserType = userType;

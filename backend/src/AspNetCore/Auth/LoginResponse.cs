@@ -2,11 +2,9 @@
 
 public sealed class LoginResponse
 {
-    public string? Login { get; set; }
+    public string? Email { get; set; }
 
     public string? UserId { get; set; }
-
-    public string? Name { get; set; }
 
     public DateTimeOffset? LoginExpirationAt { get; set; }
 

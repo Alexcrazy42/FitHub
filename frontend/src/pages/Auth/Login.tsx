@@ -3,19 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useApiService } from '../../api/useApiService';
 import { useAuth } from '../../context/useAuth';
 import { useTheme } from '../../context/useTheme';
-import { roleMapping, roleRoutes, User, UserRole } from '../../types/auth';
+import { LoginResponse, roleMapping, roleRoutes, User, UserRole } from '../../types/auth';
 
 interface LoginRequest {
   username: string;
   password: string;
-}
-
-interface LoginResponse {
-  login: string;
-  userId: string;
-  name: string;
-  loginExpirationAt: string;
-  roleNames: UserRole[];
 }
 
 const Login: React.FC = () => {
@@ -86,18 +78,18 @@ const Login: React.FC = () => {
         }));
 
         if (userRoles.length === 1) {
-          const mapping = roleMapping[userRoles[0]];
+          const mapping = userRoles[0];
           const user: User = {
             id: userData.userId,
-            name: userData.name,
-            email: userData.login,
+            email: userData.email,
             loginExpirationAt: userData.loginExpirationAt,
             roles: userRoles,
             currentRole: userRoles[0]
           };
           
           login(user);
-          navigate(roleRoutes[mapping]);
+          const route = roleRoutes[mapping];
+          navigate(route);
         } else {
           // Если несколько ролей - показываем выбор
           setAvailableRoles(rolesForSelection);

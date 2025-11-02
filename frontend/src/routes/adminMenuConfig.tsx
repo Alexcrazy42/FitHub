@@ -1,9 +1,10 @@
-﻿import { FireOutlined, HomeOutlined, RocketOutlined, ToolOutlined } from "@ant-design/icons";
+﻿import { FireOutlined, HomeOutlined, RocketOutlined, ToolOutlined, UserOutlined } from "@ant-design/icons";
 import AdminDashboard from "../pages/admin/Dashboard";
 import { MenuItem } from "./MenuItem";
 import { Gyms } from "../pages/admin/gyms/Gyms";
 import { Equipments } from "../pages/admin/equipments/Equipments";
 import { Trainings } from "../pages/admin/trainings/Trainings";
+import { Users } from "../pages/admin/users/Users";
 
 export const adminMenuConfig: MenuItem[] = [
   {
@@ -33,5 +34,12 @@ export const adminMenuConfig: MenuItem[] = [
     icon: <FireOutlined />,
     path: '/admin/trainings',
     element: <Trainings />
+  },
+  {
+    key: 'users',
+    label: 'Пользователи',
+    icon: <UserOutlined />,
+    path: '/admin/users',
+    element: <Users />
   },
 ];

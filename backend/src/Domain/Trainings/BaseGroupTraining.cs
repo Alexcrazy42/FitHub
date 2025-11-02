@@ -8,6 +8,7 @@ public class BaseGroupTraining : IEntity<BaseGroupTrainingId>
     private const int MaxComplexityValue = 3;
     private const int MinNameLength = 10;
     private List<TrainingType> trainingTypes = [];
+    private List<BaseGroupTrainingPhoto> photos = [];
 
     private BaseGroupTraining(BaseGroupTrainingId id, string name, string description, int durationInMinutes, int complexity, bool isActive)
     {
@@ -35,8 +36,13 @@ public class BaseGroupTraining : IEntity<BaseGroupTrainingId>
 
     public IReadOnlyList<TrainingType> TrainingTypes => trainingTypes;
 
+    public IReadOnlyList<BaseGroupTrainingPhoto> Photos => photos;
+
     public void SetTrainingTypes(List<TrainingType> newTrainingTypes)
         => trainingTypes = newTrainingTypes;
+
+    public void SetPhotos(List<BaseGroupTrainingPhoto> newPhotos)
+        => photos = newPhotos;
 
     public void SetName(string name)
     {

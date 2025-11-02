@@ -20,11 +20,17 @@ public class FileService : IFileService
 
     public async Task<Stream> DownloadFile(FileId id, CancellationToken ct)
     {
-        var file = await fileRepository.GetFirstOrDefaultAsync(x => x.Id == id, ct);
-        NotFoundException.ThrowIfNull(file, "Файл не найден!");
+        var file = await GetFile(id, ct);
 
         var decodedKey = Uri.UnescapeDataString(file.S3Key);
         return await s3FileService.DownloadFileAsync(decodedKey);
+    }
+
+    public async Task<FileEntity> GetFile(FileId id, CancellationToken ct)
+    {
+        var file = await fileRepository.GetFirstOrDefaultAsync(x => x.Id == id, ct);
+        NotFoundException.ThrowIfNull(file, "Файл не найден!");
+        return file;
     }
 
     public async Task<IReadOnlyList<FileEntity>> GetFiles(EntityType entityType, string entityId, CancellationToken ct)

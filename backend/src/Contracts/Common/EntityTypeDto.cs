@@ -3,5 +3,6 @@
 public enum EntityTypeDto
 {
     Gym,
-    Equipment
+    Equipment,
+    BaseGroupTraining
 }
