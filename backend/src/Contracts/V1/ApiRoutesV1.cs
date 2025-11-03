@@ -112,7 +112,35 @@ public class ApiRoutesV1
     #endregion
 
 
-    public const string Login = Root + "/login";
+    #region Auth
+
+    public const string Auth = Root + "/auth";
+
+    public const string Login = Auth + "/login";
+
+    public const string ConfirmEmail = Auth + "/confirm-email";
+
+    public const string SetPassword = Auth + "/set-password";
+
+    public const string InitResetPassword = Auth + "/init-reset-password";
+
+    public const string ResetPassword = Auth + "/reset-password";
+
+    public const string VerifyTwoFactorAuth = Auth + "/verify-two-factor";
+
+    public const string StartRegister = Auth + "/start-register";
+
+    public const string ConfirmRegister = Auth + "/confirm-register";
+
+    public const string CreateCmsAdmin = Auth + "/create-cms-admin";
+
+    public const string CreateGymAdmin = Auth + "/create-gym-admin";
+
+    public const string CreateTrainer = Auth + "/create-trainer";
+
+    #endregion
+
+
 
     public const string Organizations = Root + "/organizations";
 

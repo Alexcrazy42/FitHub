@@ -5,14 +5,25 @@ namespace FitHub.Domain.Users;
 
 public class GymAdmin : IEntity<GymAdminId>
 {
-    private readonly List<Gym> gyms = [];
+    private List<Gym> gyms  = [];
 
-    public GymAdmin(GymAdminId id)
+    private GymAdmin(GymAdminId id)
     {
         Id = id;
     }
 
     public GymAdminId Id { get; }
 
-    public IReadOnlyCollection<Gym> Gyms => gyms;
+    public IReadOnlyList<Gym> Gyms => gyms;
+
+    public void SetGym(Gym gym)
+    {
+        gyms = [gym];
+    }
+
+    public static GymAdmin Create()
+    {
+        var gymAdmin = new GymAdmin(GymAdminId.New());
+        return gymAdmin;
+    }
 }

@@ -13,7 +13,7 @@ public static class ServiceRegistry
 {
     public static IServiceCollection AddApplication(this IServiceCollection services, IConfiguration configuration)
     {
-        var applicationAssembly = typeof(Application.ServiceRegistry).Assembly;
+        var applicationAssembly = typeof(ServiceRegistry).Assembly;
 
         var interfaces = applicationAssembly.GetTypes()
             .Where(t => t.IsInterface && t.Name.ToLower().EndsWith("service"))
@@ -37,7 +37,7 @@ public static class ServiceRegistry
         return services;
     }
 
-    public static void AddFiles(this IServiceCollection services, IConfiguration configuration)
+    private static void AddFiles(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<IS3FileService, S3FileService>();
         services.AddSingleton<IAmazonS3>(sp => new AmazonS3Client(

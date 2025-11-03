@@ -5,5 +5,4 @@ namespace FitHub.Application.Users;
 
 public interface IGymAdminRepository : IPendingRepository<GymAdmin, GymAdminId>
 {
-
 }

@@ -36,7 +36,7 @@ const Login: React.FC = () => {
       const mapping = roleRoutes[selectedRole];
       const user: User = {
         id: username,
-        name: username,
+        email: username,
         roles: [selectedRole],
         currentRole: selectedRole
       };
@@ -82,7 +82,6 @@ const Login: React.FC = () => {
           const user: User = {
             id: userData.userId,
             email: userData.email,
-            loginExpirationAt: userData.loginExpirationAt,
             roles: userRoles,
             currentRole: userRoles[0]
           };

@@ -3,7 +3,7 @@
 /// <summary>
 /// Сервис для получения идентификатора текущего пользователя
 /// </summary>
-internal interface ICurrentIdentityUserIdAccessor
+public interface ICurrentIdentityUserIdAccessor
 {
     /// <summary>
     /// Возвращает идентификатор текущего пользователя

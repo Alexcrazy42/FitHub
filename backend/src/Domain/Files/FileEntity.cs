@@ -43,6 +43,6 @@ public class FileEntity : IEntity<FileId>
         string s3Key,
         FileStatus status)
     {
-        return new FileEntity(id, fileName, s3Key, status, DateTimeOffset.Now);
+        return new FileEntity(id, fileName, s3Key, status, DateTimeOffset.UtcNow);
     }
 }

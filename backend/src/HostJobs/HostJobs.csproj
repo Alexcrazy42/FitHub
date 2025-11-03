@@ -3,4 +3,11 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Hosting" />
     </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\AspNetCore\AspNetCore.csproj" />
+      <ProjectReference Include="..\Data\Data.csproj" />
+      <ProjectReference Include="..\Logging\Logging.csproj" />
+      <ProjectReference Include="..\Web\Web.csproj" />
+    </ItemGroup>
 </Project>

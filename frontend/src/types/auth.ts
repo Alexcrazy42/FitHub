@@ -18,7 +18,6 @@ export const roleRoutes: Record<UserRole, string> = {
 export interface User {
   id: string;
   email?: string;
-  loginExpirationAt?: Date;
   roles: UserRole[];
   currentRole: UserRole;
 }
@@ -31,6 +30,8 @@ export interface LoginRequest {
 export interface LoginResponse {
   email: string;
   userId: string;
-  loginExpirationAt: Date;
+  isTemporaryPassword: boolean;
+  isActive: boolean;
+  loginFlowDone: boolean;
   roleNames: UserRole[]
 }

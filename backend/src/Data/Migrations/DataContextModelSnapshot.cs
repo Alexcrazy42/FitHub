@@ -275,6 +275,49 @@ namespace FitHub.Data.Migrations
                     b.ToTable("file_entity", (string)null);
                 });
 
+            modelBuilder.Entity("FitHub.Domain.Notifications.EmailNotification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("BodyHtml")
+                        .HasColumnType("text")
+                        .HasColumnName("body_html");
+
+                    b.Property<string>("BodyText")
+                        .HasColumnType("text")
+                        .HasColumnName("body_text");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset?>("SentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("sent_at");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("subject");
+
+                    b.Property<string>("ToEmail")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("to_email");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_email_notification");
+
+                    b.ToTable("email_notification", (string)null);
+                });
+
             modelBuilder.Entity("FitHub.Domain.Trainings.BaseGroupTraining", b =>
                 {
                     b.Property<Guid>("Id")
@@ -524,6 +567,50 @@ namespace FitHub.Data.Migrations
                     b.ToTable("gym_admin", (string)null);
                 });
 
+            modelBuilder.Entity("FitHub.Domain.Users.Token", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset>("ExpiresOn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_on");
+
+                    b.Property<string>("TokenString")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("token_string");
+
+                    b.Property<string>("TokenType")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("token_type");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_token");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_token_user_id");
+
+                    b.ToTable("token", (string)null);
+                });
+
             modelBuilder.Entity("FitHub.Domain.Users.Trainer", b =>
                 {
                     b.Property<Guid>("Id")
@@ -561,13 +648,21 @@ namespace FitHub.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("email");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<bool>("IsEmailConfirmed")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_email_confirmed");
+
                     b.Property<bool>("IsOnline")
                         .HasColumnType("boolean")
                         .HasColumnName("is_online");
 
-                    b.Property<bool>("IsVerified")
+                    b.Property<bool>("IsTemporaryPassword")
                         .HasColumnType("boolean")
-                        .HasColumnName("is_verified");
+                        .HasColumnName("is_temporary_password");
 
                     b.Property<DateTimeOffset>("LastSeenAt")
                         .HasColumnType("timestamp with time zone")
@@ -582,6 +677,14 @@ namespace FitHub.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("password_hash");
+
+                    b.Property<DateTimeOffset?>("StartActiveAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("start_active_at");
+
+                    b.Property<DateTimeOffset>("StartRegistrationAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("start_registration_at");
 
                     b.Property<string>("Surname")
                         .IsRequired()
@@ -602,6 +705,25 @@ namespace FitHub.Data.Migrations
                         .HasName("pk_user");
 
                     b.ToTable("user", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("a88a98f0-35e8-46c4-a38e-bf88bd5c9ebc"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 11, 2, 21, 20, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Email = "alexcrazy42@mail.ru",
+                            IsActive = true,
+                            IsEmailConfirmed = true,
+                            IsOnline = false,
+                            IsTemporaryPassword = false,
+                            LastSeenAt = new DateTimeOffset(new DateTime(2025, 11, 2, 21, 20, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "Александр",
+                            PasswordHash = "$2a$11$H9cNs1CfV.iJiv/N9hIHOe4UC/23MCB8xObp4m.wKbh7YOzmsQrjO",
+                            StartRegistrationAt = new DateTimeOffset(new DateTime(2025, 11, 2, 21, 20, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Surname = "Мамедов",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2025, 11, 2, 21, 20, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UserType = "CmsAdmin"
+                        });
                 });
 
             modelBuilder.Entity("FitHub.Domain.Users.Visitor", b =>
@@ -847,6 +969,18 @@ namespace FitHub.Data.Migrations
                         .HasConstraintName("fk_video_trainings_training_type_training_type_id");
 
                     b.Navigation("TrainingType");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Users.Token", b =>
+                {
+                    b.HasOne("FitHub.Domain.Users.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_token_user_user_id");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("FitHub.Domain.Users.Trainer", b =>

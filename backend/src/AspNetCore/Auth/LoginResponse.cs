@@ -2,11 +2,15 @@
 
 public sealed class LoginResponse
 {
-    public string? Email { get; set; }
+    public required string? Email { get; set; }
 
-    public string? UserId { get; set; }
+    public required string? UserId { get; set; }
 
-    public DateTimeOffset? LoginExpirationAt { get; set; }
+    public required bool? IsTemporaryPassword { get; set; }
 
-    public IReadOnlyList<string> RoleNames { get; set; } = [];
+    public required bool? IsActive { get; set; }
+
+    public required bool? LoginFlowDone { get; set; }
+
+    public required IReadOnlyList<string> RoleNames { get; set; } = [];
 }

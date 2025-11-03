@@ -22,4 +22,9 @@ public class Trainer : IEntity<TrainerId>
         get => UnexpectedException.ThrowIfNull(user, "Пользоваль неожиданно оказался null");
         private set => user = value;
     }
+
+    public static Trainer Create(User user)
+    {
+        return new Trainer(TrainerId.New(), user.Id);
+    }
 }

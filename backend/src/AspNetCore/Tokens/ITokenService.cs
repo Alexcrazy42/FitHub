@@ -4,7 +4,7 @@ using FitHub.Common.AspNetCore.Accounting;
 
 namespace FitHub.Common.AspNetCore.Tokens;
 
-internal interface ITokenService
+public interface ITokenService
 {
     ClaimsPrincipal Validate(string token);
 

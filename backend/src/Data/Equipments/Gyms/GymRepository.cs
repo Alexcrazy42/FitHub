@@ -1,5 +1,6 @@
 ﻿using FitHub.Application.Common;
 using FitHub.Application.Equipments.Gyms;
+using FitHub.Common.Entities;
 using FitHub.Common.EntityFramework;
 using FitHub.Domain.Equipments;
 using Microsoft.EntityFrameworkCore;
@@ -26,5 +27,14 @@ public class GymRepository : DefaultPendingRepository<Gym, GymId, DataContext>, 
         var items = await dbQuery.ToListAsync(ct);
 
         return PagedResult<Gym>.Create(items, totalItems, pagedQuery.PageNumber, pagedQuery.PageSize);
+    }
+
+    public async Task<Gym> GetById(GymId id, CancellationToken ct)
+    {
+        var gym = await ReadRaw().FirstOrDefaultAsync(x => x.Id == id, ct);
+
+        NotFoundException.ThrowIfNull(gym, "Зал не найден!");
+
+        return gym;
     }
 }

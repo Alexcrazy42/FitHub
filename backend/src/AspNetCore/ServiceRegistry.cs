@@ -1,10 +1,10 @@
-﻿using System.Security.Claims;
-using FitHub.Common.AspNetCore.Accounting;
+﻿using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.AspNetCore.Auth;
 using FitHub.Common.AspNetCore.Problems;
 using FitHub.Common.AspNetCore.Tokens;
 using FitHub.Common.Entities;
 using FitHub.Common.Extensions.Configuration;
+using FitHub.Common.Utilities.System;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -111,37 +111,14 @@ public static class ServiceRegistry
                     ValidationException.ThrowIfNull(request.Username);
                     ValidationException.ThrowIfNull(request.Password);
 
-                    var identityUser = await authenticationService.LoginAsync(request.Username, request.Password, cancellationToken);
+                    var loginResponse = await authenticationService.LoginAsync(request.Username, request.Password, cancellationToken);
 
-                    if (identityUser is null)
+                    if (!loginResponse.LoginFlowDone.Required())
                     {
                         return Results.Unauthorized();
                     }
 
-                    var expiresAt = DateTimeOffset.UtcNow
-                        .Add(authOptions.RequiredCookieExpiration)
-                        .DateTime;
-
-                    var claims = ITokenService.CreateCommonClaims(identityUser.Id.ToString(), identityUser.UserType);
-
-                    var tokenString = tokenService.Create(claims);
-
-                    context.Response.Cookies.Append(IAuthOptions.CookieName, tokenString, new CookieOptions
-                    {
-                        HttpOnly = false,
-                        Secure = false,
-                        SameSite = SameSiteMode.Strict,
-                        Expires = expiresAt,
-                        Path = "/"
-                    });
-                    var response = new LoginResponse
-                    {
-                        Email = identityUser.Email,
-                        UserId = identityUser.Id.Value.ToString(),
-                        LoginExpirationAt = expiresAt,
-                        RoleNames = identityUser.UserType.ToRoleNames()
-                    };
-                    return Results.Ok(response);
+                    return Results.Ok(loginResponse);
                 })
                 .WithTags("Auth");
         });
