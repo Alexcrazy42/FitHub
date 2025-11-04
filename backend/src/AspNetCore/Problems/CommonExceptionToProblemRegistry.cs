@@ -1,7 +1,7 @@
 ﻿using System.Net;
-using FitHub.Entities;
+using FitHub.Common.Entities;
 
-namespace FitHub.AspNetCore.Problems;
+namespace FitHub.Common.AspNetCore.Problems;
 
 internal sealed class CommonExceptionToProblemRegistry : IExceptionToProblemRegistry
 {
@@ -9,6 +9,7 @@ internal sealed class CommonExceptionToProblemRegistry : IExceptionToProblemRegi
     {
         { typeof(AlreadyExistsException), HttpStatusCode.BadRequest },
         { typeof(ValidationException), HttpStatusCode.BadRequest },
+        { typeof(DetailedValidationException), HttpStatusCode.BadRequest },
         { typeof(NotFoundException), HttpStatusCode.NotFound }
     };
 

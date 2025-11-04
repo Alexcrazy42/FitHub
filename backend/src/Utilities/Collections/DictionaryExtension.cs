@@ -1,4 +1,4 @@
-﻿namespace FitHub.Utilities.Collections;
+﻿namespace FitHub.Common.Utilities.Collections;
 
 public static class DictionaryExtension
 {

@@ -1,17 +1,20 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from '@/App'
-import { store, persistor } from '@/store/store';
-import { Provider } from 'react-redux';
-import { PersistGate } from 'redux-persist/integration/react';
+// src/main.tsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import { AuthProvider } from './context/AuthProvider';
+import { ThemeProvider } from './context/ThemeProvider';
+import 'antd/dist/reset.css';
+import './index.css';
+import { ToastContainer } from 'react-toastify';
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <Provider store={store}>
-      <PersistGate loading={<div>Loading...</div>} persistor={persistor}>
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <ThemeProvider>
+      <AuthProvider>
         <App />
-      </PersistGate>
-    </Provider>
-  </StrictMode>
+        <ToastContainer position="top-right" autoClose={2000} />
+      </AuthProvider>
+    </ThemeProvider>
+  </React.StrictMode>
 );

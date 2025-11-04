@@ -4,6 +4,156 @@ public class ApiRoutesV1
 {
     public const string Root = "api/v1";
 
+
+    #region Gym
+
+    public const string Gyms = Root + "/gyms";
+
+    public const string GymById = Gyms + "/{id}";
+
+    public const string GymPhoto = Gyms + "/photos";
+
+    public const string GymPhotoById = Gyms + "/{id}/photos";
+
+    #endregion
+
+    #region GymZones
+
+    public const string GymZones = Root + "/gym-zones";
+
+    public const string GymZoneById = GymZones + "/{id}";
+
+    #endregion
+
+    #region MuscleGroups
+
+    public const string MuscleGroups = Root + "/muscle-groups";
+
+    public const string MuscleGroupById = MuscleGroups + "/{id}";
+
+    #endregion
+
+    #region Equipment
+
+    public const string Equipments = Root + "/equipments";
+
+    public const string EquipmentById = Equipments + "/{id}";
+
+    #endregion
+
+    #region EquipmentInstructions
+
+    public const string EquipmentsInstructions = Root + "/equipments-instructions";
+
+    public const string EquipmentInstructionById = EquipmentsInstructions + "/{id}";
+
+    #endregion
+
+    #region VideoTrainings
+
+    public const string VideoTrainings = Root + "/video-trainings";
+
+    public const string VideoTrainingsById = VideoTrainings + "/{id}";
+
+    #endregion
+
+    #region BaseGroupTrainings
+
+    public const string BaseGroupTrainings = Root + "/base-group-trainings";
+
+    public const string BaseGroupTrainingsById = BaseGroupTrainings + "/{id}";
+
+    #endregion
+
+    #region BaseGroupTrainingPhotos
+
+    public const string BaseGroupTrainingPhotos = BaseGroupTrainings + "/photos";
+
+    public const string BaseGroupTrainingPhotoById = BaseGroupTrainingPhotos + "/{id}";
+
+    #endregion
+
+    #region TrainingTypes
+
+    public const string TrainingTypes = Root + "/training-types";
+
+    public const string TrainingTypeById = TrainingTypes + "/{id}";
+
+    #endregion
+
+    #region Files
+
+    public const string Files = Root + "/files";
+
+    public const string FileById = Files + "/{id}";
+
+    public const string FileGetPresignedUrl = Files + "/get-presigned-url";
+
+    public const string FileConfirmUpload = FileById + "/confirm-upload";
+
+    public const string FileMultipleConfirmUpload = Files + "/multiply-confirm-upload";
+
+    public const string FileMakeFilesActive = Files + "/make-files-active";
+
+    #endregion
+
+    #region Entities
+
+    public const string Entities = Root + "/entities";
+
+    #endregion
+
+    #region Brands
+
+    public const string Brands = Root + "/brands";
+
+    public const string BrandsById = Brands + "/{id}";
+
+    #endregion
+
+
+    #region Auth
+
+    public const string Auth = Root + "/auth";
+
+    public const string Me = Auth + "/me";
+
+    public const string Login = Auth + "/login";
+
+    public const string Logout = Auth + "/logout";
+
+    public const string CheckConfirmEmail = Auth + "/check-confirm-email";
+
+    public const string ConfirmEmail = Auth + "/confirm-email";
+
+    public const string SetPassword = Auth + "/set-password";
+
+    public const string InitResetPassword = Auth + "/init-reset-password";
+
+    public const string CheckResetPassword = Auth + "/check-reset-password";
+
+    public const string ResetPassword = Auth + "/reset-password";
+
+    public const string StartRegister = Auth + "/start-register";
+
+    public const string CreateCmsAdmin = Auth + "/create-cms-admin";
+
+    public const string CreateGymAdmin = Auth + "/create-gym-admin";
+
+    public const string CreateTrainer = Auth + "/create-trainer";
+
+    #endregion
+
+    #region Email
+
+    public const string Email = Root + "/emails";
+
+    public const string EmailAvailable = Email + "/available";
+
+    #endregion
+
+
+
     public const string Organizations = Root + "/organizations";
 
     public const string Organization = Organizations + "/{organizationId}";

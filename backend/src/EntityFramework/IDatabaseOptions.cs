@@ -1,7 +1,7 @@
-﻿using FitHub.Extensions.Configuration;
-using FitHub.Utilities.System;
+﻿using FitHub.Common.Extensions.Configuration;
+using FitHub.Common.Utilities.System;
 
-namespace FitHub.EntityFramework;
+namespace FitHub.Common.EntityFramework;
 
 /// <summary>
 /// Опции базы данных

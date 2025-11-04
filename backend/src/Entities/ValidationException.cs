@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-namespace FitHub.Entities;
+namespace FitHub.Common.Entities;
 
 /// <summary>
 /// Исключение валидации данных
@@ -19,4 +19,12 @@ public sealed class ValidationException : CommonException
     public static T ThrowIfNull<T>([NotNull] T? value, string? message = default, [CallerArgumentExpression("value")] string? paramName = default)
         where T : struct
         => value ?? throw new ValidationException(message ?? $"Параметр {paramName} не может быть null");
+}
+
+public static class ValidationExceptionExtenstion
+{
+    public static T ValidateForNull<T>([NotNull] this T? value, string? message = default, [CallerArgumentExpression("value")] string? paramName = default)
+    {
+        return value ?? throw new ValidationException(message ?? $"Параметр {paramName} не может быть null");
+    }
 }

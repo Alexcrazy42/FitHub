@@ -1,9 +1,10 @@
-﻿using FitHub.Entities;
-using FitHub.Entities.Storage;
+﻿using FitHub.Common.Entities;
+using FitHub.Common.Entities.Storage;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace FitHub.EntityFramework;
+namespace FitHub.Common.EntityFramework;
 
 public static class ServiceRegistry
 {
@@ -19,7 +20,7 @@ public static class ServiceRegistry
                 services.AddScoped<IUnitOfWork, MsSqlUnitOfWork<TContext>>();
                 break;
             default:
-                throw new ArgumentOutOfRangeException(nameof(options.DatabaseProvider), options.RequiredDatabaseProvider, null);
+                throw new ArgumentOutOfRangeException(nameof(options.RequiredDatabaseProvider), options.RequiredDatabaseProvider, null);
         }
 
         return services;
@@ -28,22 +29,28 @@ public static class ServiceRegistry
     public static IServiceCollection AddDataContext<TContext>(this IServiceCollection services, IDatabaseOptions options)
         where TContext : DbContext
     {
-        services.AddDbContext<TContext>((provider, builder) =>
+        services.AddDbContextPool<TContext>((provider, builder) =>
         {
+            var interceptors = provider.GetServices<IInterceptor>();
+
             builder = options.RequiredDatabaseProvider switch
             {
-                DatabaseProvider.PostgreSql => builder.UseNpgsql(options.RequiredConnectionString, optionsBuilder =>
+                DatabaseProvider.PostgreSql => builder.UseNpgsql(
+                    options.RequiredConnectionString, optionsBuilder =>
                 {
                     optionsBuilder.EnableRetryOnFailure();
+
                 }),
-                DatabaseProvider.MsSql => builder.UseSqlServer(options.RequiredConnectionString, optionsBuilder =>
+                DatabaseProvider.MsSql => builder.UseSqlServer(
+                    options.RequiredConnectionString, optionsBuilder =>
                 {
                     optionsBuilder.EnableRetryOnFailure();
                 }),
                 _ => throw new UnexpectedException($"Провайдер БД не поддерживается {options.RequiredDatabaseProvider}"),
             };
 
-            builder.UseSnakeCaseNamingConvention();
+            builder.UseSnakeCaseNamingConvention()
+                .AddInterceptors(interceptors);
         });
         return services;
     }

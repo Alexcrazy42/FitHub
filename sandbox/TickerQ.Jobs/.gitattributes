@@ -1,0 +1,5 @@
+# All other files use CRLF (Windows-style)
+* text eol=crlf
+
+# Force Unix line endings for shell scripts
+*.sh text eol=lf

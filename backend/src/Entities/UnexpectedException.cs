@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace FitHub.Entities;
+namespace FitHub.Common.Entities;
 
 /// <summary>
 /// Неожиданное исключение

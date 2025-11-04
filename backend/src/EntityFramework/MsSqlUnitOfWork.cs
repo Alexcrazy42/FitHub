@@ -1,9 +1,9 @@
-﻿using FitHub.Entities;
-using FitHub.Entities.Storage;
+﻿using FitHub.Common.Entities;
+using FitHub.Common.Entities.Storage;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
-namespace FitHub.EntityFramework;
+namespace FitHub.Common.EntityFramework;
 
 internal sealed class MsSqlUnitOfWork<TContext> : IUnitOfWork
     where TContext : DbContext

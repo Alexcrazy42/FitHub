@@ -1,4 +1,4 @@
-﻿namespace FitHub.Entities.Storage;
+﻿namespace FitHub.Common.Entities.Storage;
 
 /// <summary>
 /// UnitOfWork для отложенных множества отложенных изменений

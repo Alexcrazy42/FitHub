@@ -1,15 +1,15 @@
 ﻿using System.Reflection;
-using FitHub.Entities;
-using FitHub.Entities.Identity;
-using FitHub.EntityFramework.Conversions.DateTimeOffsetToUtc;
-using FitHub.EntityFramework.Conversions.Identifiers;
-using FitHub.Utilities.Collections;
-using FitHub.Utilities.System;
+using FitHub.Common.Entities;
+using FitHub.Common.Entities.Identity;
+using FitHub.Common.EntityFramework.Conversions.DateTimeOffsetToUtc;
+using FitHub.Common.EntityFramework.Conversions.Identifiers;
+using FitHub.Common.Utilities.Collections;
+using FitHub.Common.Utilities.System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NullabilityInfoContext = System.Reflection.NullabilityInfoContext;
 
-namespace FitHub.EntityFramework;
+namespace FitHub.Common.EntityFramework;
 
 public static class ModelBuilderExtensions
 {
@@ -33,6 +33,7 @@ public static class ModelBuilderExtensions
         modelBuilder.UseStrictDeleteBehaviorConvention();
         modelBuilder.UsePrimaryKeyConvention();
         modelBuilder.UseEnumConvention();
+        modelBuilder.UseIdentifierConvention();
         modelBuilder.UseDateTimeOffsetToUtcConvention();
     }
 

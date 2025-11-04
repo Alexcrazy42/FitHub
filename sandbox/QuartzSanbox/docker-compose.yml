@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: quartz-postgres
+    environment:
+      POSTGRES_DB: quartz_db
+      POSTGRES_USER: quartz_user
+      POSTGRES_PASSWORD: quartz_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-quartz.sql:/docker-entrypoint-initdb.d/init-quartz.sql
+
+  quartz-node1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: quartz-node-1
+    depends_on:
+      - postgres
+    environment:
+      ASPNETCORE_URLS: http://+:80
+      NodeId: 1
+    ports:
+      - "5001:80"   # API + Swagger + Quartzmin будут тут
+
+  quartz-node2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: quartz-node-2
+    depends_on:
+      - postgres
+    environment:
+      ASPNETCORE_URLS: http://+:80
+      NodeId: 2
+    ports:
+      - "5002:80"   # API + Swagger + Quartzmin будут тут
+
+volumes:
+  postgres_data:

@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace FitHub.EntityFramework;
+namespace FitHub.Common.EntityFramework;
 
 public static class QueryableExtensions
 {

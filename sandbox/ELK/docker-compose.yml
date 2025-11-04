@@ -1,0 +1,82 @@
+﻿version: '3.9'
+
+services:
+  elasticsearch:
+    image: elasticsearch:8.17.10
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+      - xpack.monitoring.collection.enabled=true
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+      - es-logs:/usr/share/elasticsearch/logs
+    networks:
+      - elk
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  logstash:
+    image: logstash:8.17.10
+    container_name: logstash
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    ports:
+      - "5000:5000/tcp"   # приём JSON-логов
+      - "5000:5000/udp"   # например, для syslog
+      - "9600:9600"       # Logstash Monitoring API
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - logstash-logs:/usr/share/logstash/logs
+    environment:
+      - xpack.monitoring.enabled=false
+      - "LS_JAVA_OPTS=-Xms256m -Xmx512m"
+    networks:
+      - elk
+    restart: unless-stopped
+
+  kibana:
+    image: kibana:8.17.10
+    container_name: kibana
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    ports:
+      - "5601:5601"
+    volumes:
+      - kibana-logs:/usr/share/kibana/logs
+    environment:
+      - ELASTICSEARCH_HOSTS=["http://elasticsearch:9200"]
+      - SERVER_NAME=kibana
+      - LOGS_DESTINATION=stdout
+    networks:
+      - elk
+    restart: unless-stopped
+
+# Объявляем именованные тома
+volumes:
+  es-data:
+    name: elk-es-data
+    driver: local
+  es-logs:
+    name: elk-es-logs
+    driver: local
+  logstash-logs:
+    name: elk-logstash-logs
+    driver: local
+  kibana-logs:
+    name: elk-kibana-logs
+    driver: local
+
+networks:
+  elk:
+    driver: bridge

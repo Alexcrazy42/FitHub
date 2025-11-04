@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{B6610AF1-D5D4-401F-BE91-CF4494D03AE4}"
+	ProjectSection(SolutionItems) = preProject
+		docker-compose.yml = docker-compose.yml
+		Dockerfile = Dockerfile
+		README.md = README.md
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		init-quartz.sql = init-quartz.sql
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E658AF66-5798-4612-8D8D-9A8CF2316A23}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Node", "src\Node\Node.csproj", "{B6683AAE-F6DC-420E-A052-BE61F0E384EB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B6683AAE-F6DC-420E-A052-BE61F0E384EB} = {E658AF66-5798-4612-8D8D-9A8CF2316A23}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B6683AAE-F6DC-420E-A052-BE61F0E384EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6683AAE-F6DC-420E-A052-BE61F0E384EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6683AAE-F6DC-420E-A052-BE61F0E384EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6683AAE-F6DC-420E-A052-BE61F0E384EB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

@@ -1,10 +1,10 @@
 ﻿using System.Linq.Expressions;
-using FitHub.Entities;
-using FitHub.Entities.Identity;
-using FitHub.Entities.Storage;
+using FitHub.Common.Entities;
+using FitHub.Common.Entities.Identity;
+using FitHub.Common.Entities.Storage;
 using Microsoft.EntityFrameworkCore;
 
-namespace FitHub.EntityFramework;
+namespace FitHub.Common.EntityFramework;
 
 public abstract class DefaultPendingRepository<TEntity, TEntityId, TContext> : IPendingRepository<TEntity, TEntityId>
     where TEntity : class, IEntity<TEntityId>
@@ -51,12 +51,12 @@ public abstract class DefaultPendingRepository<TEntity, TEntityId, TContext> : I
         await DbSet.AddRangeAsync(entities, cancellationToken).ConfigureAwait(false);
     }
 
-    public void PendingRemove(TEntity entity, CancellationToken cancellationToken)
+    public void PendingRemove(TEntity entity)
     {
         DbSet.Remove(entity);
     }
 
-    public void PendingRemoveRange(IReadOnlyList<TEntity> entities, CancellationToken cancellationToken)
+    public void PendingRemoveRange(IReadOnlyList<TEntity> entities)
     {
         if (!entities.Any())
         {
@@ -66,12 +66,12 @@ public abstract class DefaultPendingRepository<TEntity, TEntityId, TContext> : I
         DbSet.RemoveRange(entities);
     }
 
-    public void PendingUpdate(TEntity entity, CancellationToken cancellationToken)
+    public void PendingUpdate(TEntity entity)
     {
         DbSet.Update(entity);
     }
 
-    public void PendingUpdateRange(IReadOnlyCollection<TEntity> entities, CancellationToken cancellationToken)
+    public void PendingUpdateRange(IReadOnlyCollection<TEntity> entities)
     {
         if (!entities.Any())
         {

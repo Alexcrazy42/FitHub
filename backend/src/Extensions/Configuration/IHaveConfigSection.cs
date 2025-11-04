@@ -1,4 +1,4 @@
-﻿namespace FitHub.Extensions.Configuration;
+﻿namespace FitHub.Common.Extensions.Configuration;
 
 /// <summary>
 /// Имеется секция в конфиге

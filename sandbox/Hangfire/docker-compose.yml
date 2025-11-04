@@ -1,0 +1,53 @@
+﻿version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: hangfire_db
+      POSTGRES_USER: hangfire_user
+      POSTGRES_PASSWORD: hangfire_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  hangfire-node1:
+    build:
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ID=node1
+      - ENABLE_DASHBOARD=true
+      - DB_CONNECTION_STRING=Server=postgres;Port=5432;Database=hangfire_db;User Id=hangfire_user;Password=hangfire_pass;
+    depends_on:
+      - postgres
+    ports:
+      - "5000:5000"  # Dashboard будет здесь: http://localhost:5000/hangfire
+    restart: unless-stopped
+
+  hangfire-node2:
+    build:
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ID=node2
+      - ENABLE_DASHBOARD=false  # Не запускаем Dashboard
+      - DB_CONNECTION_STRING=Server=postgres;Port=5432;Database=hangfire_db;User Id=hangfire_user;Password=hangfire_pass;
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+
+  hangfire-node3:
+    build:
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ID=node2
+      - ENABLE_DASHBOARD=false
+      - DB_CONNECTION_STRING=Server=postgres;Port=5432;Database=hangfire_db;User Id=hangfire_user;Password=hangfire_pass;
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

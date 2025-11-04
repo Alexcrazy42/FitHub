@@ -1,5 +1,5 @@
-﻿using FitHub.Data;
-using FitHub.Logging;
+﻿using FitHub.Common.Logging;
+using FitHub.Data;
 using Serilog;
 
 namespace FitHub.Host;
@@ -13,7 +13,7 @@ public static class Program
         try
         {
             Log.Information("Запуск приложения");
-            //await MigrateDatabase(host);
+            await MigrateDatabase(host);
 
             // if (args.contains(MigrateAndExitKey))
             //{

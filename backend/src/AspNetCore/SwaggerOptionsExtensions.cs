@@ -1,9 +1,9 @@
-﻿using FitHub.Utilities.System;
+﻿using FitHub.Common.Utilities.System;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Swagger;
 
-namespace FitHub.AspNetCore;
+namespace FitHub.Common.AspNetCore;
 
 public static class SwaggerOptionsExtensions
 {

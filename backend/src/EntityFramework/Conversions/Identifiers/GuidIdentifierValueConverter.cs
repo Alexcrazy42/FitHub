@@ -1,7 +1,7 @@
-﻿using FitHub.Entities.Identity;
+﻿using FitHub.Common.Entities.Identity;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace FitHub.EntityFramework.Conversions.Identifiers;
+namespace FitHub.Common.EntityFramework.Conversions.Identifiers;
 
 /// <summary>
 /// Конвертер идентификаторов <see cref="GuidIdentifier{TId}"/> в строку для хранения в БД

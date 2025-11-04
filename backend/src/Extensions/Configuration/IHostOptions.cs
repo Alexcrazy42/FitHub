@@ -1,6 +1,6 @@
-﻿using FitHub.Utilities.System;
+﻿using FitHub.Common.Utilities.System;
 
-namespace FitHub.Extensions.Configuration;
+namespace FitHub.Common.Extensions.Configuration;
 
 /// <summary>
 /// Настройки хоста

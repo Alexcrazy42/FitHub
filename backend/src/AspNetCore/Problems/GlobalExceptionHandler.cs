@@ -1,11 +1,12 @@
 ﻿using System.Diagnostics;
 using System.Net;
+using FitHub.Common.Entities;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace FitHub.AspNetCore.Problems;
+namespace FitHub.Common.AspNetCore.Problems;
 
 internal sealed class GlobalExceptionHandler : IExceptionHandler
 {
@@ -41,6 +42,11 @@ internal sealed class GlobalExceptionHandler : IExceptionHandler
         if (!TryGetStatusCode(exception, out HttpStatusCode statusCode))
         {
             return false;
+        }
+
+        if (exception is DetailedValidationException detailedValidationException)
+        {
+            problemDetails.Extensions["errors"] = detailedValidationException.Errors;
         }
 
         problemDetails.Status = (int)statusCode;

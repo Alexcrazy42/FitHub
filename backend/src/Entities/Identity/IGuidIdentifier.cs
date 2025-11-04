@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace FitHub.Entities.Identity;
+namespace FitHub.Common.Entities.Identity;
 
 /// <summary>
 /// Guid идентификатор сущности

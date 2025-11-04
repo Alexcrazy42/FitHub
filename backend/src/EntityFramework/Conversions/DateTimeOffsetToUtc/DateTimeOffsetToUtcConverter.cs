@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace FitHub.EntityFramework.Conversions.DateTimeOffsetToUtc;
+namespace FitHub.Common.EntityFramework.Conversions.DateTimeOffsetToUtc;
 
 /// <summary>
 /// Конвертер DateTimeOffset в DateTimeOffset в UTC для хранения в БД

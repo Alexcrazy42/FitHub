@@ -1,16 +1,27 @@
-import '@/App.css'
-import { LoginForm } from '@/Login'
+﻿import { RouterProvider } from 'react-router-dom';
+import { router } from './routes/router';
+import { useTheme } from './context/useTheme';
+import { ConfigProvider, theme as antdTheme } from 'antd';
 
-function App() {
+const ThemedApp = () => {
+  const { theme } = useTheme();
 
   return (
-    <>
-      <h1 className="text-3xl font-bold underline">
-        Hello world!
-      </h1>
-      <LoginForm />
-    </>
-  )
+    <ConfigProvider
+      theme={{
+        algorithm:
+          theme === 'dark'
+            ? antdTheme.darkAlgorithm
+            : antdTheme.defaultAlgorithm,
+      }}
+    >
+      <RouterProvider router={router} />
+    </ConfigProvider>
+  );
+};
+
+function App() {
+  return <ThemedApp />;
 }
 
-export default App
+export default App;
