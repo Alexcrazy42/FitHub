@@ -2,6 +2,7 @@
 using FitHub.Common.Entities.Storage;
 using FitHub.Common.EntityFramework;
 using FitHub.Common.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,6 +22,7 @@ public static class ServiceRegistry
         services.AddUnitOfWork<DataContext>(databaseOptions);
 
         services.AddRepositories();
+        services.AddInterceptors();
     }
 
     private static IServiceCollection AddRepositories(this IServiceCollection services)
@@ -46,6 +48,12 @@ public static class ServiceRegistry
             }
         }
 
+        return services;
+    }
+
+    private static IServiceCollection AddInterceptors(this IServiceCollection services)
+    {
+        services.AddTransient<IInterceptor, AuditableEntitiesInterceptor>();
         return services;
     }
 }

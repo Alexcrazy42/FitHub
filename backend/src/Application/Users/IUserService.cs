@@ -1,4 +1,5 @@
-﻿using FitHub.Common.AspNetCore.Auth;
+﻿using FitHub.Common.AspNetCore.Accounting;
+using FitHub.Common.AspNetCore.Auth;
 using FitHub.Contracts.V1.Auth;
 using FitHub.Domain.Users;
 
@@ -6,6 +7,16 @@ namespace FitHub.Application.Users;
 
 public interface IUserService
 {
+    /// <summary>
+    /// Получить пользователя
+    /// </summary>
+    Task<User> GetUserAsync(IdentityUserId userId, CancellationToken ct);
+
+    /// <summary>
+    /// Начать регистрацию
+    /// </summary>
+    Task<User> StartRegister(StartRegisterRequest request, CancellationToken ct);
+
     /// <summary>
     /// Зарегистрировать Cms-администратора
     /// </summary>
@@ -34,7 +45,7 @@ public interface IUserService
     /// <summary>
     /// Стартовать изменение пароля
     /// </summary>
-    Task InitResetPasswordAsync(CancellationToken ct = default);
+    Task InitResetPasswordAsync(IdentityUserId userId, CancellationToken ct = default);
 
     Task<bool> CheckResetPasswordAsync(ResetPasswordRequest request, CancellationToken ct = default);
 

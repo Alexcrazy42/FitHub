@@ -6,13 +6,15 @@ namespace FitHub.Web.V1.Auth;
 
 public static class UserExtensions
 {
-    public static IdentityUserTypeDto ToDto(this IdentityUserType userType)
-    {
-        throw new NotImplementedException();
-    }
 
     public static UserResponse ToResponse(this User user)
     {
-        throw new NotImplementedException();
+        return new UserResponse()
+        {
+            Surname = user.Surname,
+            Name = user.Name,
+            Email = user.Email,
+            RoleNames = user.UserType.ToRoleNames()
+        };
     }
 }

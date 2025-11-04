@@ -5,5 +5,5 @@ namespace FitHub.Application.Users;
 
 public interface ITokenRepository : IPendingRepository<Token, TokenId>
 {
-
+    Task ClearInactiveTokens(CancellationToken ct);
 }

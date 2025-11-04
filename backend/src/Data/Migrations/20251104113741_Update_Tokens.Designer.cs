@@ -3,6 +3,7 @@ using System;
 using FitHub.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FitHub.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20251104113741_Update_Tokens")]
+    partial class Update_Tokens
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -567,43 +570,6 @@ namespace FitHub.Data.Migrations
                     b.ToTable("gym_admin", (string)null);
                 });
 
-            modelBuilder.Entity("FitHub.Domain.Users.Session", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasMaxLength(255)
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<DateTimeOffset>("ExpiresOn")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("expires_on");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_active");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.Property<Guid>("UserId")
-                        .HasMaxLength(255)
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_session");
-
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("ix_session_user_id");
-
-                    b.ToTable("session", (string)null);
-                });
-
             modelBuilder.Entity("FitHub.Domain.Users.Token", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1010,18 +976,6 @@ namespace FitHub.Data.Migrations
                         .HasConstraintName("fk_video_trainings_training_type_training_type_id");
 
                     b.Navigation("TrainingType");
-                });
-
-            modelBuilder.Entity("FitHub.Domain.Users.Session", b =>
-                {
-                    b.HasOne("FitHub.Domain.Users.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_session_user_user_id");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("FitHub.Domain.Users.Token", b =>

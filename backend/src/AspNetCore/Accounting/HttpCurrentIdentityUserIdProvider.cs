@@ -16,5 +16,5 @@ internal sealed class HttpCurrentIdentityUserIdProvider : ICurrentIdentityUserId
             ? id
             : null;
 
-
+    public string? GetSessionId() => httpContextAccessor.HttpContext?.User.GetSessionId();
 }

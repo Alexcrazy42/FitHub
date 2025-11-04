@@ -16,4 +16,14 @@ public static class ClaimsPrincipalExtensions
 
         return userIdClaim?.Value;
     }
+
+    public static string? GetSessionId(this ClaimsPrincipal principal)
+    {
+        var sessionIdClaim = principal
+            .Identities
+            .SelectMany(identity => identity.Claims)
+            .FirstOrDefault(claim => claim.Type == JwtRegisteredClaimNames.Sid);
+
+        return sessionIdClaim?.Value;
+    }
 }

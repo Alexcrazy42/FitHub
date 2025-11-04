@@ -33,6 +33,8 @@ public class Token : IEntity<TokenId>, IAuditableEntity
 
     public DateTimeOffset ExpiresOn { get; private set; }
 
+    public DateTimeOffset? AppliedAt { get; private set; }
+
     public DateTimeOffset CreatedAt { get; private set; }
 
     public DateTimeOffset UpdatedAt { get; private set; }
@@ -40,6 +42,8 @@ public class Token : IEntity<TokenId>, IAuditableEntity
     public void SetCreatedAt(DateTimeOffset date) => CreatedAt = date;
 
     public void SetUpdatedAt(DateTimeOffset date) => UpdatedAt = date;
+
+    public void SetAppliedAt(DateTimeOffset date) => AppliedAt = date;
 
     private static string GenerateTokenString()
     {

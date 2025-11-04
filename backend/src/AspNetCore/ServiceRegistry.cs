@@ -84,6 +84,32 @@ public static class ServiceRegistry
                     {
                         context.Token = context.Request.Cookies[IAuthOptions.CookieName];
                         return Task.CompletedTask;
+                    },
+                    OnTokenValidated = async context =>
+                    {
+                        var identityUserService = context.HttpContext.RequestServices.GetRequiredService<IIdentityUserService>();
+
+                        var sessionId = context.Principal?.GetSessionId();
+
+                        if (sessionId is null)
+                        {
+                            context.Fail("SessionId is null");
+                            return;
+                        }
+
+                        var userId = context.Principal?.GetUserId();
+
+                        if (userId is null)
+                        {
+                            context.Fail("UserId is null");
+                            return;
+                        }
+
+                        var isValidSession = await identityUserService.IsSessionValid(IdentityUserId.Parse(userId), sessionId.Required());
+                        if (!isValidSession)
+                        {
+                            context.Fail("Session is inactive or revoked");
+                        }
                     }
                 };
 
@@ -104,7 +130,6 @@ public static class ServiceRegistry
                 async Task<IResult> (
                     [FromServices] IAuthenticationService authenticationService,
                     [FromServices] ITokenService tokenService,
-                    HttpContext context,
                     [FromBody] LoginRequest request,
                     CancellationToken cancellationToken) =>
                 {

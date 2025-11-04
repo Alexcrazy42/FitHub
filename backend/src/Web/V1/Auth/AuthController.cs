@@ -1,4 +1,5 @@
 ﻿using FitHub.Application.Users;
+using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.AspNetCore.Auth;
 using FitHub.Common.Entities;
 using FitHub.Contracts.V1;
@@ -12,10 +13,13 @@ namespace FitHub.Web.V1.Auth;
 public class AuthController : ControllerBase
 {
     private readonly IUserService userService;
+    private readonly ICurrentIdentityUserIdAccessor accessor;
 
-    public AuthController(IUserService userService)
+    public AuthController(IUserService userService,
+        ICurrentIdentityUserIdAccessor accessor)
     {
         this.userService = userService;
+        this.accessor = accessor;
     }
 
     [HttpPost(ApiRoutesV1.ConfirmEmail)]
@@ -36,11 +40,12 @@ public class AuthController : ControllerBase
     [Authorize]
     public Task InitResetPassword(CancellationToken ct)
     {
-        return userService.InitResetPasswordAsync(ct);
+        var userId = accessor.GetCurrentUserId();
+        return userService.InitResetPasswordAsync(userId, ct);
     }
 
-    [HttpGet(ApiRoutesV1.ResetPassword)]
-    public Task<bool> CheckResetPassword(ResetPasswordRequest? request, CancellationToken ct)
+    [HttpPost(ApiRoutesV1.CheckResetPassword)]
+    public Task<bool> CheckResetPassword([FromBody] ResetPasswordRequest? request, CancellationToken ct)
     {
         ValidationException.ThrowIfNull(request, "request cannot be null");
         return userService.CheckResetPasswordAsync(request, ct);
@@ -53,17 +58,22 @@ public class AuthController : ControllerBase
         return userService.ResetPasswordAsync(request, ct);
     }
 
-    // [HttpPost(ApiRoutesV1.StartRegister)]
-    // public Task<LoginResponse> StartRegister([FromBody] StartRegisterRequest? request, CancellationToken ct)
-    // {
-    //     throw new NotImplementedException();
-    // }
-    //
-    // [HttpPost(ApiRoutesV1.ConfirmRegister)]
-    // public Task<LoginResponse> ConfirmRegister([FromBody] ConfirmRegisterRequest? request, CancellationToken ct)
-    // {
-    //     throw new NotImplementedException();
-    // }
+    [HttpPost(ApiRoutesV1.StartRegister)]
+    public async Task<UserResponse> StartRegister([FromBody] StartRegisterRequest? request, CancellationToken ct)
+    {
+        ValidationException.ThrowIfNull(request, "request cannot be null");
+        var user = await userService.StartRegister(request, ct);
+        return user.ToResponse();
+    }
+
+    [HttpGet(ApiRoutesV1.Me)]
+    [Authorize]
+    public async Task<UserResponse> GetCurrentUser(CancellationToken ct)
+    {
+        var userId = accessor.GetCurrentUserId();
+        var user = await userService.GetUserAsync(userId, ct);
+        return user.ToResponse();
+    }
 
     [HttpPost(ApiRoutesV1.CreateCmsAdmin)]
     [Authorize(Policy = AuthorizationPolicies.CmsAdminOnly)]

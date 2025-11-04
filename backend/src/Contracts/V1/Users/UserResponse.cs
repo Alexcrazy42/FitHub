@@ -8,5 +8,5 @@ public class UserResponse
 
     public string? Email { get; set; }
 
-    public IdentityUserTypeDto? UserType { get; set; }
+    public List<string> RoleNames { get; set; } = [];
 }

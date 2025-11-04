@@ -116,6 +116,8 @@ public class ApiRoutesV1
 
     public const string Auth = Root + "/auth";
 
+    public const string Me = Auth + "/me";
+
     public const string Login = Auth + "/login";
 
     public const string ConfirmEmail = Auth + "/confirm-email";
@@ -124,19 +126,27 @@ public class ApiRoutesV1
 
     public const string InitResetPassword = Auth + "/init-reset-password";
 
-    public const string ResetPassword = Auth + "/reset-password";
+    public const string CheckResetPassword = Auth + "/check-reset-password";
 
-    public const string VerifyTwoFactorAuth = Auth + "/verify-two-factor";
+    public const string ResetPassword = Auth + "/reset-password";
 
     public const string StartRegister = Auth + "/start-register";
 
-    public const string ConfirmRegister = Auth + "/confirm-register";
+    public const string EndRegister = Auth + "/end-register";
 
     public const string CreateCmsAdmin = Auth + "/create-cms-admin";
 
     public const string CreateGymAdmin = Auth + "/create-gym-admin";
 
     public const string CreateTrainer = Auth + "/create-trainer";
+
+    #endregion
+
+    #region Email
+
+    public const string Email = Root + "/emails";
+
+    public const string EmailAvailable = Email + "/available";
 
     #endregion
 

@@ -14,4 +14,14 @@ public interface IIdentityUserService
     /// Получить пользователя по его id
     /// </summary>
     Task<IdentityUser?> GetOrDefaultAsync(IdentityUserId id, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Получить пользователя по id
+    /// </summary>
+    Task<IdentityUser> GetAsync(IdentityUserId id, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Валидна ли сессия
+    /// </summary>
+    Task<bool> IsSessionValid(IdentityUserId userId, string sessionId, CancellationToken ct = default);
 }

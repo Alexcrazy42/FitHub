@@ -59,4 +59,9 @@ public class EmailNotification : IEntity<EmailNotificationId>, IAuditableEntity
             BodyHtml = bodyHtml
         };
     }
+
+    public override string ToString()
+    {
+        return $"bodyHtml: {BodyHtml}, bodyText: {BodyText}";
+    }
 }

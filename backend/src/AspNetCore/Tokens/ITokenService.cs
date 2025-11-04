@@ -10,13 +10,14 @@ public interface ITokenService
 
     string Create(IReadOnlyList<Claim> claims);
 
-    public static IReadOnlyList<Claim> CreateCommonClaims(string sub, IdentityUserType userType)
+    public static IReadOnlyList<Claim> CreateCommonClaims(string sub, string sessionId, IdentityUserType userType)
     {
         var rolesClaim = ((int)userType).ToString();
         return new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, sub),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(JwtRegisteredClaimNames.Sid, sessionId),
             new Claim(ClaimTypes.Role, rolesClaim)
         };
     }
