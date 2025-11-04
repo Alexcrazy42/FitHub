@@ -32,6 +32,8 @@ public interface IUserService
     /// </summary>
     Task<User> RegisterTrainerAsync(CreateTrainerRequest request, CancellationToken ct = default);
 
+    Task<bool> CheckConfirmEmail(ConfirmEmailRequest request, CancellationToken ct = default);
+
     /// <summary>
     /// Подтвердить email
     /// </summary>
@@ -45,7 +47,7 @@ public interface IUserService
     /// <summary>
     /// Стартовать изменение пароля
     /// </summary>
-    Task InitResetPasswordAsync(IdentityUserId userId, CancellationToken ct = default);
+    Task InitResetPasswordAsync(string email, CancellationToken ct = default);
 
     Task<bool> CheckResetPasswordAsync(ResetPasswordRequest request, CancellationToken ct = default);
 
@@ -53,4 +55,9 @@ public interface IUserService
     /// Сменить пароль
     /// </summary>
     Task<LoginResponse> ResetPasswordAsync(ResetPasswordRequest request, CancellationToken ct = default);
+
+    /// <summary>
+    /// Разлогиниться
+    /// </summary>
+    Task Logout(IdentityUserId userId, SessionId sessionId, CancellationToken ct = default);
 }

@@ -30,7 +30,6 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
     private readonly ITokenService tokenService;
     private readonly ILogger<IdentityUserService> logger;
     private readonly ISessionService sessionService;
-    private readonly ISessionRepository sessionRepository;
 
     public IdentityUserService(IUserRepository userRepository,
         IGymAdminRepository gymAdminRepository,
@@ -43,8 +42,7 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
         IOptions<IAuthOptions> authOptions,
         ITokenService tokenService,
         ILogger<IdentityUserService> logger,
-        ISessionService sessionService,
-        ISessionRepository sessionRepository)
+        ISessionService sessionService)
     {
         this.userRepository = userRepository;
         this.gymAdminRepository = gymAdminRepository;
@@ -57,7 +55,6 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
         this.tokenService = tokenService;
         this.logger = logger;
         this.sessionService = sessionService;
-        this.sessionRepository = sessionRepository;
         this.authOptions = authOptions.Value;
     }
 
@@ -78,12 +75,10 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
         return user;
     }
 
-    public async Task<bool> IsSessionValid(IdentityUserId userId, string sessionId, CancellationToken ct = default)
+    public Task<bool> IsSessionValid(IdentityUserId userId, string sessionId, CancellationToken ct = default)
     {
         var parsedId = SessionId.Parse(sessionId);
-        var session = await sessionRepository.GetFirstOrDefaultAsync(x => x.Id == parsedId, ct);
-
-        return session is not null && session.UserId == userId && session.ExpiresOn > DateTimeOffset.UtcNow;
+        return sessionService.IsSessionValid(parsedId, userId, ct);
     }
 
     public async Task<User> GetUserAsync(IdentityUserId userId, CancellationToken ct)
@@ -244,6 +239,20 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
         return user;
     }
 
+    public async Task<bool> CheckConfirmEmail(ConfirmEmailRequest request, CancellationToken ct = default)
+    {
+        var userId = IdentityUserId.Parse(request.UserId);
+
+        var user = await GetOrDefaultAsync(userId, ct);
+        if (user == null)
+        {
+            throw new NotFoundException("Пользователь не найден!");
+        }
+
+        await CheckToken(request.Token.Required(), TokenType.ConfirmEmail, userId, ct);
+        return true;
+    }
+
     public async Task<LoginResponse> ConfirmEmailAsync(ConfirmEmailRequest request, CancellationToken ct = default)
     {
         var userId = IdentityUserId.Parse(request.UserId);
@@ -288,9 +297,9 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
         return await GetLoginResponse(user, ct);
     }
 
-    public async Task InitResetPasswordAsync(IdentityUserId userId, CancellationToken ct = default)
+    public async Task InitResetPasswordAsync(string email, CancellationToken ct = default)
     {
-        var user = await userRepository.GetFirstOrDefaultAsync(x => x.Id == userId, ct);
+        var user = await userRepository.GetFirstOrDefaultAsync(x => x.Email == email, ct);
         NotFoundException.ThrowIfNull(user, "Пользователь не найден!");
 
         var token = Token.Create(user, TokenType.ResetPassword);
@@ -330,6 +339,14 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
 
         await unitOfWork.SaveChangesAsync(ct);
         return await GetLoginResponse(user, ct);
+    }
+
+    public async Task Logout(IdentityUserId userId, SessionId sessionId, CancellationToken ct = default)
+    {
+        var session = await sessionService.Get(sessionId, ct);
+        session.SetActive(false);
+        await unitOfWork.SaveChangesAsync(ct);
+        context.Response.Cookies.Delete(IAuthOptions.CookieName);
     }
 
     public async Task<LoginResponse> LoginAsync(string login, string password, CancellationToken cancellationToken)

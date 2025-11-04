@@ -2,9 +2,11 @@
 using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.AspNetCore.Auth;
 using FitHub.Common.Entities;
+using FitHub.Common.Utilities.System;
 using FitHub.Contracts.V1;
 using FitHub.Contracts.V1.Auth;
 using FitHub.Contracts.V1.Users;
+using FitHub.Domain.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,15 +16,27 @@ public class AuthController : ControllerBase
 {
     private readonly IUserService userService;
     private readonly ICurrentIdentityUserIdAccessor accessor;
+    private readonly ICurrentIdentityUserIdProvider provider;
 
     public AuthController(IUserService userService,
-        ICurrentIdentityUserIdAccessor accessor)
+        ICurrentIdentityUserIdAccessor accessor,
+        ICurrentIdentityUserIdProvider provider)
     {
         this.userService = userService;
         this.accessor = accessor;
+        this.provider = provider;
+    }
+
+    [HttpPost(ApiRoutesV1.CheckConfirmEmail)]
+    [AllowAnonymous]
+    public async Task<bool> CheckConfirmEmail([FromBody] ConfirmEmailRequest? request, CancellationToken ct)
+    {
+        ValidationException.ThrowIfNull(request, "request cannot be null");
+        return await userService.CheckConfirmEmail(request, ct);
     }
 
     [HttpPost(ApiRoutesV1.ConfirmEmail)]
+    [AllowAnonymous]
     public Task<LoginResponse> ConfirmEmail([FromBody] ConfirmEmailRequest? request, CancellationToken ct)
     {
         ValidationException.ThrowIfNull(request, "request cannot be null");
@@ -30,6 +44,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost(ApiRoutesV1.SetPassword)]
+    [AllowAnonymous]
     public Task<LoginResponse> SetPassword([FromBody] SetPasswordRequest? request, CancellationToken ct)
     {
         ValidationException.ThrowIfNull(request, "request cannot be null");
@@ -37,14 +52,14 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost(ApiRoutesV1.InitResetPassword)]
-    [Authorize]
-    public Task InitResetPassword(CancellationToken ct)
+    [AllowAnonymous]
+    public Task InitResetPassword([FromQuery] string? email, CancellationToken ct)
     {
-        var userId = accessor.GetCurrentUserId();
-        return userService.InitResetPasswordAsync(userId, ct);
+        return userService.InitResetPasswordAsync(email.Required(), ct);
     }
 
     [HttpPost(ApiRoutesV1.CheckResetPassword)]
+    [AllowAnonymous]
     public Task<bool> CheckResetPassword([FromBody] ResetPasswordRequest? request, CancellationToken ct)
     {
         ValidationException.ThrowIfNull(request, "request cannot be null");
@@ -52,6 +67,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost(ApiRoutesV1.ResetPassword)]
+    [AllowAnonymous]
     public Task<LoginResponse> ResetPassword([FromBody] ResetPasswordRequest? request, CancellationToken ct)
     {
         ValidationException.ThrowIfNull(request, "request cannot be null");
@@ -59,6 +75,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost(ApiRoutesV1.StartRegister)]
+    [AllowAnonymous]
     public async Task<UserResponse> StartRegister([FromBody] StartRegisterRequest? request, CancellationToken ct)
     {
         ValidationException.ThrowIfNull(request, "request cannot be null");
@@ -100,5 +117,16 @@ public class AuthController : ControllerBase
         ValidationException.ThrowIfNull(request, "request cannot be null");
         var user = await userService.RegisterTrainerAsync(request, ct);
         return user.ToResponse();
+    }
+
+    [HttpPost(ApiRoutesV1.Logout)]
+    [Authorize]
+    public async Task Logout(CancellationToken ct)
+    {
+        var userId = accessor.GetCurrentUserId();
+        var sessionId = provider.GetSessionId();
+        var parsedSessionId = SessionId.Parse(sessionId);
+
+        await userService.Logout(userId, parsedSessionId, ct);
     }
 }

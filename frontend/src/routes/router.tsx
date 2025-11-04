@@ -11,6 +11,9 @@ import { Register } from '../pages/Auth/Register';
 import AccessDenied from '../pages/AccessDenied';
 import { MapCard } from '../pages/Card';
 import { EquipmentPage } from '../pages/admin/equipments/EquipmentPage';
+import { ResetPassword } from '../pages/Auth/ResetPassword';
+import { ConfirmEmail } from '../pages/Auth/ConfirmEmail';
+import { SetPassword } from '../pages/Auth/SetPassword';
 
 
 const getAdminRoutePath = (fullPath: string): string => {
@@ -56,7 +59,10 @@ export const routes: RouteObject[] = [
   { path: '/login', element: <Login /> },
   { path: '/register', element: <Register /> },
   { path: '/access-denied', element: <AccessDenied /> },
-  {path: "/card", element: <MapCard />},
+  { path: "/card", element: <MapCard /> },
+  { path: "/confirm-email", element: <ConfirmEmail /> },
+  { path: "/reset-password", element: <ResetPassword /> },
+  { path: "/set-password", element: <SetPassword /> },
   {
     element: <ProtectedRoute allowedRoles={['CmsAdmin', 'GymVisitor']} />,
     children: [

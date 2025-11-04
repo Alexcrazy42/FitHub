@@ -120,6 +120,10 @@ public class ApiRoutesV1
 
     public const string Login = Auth + "/login";
 
+    public const string Logout = Auth + "/logout";
+
+    public const string CheckConfirmEmail = Auth + "/check-confirm-email";
+
     public const string ConfirmEmail = Auth + "/confirm-email";
 
     public const string SetPassword = Auth + "/set-password";
@@ -131,8 +135,6 @@ public class ApiRoutesV1
     public const string ResetPassword = Auth + "/reset-password";
 
     public const string StartRegister = Auth + "/start-register";
-
-    public const string EndRegister = Auth + "/end-register";
 
     public const string CreateCmsAdmin = Auth + "/create-cms-admin";
 

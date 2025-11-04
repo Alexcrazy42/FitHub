@@ -4,6 +4,7 @@ import { useApiService } from '../../api/useApiService';
 import { useAuth } from '../../context/useAuth';
 import { useTheme } from '../../context/useTheme';
 import { LoginResponse, roleMapping, roleRoutes, User, UserRole } from '../../types/auth';
+import { toast } from 'react-toastify';
 
 interface LoginRequest {
   username: string;
@@ -26,6 +27,25 @@ const Login: React.FC = () => {
   
   const isDark = theme === 'dark';
 
+  const forgot = async () => {
+    try {
+      if(username != '') {
+        const response = await apiService.post(`v1/auth/init-reset-password?email=${username}`);
+        if(response.success) {
+          toast.success("Ожидайте сообщения на почту!");
+        } else {
+          toast.error(response.error?.detail);
+        }
+      } else {
+        setError("Заполнить email!");
+      }
+      
+    } catch {
+      toast.error("Ошибка!");
+    }
+  }
+
+
   const handleLogin = async () => {
     if (showRoleSelection) {
       if (!selectedRole) {
@@ -46,7 +66,7 @@ const Login: React.FC = () => {
       return;
     }
 
-    // Первый этап: аутентификация
+
     if (!username.trim() || !password.trim()) {
       setError('Пожалуйста, заполните все поля');
       return;
@@ -61,7 +81,7 @@ const Login: React.FC = () => {
         password: password.trim()
       };
 
-      const result = await apiService.post<LoginResponse>('/v1/login', loginData);
+      const result = await apiService.post<LoginResponse>('/v1/auth/login', loginData);
 
       if (result.success && result.data) {
         const userData = result.data;
@@ -201,25 +221,30 @@ const Login: React.FC = () => {
   return (
     <div className={`min-h-screen flex items-center justify-center p-4 ${isDark ? 'bg-gray-900' : 'bg-gray-100'}`}>
       <div
-        className={`w-full max-w-md rounded-xl p-8 space-y-6 shadow-lg ${
+        className={`w-full max-w-md rounded-2xl p-8 shadow-xl space-y-6 ${
           isDark ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-800'
         }`}
       >
+        {/* Header */}
         <div className="text-center">
-          <h2 className="text-2xl font-bold">Вход в систему</h2>
+          <h2 className="text-3xl font-bold">Вход в систему</h2>
           <p className={`mt-2 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-            Введите ваши учетные данные
+            Авторизуйтесь, чтобы продолжить
           </p>
         </div>
 
+        {/* Error message */}
         {error && (
-          <div className={`p-3 rounded-lg ${
-            isDark ? 'bg-red-900 text-red-200' : 'bg-red-100 text-red-700'
-          }`}>
+          <div
+            className={`p-3 rounded-lg text-sm ${
+              isDark ? 'bg-red-900 text-red-200' : 'bg-red-100 text-red-700'
+            }`}
+          >
             {error}
           </div>
         )}
 
+        {/* Email */}
         <div>
           <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
             Email
@@ -229,16 +254,17 @@ const Login: React.FC = () => {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             onKeyPress={handleKeyPress}
-            className={`w-full px-4 py-2.5 rounded-lg border outline-none transition ${
+            placeholder="Введите ваш email"
+            disabled={isLoading}
+            className={`w-full px-4 py-2.5 rounded-lg border outline-none transition focus:ring-2 ${
               isDark
                 ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500'
                 : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500'
             }`}
-            placeholder="Введите ваш email"
-            disabled={isLoading}
           />
         </div>
 
+        {/* Password */}
         <div>
           <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
             Пароль
@@ -248,27 +274,56 @@ const Login: React.FC = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             onKeyPress={handleKeyPress}
-            className={`w-full px-4 py-2.5 rounded-lg border outline-none transition ${
+            placeholder="Введите ваш пароль"
+            disabled={isLoading}
+            className={`w-full px-4 py-2.5 rounded-lg border outline-none transition focus:ring-2 ${
               isDark
                 ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500'
                 : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500'
             }`}
-            placeholder="Введите ваш пароль"
-            disabled={isLoading}
           />
         </div>
 
-        <button
-          onClick={handleLogin}
-          disabled={isLoading}
-          className={`w-full font-medium py-2.5 rounded-lg transition duration-200 shadow-sm ${
-            isLoading
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-blue-600 hover:bg-blue-700 text-white'
-          }`}
-        >
-          {isLoading ? 'Вход...' : 'Войти'}
-        </button>
+        {/* Forgot password */}
+        <div className="text-right -mt-3">
+          <button
+            onClick={forgot}
+            className={`text-sm underline transition ${
+              isDark
+                ? 'text-gray-300 hover:text-white'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Забыли пароль?
+          </button>
+        </div>
+
+        {/* Buttons */}
+        <div className="flex gap-3 pt-2">
+          <button
+            onClick={handleLogin}
+            disabled={isLoading}
+            className={`flex-1 font-semibold py-2.5 rounded-lg transition duration-200 shadow ${
+              isLoading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700 text-white"
+            }`}
+          >
+            {isLoading ? "Вход..." : "Войти"}
+          </button>
+
+          <button
+            disabled={isLoading}
+            className={`flex-1 font-semibold py-2.5 rounded-lg transition duration-200 shadow ${
+              isLoading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-green-600 hover:bg-green-700 text-white"
+            }`}
+            onClick={() => { navigate("/register")} }
+          >
+            Регистрация
+          </button>
+        </div>
       </div>
     </div>
   );

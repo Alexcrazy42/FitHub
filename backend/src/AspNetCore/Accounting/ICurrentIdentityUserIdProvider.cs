@@ -3,7 +3,7 @@
 /// <summary>
 /// Поставщик идентификатора текущего пользователя
 /// </summary>
-internal interface ICurrentIdentityUserIdProvider
+public interface ICurrentIdentityUserIdProvider
 {
     /// <summary>
     /// Получить текущего пользователя

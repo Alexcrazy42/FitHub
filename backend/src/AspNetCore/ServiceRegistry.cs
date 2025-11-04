@@ -85,6 +85,11 @@ public static class ServiceRegistry
                         context.Token = context.Request.Cookies[IAuthOptions.CookieName];
                         return Task.CompletedTask;
                     },
+                    OnAuthenticationFailed = context =>
+                    {
+                        Console.WriteLine("JWT validation failed: " + context.Exception.Message);
+                        return Task.CompletedTask;
+                    },
                     OnTokenValidated = async context =>
                     {
                         var identityUserService = context.HttpContext.RequestServices.GetRequiredService<IIdentityUserService>();
@@ -93,7 +98,7 @@ public static class ServiceRegistry
 
                         if (sessionId is null)
                         {
-                            context.Fail("SessionId is null");
+                            context.NoResult();
                             return;
                         }
 
@@ -101,14 +106,15 @@ public static class ServiceRegistry
 
                         if (userId is null)
                         {
-                            context.Fail("UserId is null");
+                            context.NoResult();
                             return;
                         }
 
                         var isValidSession = await identityUserService.IsSessionValid(IdentityUserId.Parse(userId), sessionId.Required());
                         if (!isValidSession)
                         {
-                            context.Fail("Session is inactive or revoked");
+                            context.NoResult();
+                            return;
                         }
                     }
                 };

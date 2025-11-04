@@ -2,9 +2,9 @@
 
 export const roleMapping: Record<UserRole, string> = {
   'GymVisitor': "Посетитель",
-  'GymAdmin': "Администратор",
+  'GymAdmin': "Администратор спортзала",
   "Trainer": "Тренер",
-  "CmsAdmin": "Cms администратор"
+  "CmsAdmin": "Администратор"
 };
 
 
@@ -27,6 +27,13 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface UserResponse {
+  surname: string;
+  name: string;
+  email: string;
+  roleNames: UserRole[];
+}
+
 export interface LoginResponse {
   email: string;
   userId: string;
@@ -34,4 +41,28 @@ export interface LoginResponse {
   isActive: boolean;
   loginFlowDone: boolean;
   roleNames: UserRole[]
+}
+
+
+export interface StartRegisterRequest {
+  surname: string;
+  name: string;
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  userId: string;
+  token: string;
+  newPassword: string | null;
+}
+
+export interface ConfirmEmailRequest {
+  userId: string;
+  token: string;
+}
+
+export interface SetPasswordRequest {
+  token: string;
+  userId: string;
+  password: string;
 }
