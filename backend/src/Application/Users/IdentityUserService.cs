@@ -139,7 +139,7 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
             name: ValidationException.ThrowIfNull(request.Name, "Имя не может быть пустым"),
             email: email,
             passwordHash: passwordHash,
-            userType: IdentityUserType.CmsAdmin | IdentityUserType.GymAdmin,
+            userType: IdentityUserType.GymAdmin,
             startRegistrationAt: DateTimeOffset.UtcNow,
             lastSeenAt: DateTimeOffset.UtcNow
         );
@@ -242,12 +242,7 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
     public async Task<bool> CheckConfirmEmail(ConfirmEmailRequest request, CancellationToken ct = default)
     {
         var userId = IdentityUserId.Parse(request.UserId);
-
-        var user = await GetOrDefaultAsync(userId, ct);
-        if (user == null)
-        {
-            throw new NotFoundException("Пользователь не найден!");
-        }
+        var user = await GetAsync(userId, ct);
 
         await CheckToken(request.Token.Required(), TokenType.ConfirmEmail, userId, ct);
         return true;
@@ -257,11 +252,7 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
     {
         var userId = IdentityUserId.Parse(request.UserId);
 
-        var user = await GetOrDefaultAsync(userId, ct);
-        if (user == null)
-        {
-            throw new NotFoundException("Пользователь не найден!");
-        }
+        var user = await GetAsync(userId, ct);
 
         await CheckToken(request.Token.Required(), TokenType.ConfirmEmail, userId, ct);
 
@@ -275,11 +266,7 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
     {
         var userId = IdentityUserId.Parse(request.UserId);
 
-        var user = await GetOrDefaultAsync(userId, ct);
-        if (user == null)
-        {
-            throw new NotFoundException("Пользователь не найден!");
-        }
+        var user = await GetAsync(userId, ct);
 
         if (!user.IsTemporaryPassword)
         {

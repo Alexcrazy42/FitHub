@@ -66,3 +66,23 @@ export interface SetPasswordRequest {
   userId: string;
   password: string;
 }
+
+
+export interface CreateCmsAdminRequest {
+  email: string;
+  surname: string;
+  name: string;
+}
+
+export interface CreateGymAdminRequest {
+  email: string;
+  surname: string;
+  name: string;
+  gymId: string;
+}
+
+export interface CreateTrainerAdminRequest {
+  email: string;
+  surname: string;
+  name: string;
+}

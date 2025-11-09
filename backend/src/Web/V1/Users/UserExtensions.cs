@@ -2,7 +2,7 @@
 using FitHub.Contracts.V1.Users;
 using FitHub.Domain.Users;
 
-namespace FitHub.Web.V1.Auth;
+namespace FitHub.Web.V1.Users;
 
 public static class UserExtensions
 {

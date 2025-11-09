@@ -116,8 +116,6 @@ public class ApiRoutesV1
 
     public const string Auth = Root + "/auth";
 
-    public const string Me = Auth + "/me";
-
     public const string Login = Auth + "/login";
 
     public const string Logout = Auth + "/logout";
@@ -136,12 +134,6 @@ public class ApiRoutesV1
 
     public const string StartRegister = Auth + "/start-register";
 
-    public const string CreateCmsAdmin = Auth + "/create-cms-admin";
-
-    public const string CreateGymAdmin = Auth + "/create-gym-admin";
-
-    public const string CreateTrainer = Auth + "/create-trainer";
-
     #endregion
 
     #region Email
@@ -149,6 +141,38 @@ public class ApiRoutesV1
     public const string Email = Root + "/emails";
 
     public const string EmailAvailable = Email + "/available";
+
+    #endregion
+
+    #region Users
+
+    public const string Users = Root + "/users";
+
+    public const string Me = Users + "/me";
+
+    #endregion
+
+    #region CmsAdmins
+
+    public const string CmsAdmins = Root + "/cms-admins";
+
+    public const string CreateCmsAdmin = CmsAdmins + "/create-cms-admin";
+
+    #endregion
+
+    #region GymAdmins
+
+    public const string GymAdmins = Root + "/gym-admins";
+
+    public const string CreateGymAdmin = GymAdmins + "/create-gym-admin";
+
+    #endregion
+
+    #region Trainers
+
+    public const string Trainers = Root + "/trainers";
+
+    public const string CreateTrainer = Trainers + "/create-trainer";
 
     #endregion
 

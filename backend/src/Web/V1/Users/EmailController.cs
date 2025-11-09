@@ -2,7 +2,7 @@
 using FitHub.Contracts.V1;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FitHub.Web.V1.Auth;
+namespace FitHub.Web.V1.Users;
 
 public class EmailController : ControllerBase
 {

@@ -10,7 +10,7 @@ using FitHub.Domain.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FitHub.Web.V1.Auth;
+namespace FitHub.Web.V1.Users;
 
 public class AuthController : ControllerBase
 {
@@ -80,42 +80,6 @@ public class AuthController : ControllerBase
     {
         ValidationException.ThrowIfNull(request, "request cannot be null");
         var user = await userService.StartRegister(request, ct);
-        return user.ToResponse();
-    }
-
-    [HttpGet(ApiRoutesV1.Me)]
-    [Authorize]
-    public async Task<UserResponse> GetCurrentUser(CancellationToken ct)
-    {
-        var userId = accessor.GetCurrentUserId();
-        var user = await userService.GetUserAsync(userId, ct);
-        return user.ToResponse();
-    }
-
-    [HttpPost(ApiRoutesV1.CreateCmsAdmin)]
-    [Authorize(Policy = AuthorizationPolicies.CmsAdminOnly)]
-    public async Task<UserResponse> CreateCmsAdmin([FromBody] CreateCmsAdminRequest? request, CancellationToken ct)
-    {
-        ValidationException.ThrowIfNull(request, "request cannot be null");
-        var user = await userService.RegisterCmsAdminAsync(request, ct);
-        return user.ToResponse();
-    }
-
-    [HttpPost(ApiRoutesV1.CreateGymAdmin)]
-    [Authorize(Policy = AuthorizationPolicies.CmsAdminOnly)]
-    public async Task<UserResponse> CreateGymAdmin([FromBody] CreateGymAdminRequest? request, CancellationToken ct)
-    {
-        ValidationException.ThrowIfNull(request, "request cannot be null");
-        var user = await userService.RegisterGymAdminAsync(request, ct);
-        return user.ToResponse();
-    }
-
-    [HttpPost(ApiRoutesV1.CreateTrainer)]
-    [Authorize(Policy = AuthorizationPolicies.GymAdminOnly)]
-    public async Task<UserResponse> CreateTrainer([FromBody] CreateTrainerRequest? request, CancellationToken ct)
-    {
-        ValidationException.ThrowIfNull(request, "request cannot be null");
-        var user = await userService.RegisterTrainerAsync(request, ct);
         return user.ToResponse();
     }
 

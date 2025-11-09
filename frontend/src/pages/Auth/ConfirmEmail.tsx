@@ -2,8 +2,9 @@
 import { useApiService } from "../../api/useApiService";
 import { toast } from "react-toastify";
 import { ConfirmEmailRequest, LoginResponse } from "../../types/auth";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
+import { Layout, Button } from 'antd';
 
 export const ConfirmEmail: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -14,6 +15,7 @@ export const ConfirmEmail: React.FC = () => {
     const [isEmailConfirmed, setIsEmailConfirmed] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const didRun = useRef(false);
 
     const check = async () => {
         try {
@@ -46,7 +48,13 @@ export const ConfirmEmail: React.FC = () => {
         }
     }
 
-    useEffect(() => { check(); }, []);
+    
+    useEffect(() => {
+        if (didRun.current) return;
+        didRun.current = true;
+
+        check();
+    }, []);
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -58,14 +66,12 @@ export const ConfirmEmail: React.FC = () => {
                     </div>
                 ) : error ? (
                     <div className="flex flex-col items-center text-red-600 space-y-2">
-                        <CheckCircleOutlined className="w-16 h-16"/>
                         <p className="text-lg font-semibold">{error}</p>
-                        <button 
+                        <Button 
                             onClick={() => navigate("/")}
-                            className="mt-4 px-6 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
                         >
                             На главную
-                        </button>
+                        </Button>
                     </div>
                 ) : isEmailConfirmed ? (
                     <div className="flex flex-col items-center text-green-600 space-y-4">

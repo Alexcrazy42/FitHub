@@ -1,5 +1,6 @@
 ﻿import { useAuth } from '../../../context/useAuth';
 import { useTheme } from '../../../context/useTheme';
+import { roleMapping } from '../../../types/auth';
 
 const UserProfile: React.FC = () => {
   const { user } = useAuth();
@@ -27,10 +28,10 @@ const UserProfile: React.FC = () => {
             <strong>ID:</strong> {user.id}
           </p>
           <p>
-            <strong>Имя:</strong> {user.name}
+            <strong>Email:</strong> {user.email}
           </p>
           <p>
-            <strong>Роль:</strong> {user.role}
+            <strong>Роль:</strong> {roleMapping[user.currentRole]}
           </p>
         </div>
       )}
