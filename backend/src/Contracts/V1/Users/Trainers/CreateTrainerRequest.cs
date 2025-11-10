@@ -1,4 +1,4 @@
-﻿namespace FitHub.Contracts.V1.Auth;
+﻿namespace FitHub.Contracts.V1.Users.Trainers;
 
 public class CreateTrainerRequest
 {

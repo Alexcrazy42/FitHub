@@ -31,6 +31,7 @@ export interface UserResponse {
   surname: string;
   name: string;
   email: string;
+  isActive: boolean;
   roleNames: UserRole[];
 }
 

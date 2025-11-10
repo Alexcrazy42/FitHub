@@ -1,5 +1,7 @@
 ﻿using FitHub.Application.EmailNotifications;
 using FitHub.Application.Equipments.Gyms;
+using FitHub.Application.Users.GymAdmins;
+using FitHub.Application.Users.Trainers;
 using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.AspNetCore.Auth;
 using FitHub.Common.AspNetCore.Tokens;
@@ -7,6 +9,8 @@ using FitHub.Common.Entities;
 using FitHub.Common.Entities.Storage;
 using FitHub.Common.Utilities.System;
 using FitHub.Contracts.V1.Auth;
+using FitHub.Contracts.V1.Users.GymAdmins;
+using FitHub.Contracts.V1.Users.Trainers;
 using FitHub.Domain.Equipments;
 using FitHub.Domain.Notifications;
 using FitHub.Domain.Users;
@@ -30,6 +34,7 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
     private readonly ITokenService tokenService;
     private readonly ILogger<IdentityUserService> logger;
     private readonly ISessionService sessionService;
+    //private readonly IVisitor
 
     public IdentityUserService(IUserRepository userRepository,
         IGymAdminRepository gymAdminRepository,
@@ -109,6 +114,8 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
             lastSeenAt: DateTimeOffset.UtcNow
         );
 
+        var visitor = Visitor.Create(user);
+
         var token = Token.Create(user, TokenType.ConfirmEmail);
 
         var notification = EmailNotification.Create(email, "Подтвердите свою почту", bodyHtml: $"userId: {user.Id} token: {token.TokenString}");
@@ -139,7 +146,7 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
             name: ValidationException.ThrowIfNull(request.Name, "Имя не может быть пустым"),
             email: email,
             passwordHash: passwordHash,
-            userType: IdentityUserType.GymAdmin,
+            userType: IdentityUserType.CmsAdmin,
             startRegistrationAt: DateTimeOffset.UtcNow,
             lastSeenAt: DateTimeOffset.UtcNow
         );
@@ -183,7 +190,7 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
             lastSeenAt: DateTimeOffset.UtcNow
         );
 
-        var gymAdmin = GymAdmin.Create();
+        var gymAdmin = GymAdmin.Create(user);
         gymAdmin.SetGym(gym);
 
         var token = Token.Create(user, TokenType.ConfirmEmail);

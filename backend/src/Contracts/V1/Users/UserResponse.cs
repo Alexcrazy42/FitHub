@@ -8,5 +8,7 @@ public class UserResponse
 
     public string? Email { get; set; }
 
+    public bool? IsActive { get; set; }
+
     public List<string> RoleNames { get; set; } = [];
 }

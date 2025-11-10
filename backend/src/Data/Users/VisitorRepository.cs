@@ -1,21 +1,18 @@
 ﻿using FitHub.Application.Common;
-using FitHub.Application.Users;
-using FitHub.Application.Users.Trainers;
+using FitHub.Application.Users.Visitors;
 using FitHub.Common.EntityFramework;
 using FitHub.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 
 namespace FitHub.Data.Users;
 
-public class TrainerRepository :
-    DefaultPendingRepository<Trainer, TrainerId, DataContext>,
-    ITrainerRepository
+public class VisitorRepository : DefaultPendingRepository<Visitor, VisitorId, DataContext>, IVisitorRepository
 {
-    public TrainerRepository(DataContext context) : base(context)
+    public VisitorRepository(DataContext context) : base(context)
     {
     }
 
-    public async Task<PagedResult<Trainer>> GetAll(PagedQuery query, CancellationToken ct)
+    public async Task<PagedResult<Visitor>> GetAll(PagedQuery query, CancellationToken ct)
     {
         var dbQuery = ReadRaw()
             .Include(x => x.User)
@@ -29,6 +26,6 @@ public class TrainerRepository :
 
         var items = await dbQuery.ToListAsync(ct);
 
-        return PagedResult<Trainer>.Create(items, totalItems: total, currentPage: query.PageNumber, pageSize: query.PageSize);
+        return PagedResult<Visitor>.Create(items: items, totalItems: total, currentPage: query.PageNumber, pageSize: query.PageSize);
     }
 }

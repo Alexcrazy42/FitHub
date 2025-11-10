@@ -2,4 +2,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Http.Features" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="V1\Users\Visitors\" />
+  </ItemGroup>
 </Project>

@@ -3,6 +3,7 @@ using System;
 using FitHub.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FitHub.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20251110173503_Update_GymAdmin_AddUser")]
+    partial class Update_GymAdmin_AddUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -791,16 +794,8 @@ namespace FitHub.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
-                    b.Property<Guid>("UserId")
-                        .HasMaxLength(255)
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
                     b.HasKey("Id")
                         .HasName("pk_visitor");
-
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("ix_visitor_user_id");
 
                     b.ToTable("visitor", (string)null);
                 });
@@ -1073,18 +1068,6 @@ namespace FitHub.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_trainer_user_user_id");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("FitHub.Domain.Users.Visitor", b =>
-                {
-                    b.HasOne("FitHub.Domain.Users.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_visitor_user_user_id");
 
                     b.Navigation("User");
                 });

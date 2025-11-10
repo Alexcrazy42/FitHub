@@ -156,23 +156,17 @@ public class ApiRoutesV1
 
     public const string CmsAdmins = Root + "/cms-admins";
 
-    public const string CreateCmsAdmin = CmsAdmins + "/create-cms-admin";
-
     #endregion
 
     #region GymAdmins
 
     public const string GymAdmins = Root + "/gym-admins";
 
-    public const string CreateGymAdmin = GymAdmins + "/create-gym-admin";
-
     #endregion
 
     #region Trainers
 
     public const string Trainers = Root + "/trainers";
-
-    public const string CreateTrainer = Trainers + "/create-trainer";
 
     #endregion
 
