@@ -57,6 +57,11 @@ public class IdentityUser : IEntity<IdentityUserId>
         IsActive = value;
     }
 
+    public void SetActiveAt(DateTimeOffset value)
+    {
+        StartActiveAt = value;
+    }
+
     public bool IsLoginFlowDone()
     {
         return IsEmailConfirmed && !IsTemporaryPassword && IsActive;

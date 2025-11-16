@@ -2,6 +2,7 @@
 using FitHub.Contracts.V1.Users;
 using FitHub.Contracts.V1.Users.GymAdmins;
 using FitHub.Contracts.V1.Users.Trainers;
+using FitHub.Contracts.V1.Users.Visitors;
 using FitHub.Domain.Users;
 using EquipmentResponseExtensions = FitHub.Web.V1.Equipments.EquipmentResponseExtensions;
 
@@ -12,19 +13,21 @@ public static class UserExtensions
 
     public static UserResponse ToResponse(this User user)
     {
-        return new UserResponse()
+        return new UserResponse
         {
+            Id = user.Id.ToString(),
             Surname = user.Surname,
             Name = user.Name,
             Email = user.Email,
             IsActive = user.IsActive,
+            StartActiveAt = user.StartActiveAt,
             RoleNames = user.UserType.ToRoleNames()
         };
     }
 
     public static GymAdminResponse ToResponse(this GymAdmin gymAdmin)
     {
-        return new GymAdminResponse()
+        return new GymAdminResponse
         {
             Id = gymAdmin.Id.ToString(),
             User = gymAdmin.User.ToResponse(),
@@ -34,10 +37,19 @@ public static class UserExtensions
 
     public static TrainerResponse ToResponse(this Trainer trainer)
     {
-        return new TrainerResponse()
+        return new TrainerResponse
         {
             Id = trainer.Id.ToString(),
             User = trainer.User.ToResponse()
+        };
+    }
+
+    public static VisitorResponse ToResponse(this Visitor visitor)
+    {
+        return new VisitorResponse
+        {
+            Id = visitor.Id.ToString(),
+            User = visitor.User.ToResponse()
         };
     }
 }

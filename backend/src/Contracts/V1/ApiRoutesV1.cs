@@ -170,6 +170,12 @@ public class ApiRoutesV1
 
     #endregion
 
+    #region Visitors
+
+    public const string Visitors = Root + "/visitors";
+
+    #endregion
+
 
 
     public const string Organizations = Root + "/organizations";

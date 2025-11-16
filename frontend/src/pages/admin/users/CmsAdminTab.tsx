@@ -1,12 +1,12 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { UserPageTabType } from "./userPageTabType";
 import { CreateCmsAdminRequest, roleMapping, UserResponse } from "../../../types/auth";
 import { useApiService } from "../../../api/useApiService";
 import { ListResponse } from "../../../types/common";
 import { toast } from "react-toastify";
-import { Table, Pagination, Button, Modal, Form, Input, Space } from 'antd';
+import { Table, Pagination, Button, Modal, Form, Input, Space, Menu } from 'antd';
 import { useForm, Controller } from 'react-hook-form';
-
+import './styles/cmsAdminTab.css'
 
 interface CmsAdminTabProps {
   activeTab: UserPageTabType;
@@ -19,7 +19,9 @@ export const CmsAdminTab: React.FC<CmsAdminTabProps> = ({ activeTab }) => {
   const [items, setItems] = useState<UserResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{ visible: boolean; x: number; y: number; record?: UserResponse }>({ visible: false, x: 0, y: 0 });
   const apiService = useApiService();
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const {
     control,
@@ -39,6 +41,19 @@ export const CmsAdminTab: React.FC<CmsAdminTabProps> = ({ activeTab }) => {
       fetchAll();
     }
   }, [page, pageSize, activeTab]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (contextMenu.visible && menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setContextMenu({ ...contextMenu, visible: false });
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [contextMenu]);
 
   const fetchAll = async () => {
     setLoading(true);
@@ -70,8 +85,8 @@ export const CmsAdminTab: React.FC<CmsAdminTabProps> = ({ activeTab }) => {
       if (response.success && response.data) {
         toast.success('Администратор успешно создан!');
         setIsModalOpen(false);
-        reset(); // очищаем форму
-        await fetchAll(); // обновляем список
+        reset(); 
+        await fetchAll(); 
       } else {
         toast.error(response.error?.detail ?? 'Ошибка при создании администратора');
       }
@@ -125,10 +140,70 @@ export const CmsAdminTab: React.FC<CmsAdminTabProps> = ({ activeTab }) => {
         </span>
       ),
     },
+    {
+      title: 'Дата активации',
+      key: 'startActiveAt',
+      render: (_: unknown, record: UserResponse) => {
+        if (!record.startActiveAt) return <span style={{ color: 'gray' }}>—</span>;
+
+        const localDate = new Date(record.startActiveAt).toLocaleString();
+        return <span>{localDate}</span>;
+      },
+    }
   ];
 
+
+  const menu = (record?: UserResponse) => {
+    // Если пользователь никогда не был активирован, меню не показываем
+    if (!record?.startActiveAt) return null;
+
+    return (
+      <Menu>
+        {record.isActive ? (
+          <Menu.Item
+            key="deactivate"
+            onClick={() => toast.info(`Деактивировать ${record.email}`)}
+          >
+            Деактивировать
+          </Menu.Item>
+        ) : (
+          <Menu.Item
+            key="activate"
+            onClick={() => toast.info(`Активировать ${record.email}`)}
+          >
+            Активировать
+          </Menu.Item>
+        )}
+
+        <Menu.Item
+          key="delete"
+          onClick={() => toast.info(`Удалить ${record.email}`)}
+          danger
+        >
+          Удалить
+        </Menu.Item>
+      </Menu>
+    );
+  };
+
+  const handleRightClick = (event: React.MouseEvent, record: UserResponse) => {
+    event.preventDefault();
+    setContextMenu({
+      visible: true,
+      x: event.clientX,
+      y: event.clientY,
+      record,
+    });
+  };
+
+  const handleClickOutside = () => {
+    if (contextMenu.visible) {
+      setContextMenu({ ...contextMenu, visible: false });
+    }
+  };
+
   return (
-    <div style={{ padding: '16px' }}>
+    <div style={{ padding: '16px' }} onClick={handleClickOutside}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
         <h2>Администраторы CMS</h2>
         <Button type="primary" onClick={() => setIsModalOpen(true)}>
@@ -141,8 +216,11 @@ export const CmsAdminTab: React.FC<CmsAdminTabProps> = ({ activeTab }) => {
         columns={columns}
         rowKey="email"
         loading={loading}
-        pagination={false} // убираем встроенную пагинацию — делаем свою
+        pagination={false}
         scroll={{ x: true }}
+        onRow={(record) => ({
+          onContextMenu: (event) => handleRightClick(event, record),
+        })}
       />
 
       <div style={{ marginTop: 16, textAlign: 'right' }}>
@@ -156,6 +234,27 @@ export const CmsAdminTab: React.FC<CmsAdminTabProps> = ({ activeTab }) => {
           showTotal={(total) => `Всего: ${total}`}
         />
       </div>
+
+      {contextMenu.visible && (
+        <div
+          ref={menuRef}
+          style={{
+            position: 'fixed',
+            top: contextMenu.y,
+            left: contextMenu.x,
+            zIndex: 1000,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            borderRadius: 6,
+            background: '#fff',
+            transform: 'scale(0.8)',
+            opacity: 0,
+            transition: 'transform 0.25s ease-out, opacity 0.15s ease-out',
+            animation: 'menuFadeIn 0.25s forwards',
+          }}
+        >
+          {menu(contextMenu.record)}
+        </div>
+      )}
 
       {/* Модальное окно создания */}
       <Modal

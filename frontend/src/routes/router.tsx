@@ -14,6 +14,7 @@ import { EquipmentPage } from '../pages/admin/equipments/EquipmentPage';
 import { ResetPassword } from '../pages/Auth/ResetPassword';
 import { ConfirmEmail } from '../pages/Auth/ConfirmEmail';
 import { SetPassword } from '../pages/Auth/SetPassword';
+import { Main } from '../pages/Main';
 
 
 const getAdminRoutePath = (fullPath: string): string => {
@@ -56,6 +57,7 @@ const extractRoutesFromMenu = (items: MenuItem[], userType: UserType): { path: s
 };
 
 export const routes: RouteObject[] = [
+  {path: '', element: <Main />},
   { path: '/login', element: <Login /> },
   { path: '/register', element: <Register /> },
   { path: '/access-denied', element: <AccessDenied /> },

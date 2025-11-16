@@ -2,6 +2,7 @@
 using FitHub.Application.Equipments.Gyms;
 using FitHub.Application.Users.GymAdmins;
 using FitHub.Application.Users.Trainers;
+using FitHub.Application.Users.Visitors;
 using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.AspNetCore.Auth;
 using FitHub.Common.AspNetCore.Tokens;
@@ -34,7 +35,7 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
     private readonly ITokenService tokenService;
     private readonly ILogger<IdentityUserService> logger;
     private readonly ISessionService sessionService;
-    //private readonly IVisitor
+    private readonly IVisitorRepository visitorRepository;
 
     public IdentityUserService(IUserRepository userRepository,
         IGymAdminRepository gymAdminRepository,
@@ -47,7 +48,8 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
         IOptions<IAuthOptions> authOptions,
         ITokenService tokenService,
         ILogger<IdentityUserService> logger,
-        ISessionService sessionService)
+        ISessionService sessionService,
+        IVisitorRepository visitorRepository)
     {
         this.userRepository = userRepository;
         this.gymAdminRepository = gymAdminRepository;
@@ -60,6 +62,7 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
         this.tokenService = tokenService;
         this.logger = logger;
         this.sessionService = sessionService;
+        this.visitorRepository = visitorRepository;
         this.authOptions = authOptions.Value;
     }
 
@@ -125,6 +128,7 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
         await userRepository.PendingAddAsync(user, ct);
         await emailNotificationRepository.PendingAddAsync(notification, ct);
         await tokenRepository.PendingAddAsync(token, ct);
+        await visitorRepository.PendingAddAsync(visitor, ct);
         await unitOfWork.SaveChangesAsync(ct);
 
         return user;
@@ -285,6 +289,7 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password.Required()).Required();
         user.SetPassword(passwordHash);
         user.SetActive(true);
+        user.SetActiveAt(DateTimeOffset.UtcNow);
         token.SetAppliedAt(DateTimeOffset.UtcNow);
 
         await unitOfWork.SaveChangesAsync(ct);

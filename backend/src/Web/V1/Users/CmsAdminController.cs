@@ -17,12 +17,14 @@ public class CmsAdminController : ControllerBase
     private readonly IUserService userService;
     private readonly ICmsAdminService cmsAdminService;
     private readonly IAuthorizationService authorizationService;
+    private readonly IAccessService accessService;
 
-    public CmsAdminController(IUserService userService, ICmsAdminService cmsAdminService, IAuthorizationService authorizationService)
+    public CmsAdminController(IUserService userService, ICmsAdminService cmsAdminService, IAuthorizationService authorizationService, IAccessService accessService)
     {
         this.userService = userService;
         this.cmsAdminService = cmsAdminService;
         this.authorizationService = authorizationService;
+        this.accessService = accessService;
     }
 
     [HttpGet(ApiRoutesV1.CmsAdmins)]
@@ -38,8 +40,6 @@ public class CmsAdminController : ControllerBase
     [Authorize(Policy = AuthorizationPolicies.CmsAdminOnly)]
     public async Task<UserResponse> CreateCmsAdmin([FromBody] CreateCmsAdminRequest? request, CancellationToken ct)
     {
-        // var isCmsAdmin = (await authorizationService.AuthorizeAsync(User, AuthorizationPolicies.CmsAdminOnly)).Succeeded;
-        // var isTrainer = (await authorizationService.AuthorizeAsync(User, AuthorizationPolicies.TrainerOnly)).Succeeded;
 
         ValidationException.ThrowIfNull(request, "request cannot be null");
         var user = await userService.RegisterCmsAdminAsync(request, ct);

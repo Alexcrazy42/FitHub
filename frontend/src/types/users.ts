@@ -11,3 +11,8 @@ export interface ITrainerResponse {
     id: string;
     user: UserResponse;
 }
+
+export interface IVisitorResponse {
+    id: string;
+    user: UserResponse;
+}

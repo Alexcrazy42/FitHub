@@ -163,5 +163,7 @@ public static class ServiceRegistry
         services.AddScoped<ICurrentIdentityUserIdAccessor, CurrentIdentityUserIdAccessor>();
 
         services.AddScoped<ICurrentIdentityUserAccessor, CurrentIdentityUserAccessor>();
+
+        services.AddScoped<IAccessService, AccessService>();
     }
 }
