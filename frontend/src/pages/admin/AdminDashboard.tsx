@@ -4,7 +4,6 @@ import {
   TeamOutlined,
   EnvironmentOutlined,
   ToolOutlined,
-  ThunderboltOutlined,
 } from "@ant-design/icons";
 
 const AdminDashboard: React.FC = () => {

@@ -1,5 +1,6 @@
 ﻿using FitHub.Application.Common;
 using FitHub.Application.Users.Visitors;
+using FitHub.Common.Entities;
 using FitHub.Common.EntityFramework;
 using FitHub.Domain.Users;
 using Microsoft.EntityFrameworkCore;
@@ -27,5 +28,16 @@ public class VisitorRepository : DefaultPendingRepository<Visitor, VisitorId, Da
         var items = await dbQuery.ToListAsync(ct);
 
         return PagedResult<Visitor>.Create(items: items, totalItems: total, currentPage: query.PageNumber, pageSize: query.PageSize);
+    }
+
+    public async Task<Visitor> GetAsync(VisitorId id, CancellationToken ct)
+    {
+        var visitor = await ReadRaw()
+            .Include(x => x.User)
+            .FirstOrDefaultAsync(x => x.Id == id, ct);
+
+        NotFoundException.ThrowIfNull(visitor, "Посетитель не найден!");
+
+        return visitor;
     }
 }

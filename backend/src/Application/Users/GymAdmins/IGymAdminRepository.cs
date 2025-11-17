@@ -7,4 +7,6 @@ namespace FitHub.Application.Users.GymAdmins;
 public interface IGymAdminRepository : IPendingRepository<GymAdmin, GymAdminId>
 {
     Task<PagedResult<GymAdmin>> GetAll(PagedQuery query, CancellationToken ct);
+
+    Task<GymAdmin> GetAsync(GymAdminId id, CancellationToken ct);
 }

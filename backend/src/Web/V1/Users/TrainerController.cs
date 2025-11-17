@@ -6,6 +6,7 @@ using FitHub.Contracts;
 using FitHub.Contracts.V1;
 using FitHub.Contracts.V1.Users;
 using FitHub.Contracts.V1.Users.Trainers;
+using FitHub.Domain.Users;
 using FitHub.Web.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,11 +17,13 @@ public class TrainerController : ControllerBase
 {
     private readonly IUserService userService;
     private readonly ITrainerService trainerService;
+    private readonly IAccessService accessService;
 
-    public TrainerController(IUserService userService, ITrainerService trainerService)
+    public TrainerController(IUserService userService, ITrainerService trainerService, IAccessService accessService)
     {
         this.userService = userService;
         this.trainerService = trainerService;
+        this.accessService = accessService;
     }
 
     [HttpGet(ApiRoutesV1.Trainers)]
@@ -39,5 +42,13 @@ public class TrainerController : ControllerBase
         ValidationException.ThrowIfNull(request, "request cannot be null");
         var user = await userService.RegisterTrainerAsync(request, ct);
         return user.ToResponse();
+    }
+
+    [HttpPut(ApiRoutesV1.TrainerSetStatus)]
+    public async Task SetStatus([FromRoute] string? id, [FromQuery] bool? status, CancellationToken ct)
+    {
+        await accessService.EnsureHasAnyPolicyAsync(AuthorizationPolicies.CmsAdminOnly, AuthorizationPolicies.GymAdminOnly);
+        var trainerId = TrainerId.Parse(id);
+        await trainerService.SetStatus(trainerId, status ?? false, ct);
     }
 }

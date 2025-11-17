@@ -7,4 +7,6 @@ namespace FitHub.Application.Users.Trainers;
 public interface ITrainerRepository : IPendingRepository<Trainer, TrainerId>
 {
     Task<PagedResult<Trainer>> GetAll(PagedQuery query, CancellationToken ct);
+
+    Task<Trainer> GetAsync(TrainerId id, CancellationToken ct);
 }

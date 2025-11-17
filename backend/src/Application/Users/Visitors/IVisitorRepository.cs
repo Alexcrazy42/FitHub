@@ -7,4 +7,6 @@ namespace FitHub.Application.Users.Visitors;
 public interface IVisitorRepository : IPendingRepository<Visitor, VisitorId>
 {
     Task<PagedResult<Visitor>> GetAll(PagedQuery query, CancellationToken ct);
+
+    Task<Visitor> GetAsync(VisitorId id, CancellationToken ct);
 }

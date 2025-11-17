@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { UserPageTabType } from './userPageTabType';
 import {
   CreateGymAdminRequest,
@@ -8,9 +8,10 @@ import {
 import { useApiService } from '../../../api/useApiService';
 import { ListResponse } from '../../../types/common';
 import { toast } from 'react-toastify';
-import { Table, Pagination, Button, Modal, Input, Space, Select } from 'antd';
+import { Table, Pagination, Button, Modal, Input, Space, Select, Menu } from 'antd';
 import { useForm, Controller } from 'react-hook-form';
 import { IGymResponse } from '../../../types/gyms';
+import './styles/gymAdminTab.css'
 
 interface GymAdminTabProps {
   activeTab: UserPageTabType;
@@ -26,6 +27,8 @@ export const GymAdminTab: React.FC<GymAdminTabProps> = ({ activeTab }) => {
   const [gymOptions, setGymOptions] = useState<{ value: string; label: string }[]>([]);
   const [formLoading, setFormLoading] = useState(false);
   const apiService = useApiService();
+  const [contextMenu, setContextMenu] = useState<{ visible: boolean; x: number; y: number; record?: IGymAdminResponse }>({ visible: false, x: 0, y: 0 });
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const {
     control,
@@ -73,6 +76,19 @@ export const GymAdminTab: React.FC<GymAdminTabProps> = ({ activeTab }) => {
       fetchAll();
     }
   }, [page, pageSize, activeTab]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (contextMenu.visible && menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setContextMenu({ ...contextMenu, visible: false });
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [contextMenu]);
 
   const fetchAll = async () => {
     setLoading(true);
@@ -212,8 +228,61 @@ export const GymAdminTab: React.FC<GymAdminTabProps> = ({ activeTab }) => {
     }
   ];
 
+  const handleRightClick = (event: React.MouseEvent, record: IGymAdminResponse) => {
+    event.preventDefault();
+    setContextMenu({
+      visible: true,
+      x: event.clientX,
+      y: event.clientY,
+      record,
+    });
+  };
+
+  const handleClickOutside = () => {
+    if (contextMenu.visible) {
+      setContextMenu({ ...contextMenu, visible: false });
+    }
+  };
+
+  const setStatus = async (record: IGymAdminResponse, status : boolean) => {
+      const response = await apiService.put<never>(`v1/gym-admins/${record.id}/set-status?status=${status}`);
+      if(response.success) {
+        const actionName = status ? "активировали" : "деактивировали";
+        toast.info(`Успешно ${actionName} пользователя ${record.user.email}`);
+        fetchAll();
+      } else {
+        toast.error(response.error?.detail ?? "Ошибка");
+      }
+  }
+
+  const menu = (record?: IGymAdminResponse) => {
+    // Если пользователь никогда не был активирован, меню не показываем
+    if (!record?.user.startActiveAt) return null;
+
+    return (
+      <Menu>
+        {record?.user.isActive ? (
+          <Menu.Item
+            key="deactivate"
+            onClick={() => setStatus(record, false)}
+          >
+            Деактивировать
+          </Menu.Item>
+        ) : (
+          <Menu.Item
+            key="activate"
+            onClick={() => setStatus(record, true)}
+          >
+            Активировать
+          </Menu.Item>
+        )}
+      </Menu>
+    );
+  };
+
+
   return (
-    <div style={{ padding: '16px' }}>
+    <div style={{ padding: '16px' }} onClick={handleClickOutside}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
         <h2>Администраторы спортзалов</h2>
         <Button type="primary" onClick={() => setIsModalOpen(true)}>
@@ -222,15 +291,15 @@ export const GymAdminTab: React.FC<GymAdminTabProps> = ({ activeTab }) => {
       </div>
 
       <Table
-        dataSource={items.map((user, index) => ({
-          ...user,
-          key: user.user.email || index,
-        }))}
+        dataSource={items}
         columns={columns}
         loading={loading}
         pagination={false}
         scroll={{ x: true }}
         rowKey={(record) => record.user.email || record.id}
+        onRow={(record) => ({
+          onContextMenu: (event) => handleRightClick(event, record),
+        })}
       />
 
       <div style={{ marginTop: 16, textAlign: 'right' }}>
@@ -244,6 +313,28 @@ export const GymAdminTab: React.FC<GymAdminTabProps> = ({ activeTab }) => {
           showTotal={(total) => `Всего: ${total}`}
         />
       </div>
+
+      {contextMenu.visible && (
+        <div
+          ref={menuRef}
+          style={{
+            position: 'fixed',
+            top: contextMenu.y,
+            left: contextMenu.x,
+            zIndex: 1000,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            borderRadius: 6,
+            background: '#fff',
+            transform: 'scale(0.8)',
+            opacity: 0,
+            transition: 'transform 0.25s ease-out, opacity 0.15s ease-out',
+            animation: 'menuFadeIn 0.25s forwards',
+          }}
+        >
+          {menu(contextMenu.record)}
+        </div>
+      )}
+
 
       {/* Модальное окно создания */}
       <Modal

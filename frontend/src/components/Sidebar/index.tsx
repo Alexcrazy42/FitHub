@@ -7,6 +7,7 @@ import { adminMenuConfig } from '../../routes/adminMenuConfig';
 import { useAuth } from '../../context/useAuth';
 import { MenuItem } from '../../routes/MenuItem';
 import { userMenuConfig } from '../../routes/userMenuConfig';
+import { gymAdminMenuConfig } from '../../routes/gymAdminMenuConfig';
 
 interface SidebarProps {
   collapsed: boolean;
@@ -52,6 +53,8 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, isDark = false }) => {
     menuConfig = adminMenuConfig;
   } else if (user?.currentRole === 'GymVisitor') {
     menuConfig = userMenuConfig;
+  } else if (user?.currentRole === 'GymAdmin') {
+    menuConfig = gymAdminMenuConfig;
   }
 
   const menuItems = transformToAntdMenu(menuConfig, collapsed);

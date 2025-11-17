@@ -19,8 +19,8 @@ export const CmsAdminTab: React.FC<CmsAdminTabProps> = ({ activeTab }) => {
   const [items, setItems] = useState<UserResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [contextMenu, setContextMenu] = useState<{ visible: boolean; x: number; y: number; record?: UserResponse }>({ visible: false, x: 0, y: 0 });
   const apiService = useApiService();
+  const [contextMenu, setContextMenu] = useState<{ visible: boolean; x: number; y: number; record?: UserResponse }>({ visible: false, x: 0, y: 0 });
   const menuRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -152,6 +152,17 @@ export const CmsAdminTab: React.FC<CmsAdminTabProps> = ({ activeTab }) => {
     }
   ];
 
+  const setStatus = async (record: UserResponse, status : boolean) => {
+    const response = await apiService.put<never>(`v1/cms-admins/${record.id}/set-status?status=${status}`);
+    if(response.success) {
+      const actionName = status ? "активировали" : "деактивировали";
+      toast.info(`Успешно ${actionName} пользователя ${record.email}`);
+      fetchAll();
+    } else {
+      toast.error(response.error?.detail ?? "Ошибка");
+    }
+  }
+
 
   const menu = (record?: UserResponse) => {
     // Если пользователь никогда не был активирован, меню не показываем
@@ -162,26 +173,18 @@ export const CmsAdminTab: React.FC<CmsAdminTabProps> = ({ activeTab }) => {
         {record.isActive ? (
           <Menu.Item
             key="deactivate"
-            onClick={() => toast.info(`Деактивировать ${record.email}`)}
+            onClick={() => setStatus(record, false)}
           >
             Деактивировать
           </Menu.Item>
         ) : (
           <Menu.Item
             key="activate"
-            onClick={() => toast.info(`Активировать ${record.email}`)}
+            onClick={() => setStatus(record, true)}
           >
             Активировать
           </Menu.Item>
         )}
-
-        <Menu.Item
-          key="delete"
-          onClick={() => toast.info(`Удалить ${record.email}`)}
-          danger
-        >
-          Удалить
-        </Menu.Item>
       </Menu>
     );
   };

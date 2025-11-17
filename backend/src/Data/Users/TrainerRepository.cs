@@ -1,6 +1,7 @@
 ﻿using FitHub.Application.Common;
 using FitHub.Application.Users;
 using FitHub.Application.Users.Trainers;
+using FitHub.Common.Entities;
 using FitHub.Common.EntityFramework;
 using FitHub.Domain.Users;
 using Microsoft.EntityFrameworkCore;
@@ -30,5 +31,16 @@ public class TrainerRepository :
         var items = await dbQuery.ToListAsync(ct);
 
         return PagedResult<Trainer>.Create(items, totalItems: total, currentPage: query.PageNumber, pageSize: query.PageSize);
+    }
+
+    public async Task<Trainer> GetAsync(TrainerId id, CancellationToken ct)
+    {
+        var trainer = await ReadRaw()
+            .Include(x => x.User)
+            .FirstOrDefaultAsync(x => x.Id == id, ct);
+
+        NotFoundException.ThrowIfNull(trainer, "Тренер не найден!");
+
+        return trainer;
     }
 }

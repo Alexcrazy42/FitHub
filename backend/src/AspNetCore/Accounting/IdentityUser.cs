@@ -1,4 +1,5 @@
 ﻿using FitHub.Common.Entities;
+using ValidationException = System.ComponentModel.DataAnnotations.ValidationException;
 
 namespace FitHub.Common.AspNetCore.Accounting;
 
@@ -54,6 +55,10 @@ public class IdentityUser : IEntity<IdentityUserId>
 
     public void SetActive(bool value)
     {
+        if (StartActiveAt is null)
+        {
+            throw new ValidationException("Невозможно поменять статус для неактивированного пользователя!");
+        }
         IsActive = value;
     }
 

@@ -6,4 +6,6 @@ namespace FitHub.Application.Users.Visitors;
 public interface IVisitorService
 {
     Task<PagedResult<Visitor>> GetAll(PagedQuery query, CancellationToken ct);
+
+    Task SetStatus(VisitorId id, bool status, CancellationToken ct);
 }

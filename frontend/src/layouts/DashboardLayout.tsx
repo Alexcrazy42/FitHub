@@ -5,7 +5,6 @@ import Sidebar from '../components/Sidebar';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/useTheme';
 import { useApiService } from '../api/useApiService';
-import { toast } from 'react-toastify';
 
 const { Sider, Content, Header } = Layout;
 

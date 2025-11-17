@@ -1,5 +1,6 @@
 ﻿using FitHub.Application.Users;
 using FitHub.Application.Users.CmsAdmins;
+using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.AspNetCore.Auth;
 using FitHub.Common.Entities;
 using FitHub.Contracts;
@@ -40,9 +41,16 @@ public class CmsAdminController : ControllerBase
     [Authorize(Policy = AuthorizationPolicies.CmsAdminOnly)]
     public async Task<UserResponse> CreateCmsAdmin([FromBody] CreateCmsAdminRequest? request, CancellationToken ct)
     {
-
         ValidationException.ThrowIfNull(request, "request cannot be null");
         var user = await userService.RegisterCmsAdminAsync(request, ct);
         return user.ToResponse();
+    }
+
+    [HttpPut(ApiRoutesV1.CmsAdminSetStatus)]
+    public async Task Deactivate([FromRoute] string? id, [FromQuery] bool? status, CancellationToken ct)
+    {
+        await accessService.EnsureHasAnyPolicyAsync(AuthorizationPolicies.CmsAdminOnly);
+        var adminId = IdentityUserId.Parse(id);
+        await cmsAdminService.SetStatus(adminId, status ?? false, ct);
     }
 }
