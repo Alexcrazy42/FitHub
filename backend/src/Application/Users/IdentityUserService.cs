@@ -58,7 +58,7 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
         this.emailNotificationRepository = emailNotificationRepository;
         this.tokenRepository = tokenRepository;
         this.trainerRepository = trainerRepository;
-        this.context = httpContextAccessor.HttpContext ?? throw new ArgumentException("Не получается получить HttpContext");
+        context = httpContextAccessor.HttpContext ?? throw new ArgumentException("Не получается получить HttpContext");
         this.tokenService = tokenService;
         this.logger = logger;
         this.sessionService = sessionService;

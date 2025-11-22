@@ -6,7 +6,7 @@ namespace FitHub.Domain.Users;
 
 public class GymAdmin : IEntity<GymAdminId>
 {
-    private List<Gym> gyms  = [];
+    private List<Gym> gyms = [];
     private User? user;
 
     private GymAdmin(GymAdminId id, IdentityUserId userId)

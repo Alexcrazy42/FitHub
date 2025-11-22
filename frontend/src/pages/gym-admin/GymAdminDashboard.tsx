@@ -21,15 +21,6 @@ const GymAdminDashboard: React.FC = () => {
 
       {/* Карточки статистики */}
       <Row gutter={[16, 16]}>
-        <Col xs={24} sm={12} lg={6}>
-          <Card bordered={false} className="shadow-md rounded-2xl">
-            <Statistic
-              title="Залы"
-              value={8}
-              prefix={<EnvironmentOutlined className="text-blue-500" />}
-            />
-          </Card>
-        </Col>
 
         <Col xs={24} sm={12} lg={6}>
           <Card bordered={false} className="shadow-md rounded-2xl">

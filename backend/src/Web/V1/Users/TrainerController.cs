@@ -27,18 +27,18 @@ public class TrainerController : ControllerBase
     }
 
     [HttpGet(ApiRoutesV1.Trainers)]
-    [Authorize(Policy = AuthorizationPolicies.CmsAdminOnly)]
     public async Task<ListResponse<TrainerResponse>> GetAll([FromQuery] PagedRequest? request, CancellationToken ct)
     {
+        await accessService.EnsureHasAnyPolicyAsync(AuthorizationPolicies.CmsAdminOnly, AuthorizationPolicies.GymAdminOnly);
         var query = request.ToDomain();
         var result = await trainerService.GetAll(query, ct);
         return result.ToResponse(UserExtensions.ToResponse);
     }
 
     [HttpPost(ApiRoutesV1.Trainers)]
-    [Authorize(Policy = AuthorizationPolicies.CmsAdminOnly)]
     public async Task<UserResponse> CreateTrainer([FromBody] CreateTrainerRequest? request, CancellationToken ct)
     {
+        await accessService.EnsureHasAnyPolicyAsync(AuthorizationPolicies.CmsAdminOnly, AuthorizationPolicies.GymAdminOnly);
         ValidationException.ThrowIfNull(request, "request cannot be null");
         var user = await userService.RegisterTrainerAsync(request, ct);
         return user.ToResponse();

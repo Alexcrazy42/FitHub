@@ -151,7 +151,7 @@ public static class ServiceRegistry
 
                     return Results.Ok(loginResponse);
                 })
-                .WithTags("Auth");
+                .AllowAnonymous();
         });
     }
 

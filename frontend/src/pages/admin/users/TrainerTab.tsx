@@ -11,12 +11,14 @@ import { toast } from 'react-toastify';
 import { Table, Pagination, Button, Modal, Form, Input, Space, Menu } from 'antd';
 import { useForm, Controller } from 'react-hook-form';
 import './styles/trainerTab.css'
+import { useAuth } from '../../../context/useAuth';
 
 interface TrainerTabProps {
   activeTab: UserPageTabType;
 }
 
 export const TrainerTab: React.FC<TrainerTabProps> = ({ activeTab }) => {
+  const { user } = useAuth();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [total, setTotal] = useState(0);
@@ -223,9 +225,11 @@ export const TrainerTab: React.FC<TrainerTabProps> = ({ activeTab }) => {
     <div style={{ padding: '16px' }} onClick={handleClickOutside}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
         <h2>Тренеры</h2>
-        <Button type="primary" onClick={() => setIsModalOpen(true)}>
-          + Добавить тренера
-        </Button>
+        {user?.currentRole == "GymAdmin" && (
+          <Button type="primary" onClick={() => setIsModalOpen(true)}>
+            + Добавить тренера
+          </Button>
+        )}
       </div>
 
       <Table

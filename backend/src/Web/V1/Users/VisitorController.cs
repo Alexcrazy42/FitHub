@@ -23,6 +23,7 @@ public class VisitorController : ControllerBase
     [HttpGet(ApiRoutesV1.Visitors)]
     public async Task<ListResponse<VisitorResponse>> Get([FromQuery] PagedRequest? pagedRequest, CancellationToken ct)
     {
+        await accessService.EnsureHasAnyPolicyAsync(AuthorizationPolicies.CmsAdminOnly, AuthorizationPolicies.GymAdminOnly);
         var domain = pagedRequest.ToDomain();
         var result = await visitorService.GetAll(domain, ct);
         return result.ToResponse(UserExtensions.ToResponse);

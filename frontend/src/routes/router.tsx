@@ -78,7 +78,7 @@ export const routes: RouteObject[] = [
   { path: "/reset-password", element: <ResetPassword /> },
   { path: "/set-password", element: <SetPassword /> },
   {
-    element: <ProtectedRoute allowedRoles={['CmsAdmin', 'GymVisitor']} />,
+    element: <ProtectedRoute allowedRoles={['CmsAdmin', 'GymVisitor', 'GymAdmin']} />,
     children: [
       {
         element: <DashboardLayout />,

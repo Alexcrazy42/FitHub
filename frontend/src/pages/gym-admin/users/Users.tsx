@@ -5,14 +5,14 @@ import { TrainerTab } from "../../admin/users/TrainerTab";
 import { UserTab } from "../../admin/users/UserTab";
 
 export const Users : React.FC = () => {
-    const [activeTab, setActiveTab] = useState<UserPageTabType>(UserPageTabType.CmsAdmins);
+    const [activeTab, setActiveTab] = useState<UserPageTabType>(UserPageTabType.Trainers);
     
      const handleTabChange = useCallback((key: string) => {
       if (isValidTabKey(key)) {
         setActiveTab(key);
       } else {
         console.warn("Invalid tab key:", key);
-        setActiveTab(UserPageTabType.CmsAdmins);
+        setActiveTab(UserPageTabType.Trainers);
       }
     }, []);
 

@@ -135,4 +135,26 @@ public class TestController : ControllerBase
             return StatusCode(500, new { error = "Internal server error" });
         }
     }
+
+    [HttpPost("test")]
+    public IActionResult Test([FromQuery] Test1 test)
+    {
+        return Ok(test);
+    }
+
+    public class Test1
+    {
+        public DateTimeOffset? Start { get; set; }
+
+        public DateTimeOffset? End { get; set; }
+
+        public TestEnum? Status { get; set; }
+    }
+
+    public enum TestEnum
+    {
+        Stop,
+        Start,
+        End
+    }
 }
