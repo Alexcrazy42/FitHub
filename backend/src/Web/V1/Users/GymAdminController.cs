@@ -1,5 +1,6 @@
 ﻿using FitHub.Application.Users;
 using FitHub.Application.Users.GymAdmins;
+using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.AspNetCore.Auth;
 using FitHub.Common.Entities;
 using FitHub.Contracts;
@@ -18,12 +19,23 @@ public class GymAdminController : ControllerBase
     private readonly IUserService userService;
     private readonly IGymAdminService gymAdminService;
     private readonly IAccessService accessService;
+    private readonly ICurrentIdentityUserIdAccessor accessor;
 
-    public GymAdminController(IUserService userService, IGymAdminService gymAdminService, IAccessService accessService)
+    public GymAdminController(IUserService userService, IGymAdminService gymAdminService, IAccessService accessService, ICurrentIdentityUserIdAccessor accessor)
     {
         this.userService = userService;
         this.gymAdminService = gymAdminService;
         this.accessService = accessService;
+        this.accessor = accessor;
+    }
+
+    [HttpGet(ApiRoutesV1.GymAdminMe)]
+    [Authorize(Policy = AuthorizationPolicies.GymAdminOnly)]
+    public async Task<GymAdminResponse> GetMe(CancellationToken ct)
+    {
+        var userId = accessor.GetCurrentUserId();
+        var gymAdmin = await gymAdminService.GetByUserIdAsync(userId, ct);
+        return gymAdmin.ToResponse();
     }
 
     [HttpGet(ApiRoutesV1.GymAdmins)]

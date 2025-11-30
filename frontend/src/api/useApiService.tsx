@@ -16,3 +16,13 @@ export const useApiService = () => {
     
     return apiService;
 };
+
+export const useApiServiceWithoutNavigate = () => {
+    const apiService = new ApiService(
+      API_URL,
+          () => {},
+          () => {}
+    );
+
+    return apiService;
+}

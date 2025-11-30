@@ -1,182 +1,333 @@
-﻿import React, { useState } from "react";
+﻿import React, { useMemo, useState } from "react";
+import "react-big-calendar/lib/css/react-big-calendar.css";
+import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
+
+import {
+  Calendar as RBC,
+  dateFnsLocalizer,
+  Event as RBCEvent,
+  SlotInfo,
+  View,
+} from "react-big-calendar";
+import withDragAndDrop, { EventResizeArg, EventDropArg } from "react-big-calendar/lib/addons/dragAndDrop";
+
+import { format, parse, startOfWeek, getDay } from "date-fns";
+import { ru } from "date-fns/locale";
+
+import { Button, Modal, Input, DatePicker, TimePicker, Select, Space, Popconfirm, Checkbox } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
+
+import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import dayjs, { Dayjs } from "dayjs";
-import { Modal, Button, Form, Input, Select, DatePicker, TimePicker, Popconfirm, Checkbox } from "antd";
+import "dayjs/locale/ru";
 
-type TrainingEvent = {
-  id: string;
-  title: string;
-  trainer: string;
-  date: string; // YYYY-MM-DD
-  start: string; // HH:mm
-  end: string;   // HH:mm
-  color: string;
-};
+dayjs.locale("ru");
 
-const sampleTrainers = [
+// ---- date-fns локализатор ----
+const locales = { ru };
+const localizer = dateFnsLocalizer({
+  format: (date, formatStr) => format(date, formatStr, { locale: ru }),
+  parse: (value, formatStr) => parse(value, formatStr, new Date(), { locale: ru }),
+  startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 1 }),
+  getDay,
+  locales,
+});
+
+const DnDCalendar = withDragAndDrop(RBC);
+
+type Trainer = { value: string; color: string };
+
+const sampleTrainers: Trainer[] = [
   { value: "Иван", color: "#60A5FA" },
   { value: "Мария", color: "#34D399" },
   { value: "Ольга", color: "#F59E0B" },
 ];
 
-export const ScheduleOld: React.FC = () => {
-  const [events, setEvents] = useState<TrainingEvent[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingEvent, setEditingEvent] = useState<TrainingEvent | null>(null);
-  const [form] = Form.useForm();
+export type TrainingEvent = {
+  id: string;
+  title: string;
+  trainer: string;
+  start: Date;
+  end: Date;
+  color?: string;
+};
+
+type ScheduleFormValues = {
+  title: string;
+  trainer: string;
+  date: Dayjs;
+  timeStart: Dayjs;
+  timeEnd: Dayjs;
+};
+
+export const Schedule: React.FC = () => {
+  const [events, setEvents] = useState<TrainingEvent[]>(() => {
+    const base = dayjs().startOf("week").add(1, "day"); // понедельник
+    return [
+      { id: "1", title: "Йога", trainer: "Мария", start: base.hour(10).toDate(), end: base.hour(11).toDate(), color: "#34D399" },
+      { id: "2", title: "Кроссфит", trainer: "Иван", start: base.add(1, "day").hour(18).toDate(), end: base.add(1, "day").hour(19).toDate(), color: "#60A5FA" },
+      { id: "3", title: "Силовая", trainer: "Ольга", start: base.add(2, "day").hour(17).toDate(), end: base.add(2, "day").hour(18).toDate(), color: "#F59E0B" },
+    ];
+  });
+
+  const [view, setView] = useState<View>("week");
   const [selectedTrainer, setSelectedTrainer] = useState<string | null>(null);
   const [onlyShowSelected, setOnlyShowSelected] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<TrainingEvent | null>(null);
 
-  const openModal = (event?: TrainingEvent) => {
-    if (event) {
-      setEditingEvent(event);
-      form.setFieldsValue({
-        title: event.title,
-        trainer: event.trainer,
-        date: dayjs(event.date),
-        timeStart: dayjs(`${event.date}T${event.start}`),
-        timeEnd: dayjs(`${event.date}T${event.end}`),
-      });
-    } else {
-      setEditingEvent(null);
-      form.resetFields();
-    }
+  const { control, handleSubmit, reset } = useForm<ScheduleFormValues>({
+    defaultValues: {
+      title: "",
+      trainer: "",
+      date: dayjs(),
+      timeStart: dayjs().hour(10).minute(0),
+      timeEnd: dayjs().hour(11).minute(0),
+    },
+  });
+
+  const trainerOptions = useMemo(() => sampleTrainers.map(t => ({ label: t.value, value: t.value })), []);
+
+  const openCreateModal = ({ start, end }: SlotInfo) => {
+    setEditingEvent(null);
+    reset({
+      title: "",
+      trainer: "",
+      date: dayjs(start),
+      timeStart: dayjs(start),
+      timeEnd: dayjs(end),
+    });
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (ev: TrainingEvent) => {
+    setEditingEvent(ev);
+    reset({
+      title: ev.title,
+      trainer: ev.trainer,
+      date: dayjs(ev.start),
+      timeStart: dayjs(ev.start),
+      timeEnd: dayjs(ev.end),
+    });
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingEvent(null);
-    form.resetFields();
   };
 
-  const saveEvent = (values: any) => {
-    const date: Dayjs = values.date;
-    const startTime: Dayjs = values.timeStart;
-    const endTime: Dayjs = values.timeEnd;
-    const newEvent: TrainingEvent = {
-      id: editingEvent ? editingEvent.id : String(Date.now()),
-      title: values.title,
-      trainer: values.trainer,
-      date: date.format("YYYY-MM-DD"),
-      start: startTime.format("HH:mm"),
-      end: endTime.format("HH:mm"),
-      color: sampleTrainers.find(t => t.value === values.trainer)?.color || "#60A5FA",
-    };
+  const onSubmit: SubmitHandler<ScheduleFormValues> = async (values) => {
+    const start = dayjs(values.date)
+      .hour(values.timeStart.hour())
+      .minute(values.timeStart.minute())
+      .toDate();
+
+    const end = dayjs(values.date)
+      .hour(values.timeEnd.hour())
+      .minute(values.timeEnd.minute())
+      .toDate();
 
     if (editingEvent) {
-      setEvents(prev => prev.map(ev => (ev.id === editingEvent.id ? newEvent : ev)));
+      const updatedEvent = { ...editingEvent, title: values.title, trainer: values.trainer, start, end };
+
+      const body = { start, end, status: 'Test' };
+      // --- PUT запрос на обновление ---
+      try {
+        const res = await fetch(`http://localhost:5209/api/Test/test`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        console.log("PUT body:", JSON.stringify(updatedEvent, null, 2));
+        const data = await res.json().catch(() => null);
+        console.log("Response:", data);
+      } catch (err) {
+        console.error("Ошибка обновления:", err);
+      }
+
+      setEvents(prev => prev.map(ev => ev.id === editingEvent.id ? updatedEvent : ev));
     } else {
+      const color = sampleTrainers.find(t => t.value === values.trainer)?.color ?? "#60A5FA";
+      const newEvent: TrainingEvent = { id: String(Date.now()), title: values.title, trainer: values.trainer, start, end, color };
+
+      // --- POST запрос на создание ---
+      try {
+        const body = { start, end, status: 'Start' };
+        const res = await fetch(`http://localhost:5209/api/Test/test`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        console.log("POST body:", JSON.stringify(newEvent, null, 2));
+        const data = await res.json().catch(() => null);
+        console.log("Response:", data);
+      } catch (err) {
+        console.error("Ошибка создания:", err);
+      }
+
       setEvents(prev => [...prev, newEvent]);
     }
+
     closeModal();
   };
 
-  const deleteEvent = (id: string) => {
-    setEvents(prev => prev.filter(ev => ev.id !== id));
+  const handleEventDrop = ({ event, start, end }: EventDropArg<TrainingEvent>) => {
+    setEvents(prev => prev.map(ev => ev.id === event.id ? { ...ev, start, end } : ev));
   };
 
-  const filteredEvents = events.filter(ev =>
-    selectedTrainer ? (onlyShowSelected ? ev.trainer === selectedTrainer : true) : true
+  const handleEventResize = ({ event, start, end }: EventResizeArg<TrainingEvent>) => {
+    setEvents(prev => prev.map(ev => ev.id === event.id ? { ...ev, start, end } : ev));
+  };
+
+  const handleDeleteEvent = (id: string) => {
+    setEvents(prev => prev.filter(e => e.id !== id));
+    closeModal();
+  };
+
+  const filteredEvents = useMemo(() => {
+    if (!selectedTrainer) return events;
+    return onlyShowSelected ? events.filter(e => e.trainer === selectedTrainer) : events;
+  }, [events, selectedTrainer, onlyShowSelected]);
+
+  const eventStyleGetter = (event: TrainingEvent) => {
+    const isHighlighted = selectedTrainer && event.trainer === selectedTrainer;
+    const baseColor = event.color ?? "#60A5FA";
+    return {
+      style: {
+        backgroundColor: isHighlighted ? baseColor : selectedTrainer ? "#E6E6E6" : baseColor,
+        border: "1px solid rgba(0,0,0,0.08)",
+        color: "#0f172a",
+        paddingLeft: 6,
+        borderRadius: 4,
+        opacity: selectedTrainer && !isHighlighted ? 0.6 : 1,
+      },
+    };
+  };
+
+  const EventRenderer: React.FC<{ event: TrainingEvent }> = ({ event }) => (
+    <div className="flex items-center justify-between">
+      <div className="text-xs">
+        <div className="font-medium truncate">{event.title}</div>
+        <div className="text-[11px] text-gray-700 truncate">{event.trainer}</div>
+      </div>
+    </div>
   );
 
-  // Простая таблица 7 дней недели
-  const weekDays = Array.from({ length: 7 }, (_, i) => dayjs().startOf("week").add(i, "day"));
-
   return (
-    <div style={{ padding: 20 }}>
-      <h1>Расписание тренировок</h1>
-      <div style={{ marginBottom: 16 }}>
-        <Select
-          placeholder="Выделить тренера"
-          allowClear
-          style={{ width: 180, marginRight: 8 }}
-          value={selectedTrainer ?? undefined}
-          onChange={v => setSelectedTrainer(v ?? null)}
-          options={sampleTrainers.map(t => ({ label: t.value, value: t.value }))}
-        />
-        <Checkbox checked={onlyShowSelected} onChange={e => setOnlyShowSelected(e.target.checked)} style={{ marginRight: 8 }}>
-          Показать только выбранного
-        </Checkbox>
-        <Button type="primary" onClick={() => openModal()}>
-          Создать
-        </Button>
+    <div className="p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-semibold">Расписание</h1>
+        <div className="flex items-center gap-3">
+          <Select
+            placeholder="Выделить тренера"
+            allowClear
+            value={selectedTrainer ?? undefined}
+            style={{ width: 180 }}
+            options={trainerOptions}
+            onChange={v => setSelectedTrainer(v ?? null)}
+          />
+          <Checkbox checked={onlyShowSelected} onChange={e => setOnlyShowSelected(e.target.checked)}>
+            Только выбранный
+          </Checkbox>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => openCreateModal({ start: new Date(), end: dayjs().add(1, "hour").toDate() })}
+          >
+            Создать
+          </Button>
+        </div>
       </div>
 
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
-            {weekDays.map(day => (
-              <th key={day.format("YYYY-MM-DD")} style={{ border: "1px solid #ccc", padding: 8 }}>
-                {day.format("ddd DD.MM")}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            {weekDays.map(day => {
-              const dayEvents = filteredEvents.filter(ev => ev.date === day.format("YYYY-MM-DD"));
-              return (
-                <td key={day.format("YYYY-MM-DD")} style={{ border: "1px solid #ccc", verticalAlign: "top", padding: 4, minHeight: 100 }}>
-                  {dayEvents.map(ev => (
-                    <div
-                      key={ev.id}
-                      style={{
-                        backgroundColor: ev.color,
-                        color: "#fff",
-                        padding: "2px 4px",
-                        marginBottom: 4,
-                        borderRadius: 4,
-                        cursor: "pointer",
-                      }}
-                      onClick={() => openModal(ev)}
-                      draggable
-                      onDragStart={e => e.dataTransfer.setData("text/plain", ev.id)}
-                    >
-                      {ev.title} ({ev.trainer}) {ev.start}-{ev.end}
-                    </div>
-                  ))}
-                </td>
-              );
-            })}
-          </tr>
-        </tbody>
-      </table>
+      <div style={{ height: "75vh" }}>
+        <DnDCalendar
+          views={['month', 'week', 'day']}
+          defaultView="week"
+          localizer={localizer}
+          events={filteredEvents as RBCEvent[]}
+          view={view}
+          onView={setView}
+          startAccessor="start"
+          endAccessor="end"
+          selectable
+          resizable
+          onSelectEvent={openEditModal}
+          onSelectSlot={(slotInfo) => openCreateModal(slotInfo)}
+          onEventDrop={handleEventDrop}
+          onEventResize={handleEventResize}
+          style={{ height: "100%" }}
+          eventPropGetter={eventStyleGetter}
+          components={{ event: EventRenderer }}
+          defaultDate={new Date()}
+          popup
+          messages={{
+            week: "Неделя",
+            work_week: "Рабочая неделя",
+            day: "День",
+            month: "Месяц",
+            previous: "Назад",
+            next: "Вперёд",
+            today: "Сегодня",
+            agenda: "Повестка",
+            noEventsInRange: "Нет событий",
+            showMore: total => `+ ещё ${total}`
+          }}
+        />
+      </div>
 
-      <Modal title={editingEvent ? "Редактировать тренировку" : "Создать тренировку"} open={isModalOpen} onCancel={closeModal} footer={null} destroyOnClose>
-        <Form form={form} layout="vertical" onFinish={saveEvent}>
-          <Form.Item name="title" label="Название" rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="trainer" label="Тренер" rules={[{ required: true }]}>
-            <Select options={sampleTrainers.map(t => ({ label: t.value, value: t.value }))} />
-          </Form.Item>
-          <Form.Item name="date" label="Дата" rules={[{ required: true }]}>
-            <DatePicker className="w-full" />
-          </Form.Item>
-          <div style={{ display: "flex", gap: 8 }}>
-            <Form.Item name="timeStart" label="Время начала" rules={[{ required: true }]}>
-              <TimePicker format="HH:mm" />
-            </Form.Item>
-            <Form.Item name="timeEnd" label="Время окончания" rules={[{ required: true }]}>
-              <TimePicker format="HH:mm" />
-            </Form.Item>
+      <Modal
+        title={editingEvent ? "Редактировать тренировку" : "Создать тренировку"}
+        open={isModalOpen}
+        onCancel={closeModal}
+        footer={null}
+      >
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+          <Controller
+            name="title"
+            control={control}
+            rules={{ required: true }}
+            render={({ field }) => <Input {...field} placeholder="Название" />}
+          />
+          <Controller
+            name="trainer"
+            control={control}
+            rules={{ required: true }}
+            render={({ field }) => <Select {...field} options={trainerOptions} placeholder="Тренер" />}
+          />
+          <Controller
+            name="date"
+            control={control}
+            rules={{ required: true }}
+            render={({ field }) => <DatePicker className="w-full" format="DD.MM.YYYY" {...field} value={field.value} />}
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <Controller
+              name="timeStart"
+              control={control}
+              render={({ field }) => <TimePicker className="w-full" format="HH:mm" {...field} value={field.value} />}
+            />
+            <Controller
+              name="timeEnd"
+              control={control}
+              render={({ field }) => <TimePicker className="w-full" format="HH:mm" {...field} value={field.value} />}
+            />
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 16 }}>
-            <div>
+          <div className="flex justify-between items-center mt-4">
+            <Space>
               <Button type="primary" htmlType="submit">{editingEvent ? "Сохранить" : "Создать"}</Button>
               {editingEvent && (
-                <Popconfirm title="Удалить тренировку?" onConfirm={() => deleteEvent(editingEvent.id)}>
-                  <Button danger style={{ marginLeft: 8 }}>Удалить</Button>
+                <Popconfirm title="Удалить тренировку?" onConfirm={() => handleDeleteEvent(editingEvent.id)}>
+                  <Button danger>Удалить</Button>
                 </Popconfirm>
               )}
-            </div>
+            </Space>
             <Button onClick={closeModal}>Отмена</Button>
           </div>
-        </Form>
+        </form>
       </Modal>
     </div>
   );
 };
 
-export default ScheduleOld;
+export default Schedule;

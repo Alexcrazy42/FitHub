@@ -34,7 +34,7 @@ public class GymController : ControllerBase
     {
         ValidationException.ThrowIfNull(id, "Id cannot be null");
         var gymId = GymId.Parse(id);
-        var gym = await gymService.GetGymOrDefaultAsync(gymId, ct);
+        var gym = await gymService.GetByIdAsync(gymId, ct);
 
         if (gym == null)
         {

@@ -22,6 +22,7 @@ public static class ServiceRegistry
         services.AddUnitOfWork<DataContext>(databaseOptions);
 
         services.AddRepositories();
+        services.AddNoIdRepositories();
         services.AddInterceptors();
     }
 
@@ -35,6 +36,32 @@ public static class ServiceRegistry
                         t.GetInterfaces().Any(i =>
                             i.IsGenericType &&
                             i.GetGenericTypeDefinition() == typeof(IPendingRepository<,>)))
+            .ToList();
+
+        foreach (var interfaceType in pendingRepoInterfaces)
+        {
+            var implementation = repositoryAssembly.GetTypes()
+                .FirstOrDefault(t => t.IsClass && !t.IsAbstract && interfaceType.IsAssignableFrom(t));
+
+            if (implementation != null)
+            {
+                services.AddTransient(interfaceType, implementation);
+            }
+        }
+
+        return services;
+    }
+
+    private static IServiceCollection AddNoIdRepositories(this IServiceCollection services)
+    {
+        var applicationAssembly = typeof(Application.ServiceRegistry).Assembly;
+        var repositoryAssembly = typeof(ServiceRegistry).Assembly;
+
+        var pendingRepoInterfaces = applicationAssembly.GetTypes()
+            .Where(t => t.IsInterface &&
+                        t.GetInterfaces().Any(i =>
+                            i.IsGenericType &&
+                            i.GetGenericTypeDefinition() == typeof(IPendingNoIdRepository<>)))
             .ToList();
 
         foreach (var interfaceType in pendingRepoInterfaces)

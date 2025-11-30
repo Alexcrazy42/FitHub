@@ -4,6 +4,7 @@ using FitHub.Contracts.V1.Users.GymAdmins;
 using FitHub.Contracts.V1.Users.Trainers;
 using FitHub.Contracts.V1.Users.Visitors;
 using FitHub.Domain.Users;
+using FitHub.Web.V1.Equipments;
 using EquipmentResponseExtensions = FitHub.Web.V1.Equipments.EquipmentResponseExtensions;
 
 namespace FitHub.Web.V1.Users;
@@ -40,7 +41,8 @@ public static class UserExtensions
         return new TrainerResponse
         {
             Id = trainer.Id.ToString(),
-            User = trainer.User.ToResponse()
+            User = trainer.User.ToResponse(),
+            Gyms = trainer.Gyms.Select(EquipmentResponseExtensions.ToGymResponse).ToList(),
         };
     }
 
@@ -49,7 +51,8 @@ public static class UserExtensions
         return new VisitorResponse
         {
             Id = visitor.Id.ToString(),
-            User = visitor.User.ToResponse()
+            User = visitor.User.ToResponse(),
+            Gyms = visitor.Gyms.Select(x => x.Gym.ToGymResponse()).ToList()
         };
     }
 }

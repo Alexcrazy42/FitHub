@@ -1,8 +1,12 @@
-﻿namespace FitHub.Contracts.V1.Users.Visitors;
+﻿using FitHub.Contracts.V1.Equipments.Gyms;
+
+namespace FitHub.Contracts.V1.Users.Visitors;
 
 public class VisitorResponse
 {
     public string? Id { get; set; }
 
     public UserResponse? User { get; set; }
+
+    public IReadOnlyList<GymResponse> Gyms { get; set; } = [];
 }

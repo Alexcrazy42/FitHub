@@ -1,4 +1,5 @@
 ﻿using FitHub.Application.Common;
+using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.Entities.Storage;
 using FitHub.Domain.Users;
 
@@ -25,5 +26,10 @@ public class GymAdminService : IGymAdminService
         var gymAdmin = await gymAdminRepository.GetAsync(gymAdminId, ct);
         gymAdmin.User.SetActive(status);
         await unitOfWork.SaveChangesAsync(ct);
+    }
+
+    public Task<GymAdmin> GetByUserIdAsync(IdentityUserId userId, CancellationToken ct)
+    {
+        return gymAdminRepository.GetByUserIdAsync(userId, ct);
     }
 }

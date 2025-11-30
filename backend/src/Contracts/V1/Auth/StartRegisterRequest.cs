@@ -7,4 +7,6 @@ public class StartRegisterRequest
     public string? Name { get; set; }
 
     public string? Email { get; set; }
+
+    public string? GymId { get; set; }
 }

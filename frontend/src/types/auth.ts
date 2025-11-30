@@ -9,7 +9,6 @@ export const roleMapping: Record<UserRole, string> = {
   "CmsAdmin": "Администратор"
 };
 
-
 export const roleRoutes: Record<UserRole, string> = {
   'GymVisitor': '/user',
   'GymAdmin': '/gym-admin',
@@ -90,6 +89,7 @@ export interface CreateTrainerAdminRequest {
   email: string;
   surname: string;
   name: string;
+  gymId: string;
 }
 
 export interface IGymAdminResponse {
@@ -101,4 +101,5 @@ export interface IGymAdminResponse {
 export interface ITrainerResponse {
   id: string;
   user: UserResponse;
+  gyms: IGymResponse[];
 }

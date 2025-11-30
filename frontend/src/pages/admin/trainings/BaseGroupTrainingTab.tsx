@@ -47,7 +47,7 @@ export const BaseGroupTrainingTab: React.FC<BaseGroupTrainingTabProps> = ({
 
   const [modalVisible, setModalVisible] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [editingItem, setEditingItem] = useState<IBaseGroupTraining | null>(
+  const [editingItem, setEditingItem] = useState<IBaseGroupTraining | null | undefined>(
     null
   );
   const [submitting, setSubmitting] = useState(false);

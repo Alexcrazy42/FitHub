@@ -1,4 +1,5 @@
 ﻿using FitHub.Application.Common;
+using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.Entities.Storage;
 using FitHub.Domain.Users;
 
@@ -9,4 +10,5 @@ public interface IGymAdminRepository : IPendingRepository<GymAdmin, GymAdminId>
     Task<PagedResult<GymAdmin>> GetAll(PagedQuery query, CancellationToken ct);
 
     Task<GymAdmin> GetAsync(GymAdminId id, CancellationToken ct);
+    Task<GymAdmin> GetByUserIdAsync(IdentityUserId userId, CancellationToken ct);
 }

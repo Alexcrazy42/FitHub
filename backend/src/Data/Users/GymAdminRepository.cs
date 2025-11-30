@@ -1,6 +1,7 @@
 ﻿using FitHub.Application.Common;
 using FitHub.Application.Users;
 using FitHub.Application.Users.GymAdmins;
+using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.Entities;
 using FitHub.Common.EntityFramework;
 using FitHub.Domain.Users;
@@ -17,12 +18,17 @@ public class GymAdminRepository : DefaultPendingRepository<GymAdmin, GymAdminId,
         this.context = context;
     }
 
-    public async Task<PagedResult<GymAdmin>> GetAll(PagedQuery query, CancellationToken ct)
+    protected override IQueryable<GymAdmin> ReadRaw()
     {
-        var dbQuery = ReadRaw()
+        return base.ReadRaw()
             .Include(x => x.User)
             .Include(x => x.Gyms)
             .AsQueryable();
+    }
+
+    public async Task<PagedResult<GymAdmin>> GetAll(PagedQuery query, CancellationToken ct)
+    {
+        var dbQuery = ReadRaw();
 
         var total = await dbQuery.CountAsync(ct);
 
@@ -38,12 +44,19 @@ public class GymAdminRepository : DefaultPendingRepository<GymAdmin, GymAdminId,
     public async Task<GymAdmin> GetAsync(GymAdminId id, CancellationToken ct)
     {
         var admin = await ReadRaw()
-            .Include(x => x.User)
-            .Include(x => x.Gyms)
             .FirstOrDefaultAsync(x => x.Id == id, ct);
 
         NotFoundException.ThrowIfNull(admin, "Администратор не найден!");
 
+        return admin;
+    }
+
+    public async Task<GymAdmin> GetByUserIdAsync(IdentityUserId userId, CancellationToken ct)
+    {
+        var admin = await ReadRaw()
+            .FirstOrDefaultAsync(x => x.UserId == userId, ct);
+
+        NotFoundException.ThrowIfNull(admin, "Администратор зала не найден!");
         return admin;
     }
 }

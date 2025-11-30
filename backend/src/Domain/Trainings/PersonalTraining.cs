@@ -23,6 +23,8 @@ public class PersonalTraining : IEntity<PersonalTrainingId>, IBaseTrainingWithSc
 
     public DateTimeOffset EndTime { get; private set; }
 
+    public bool IsActive { get; private set; }
+
     public VisitorId VisitorId { get; private set; }
 
     public Visitor Visitor
@@ -43,5 +45,10 @@ public class PersonalTraining : IEntity<PersonalTrainingId>, IBaseTrainingWithSc
     {
         StartTime = startTime;
         EndTime = endTime;
+    }
+
+    public void SetActive(bool isActive)
+    {
+        IsActive = isActive;
     }
 }

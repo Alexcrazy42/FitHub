@@ -1,33 +1,42 @@
 ﻿import React, { useMemo, useState } from "react";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
-
 import {
   Calendar as RBC,
   dateFnsLocalizer,
   Event as RBCEvent,
-  SlotInfo,
-  View,
+  SlotInfo
 } from "react-big-calendar";
-import withDragAndDrop, { EventResizeArg, EventDropArg } from "react-big-calendar/lib/addons/dragAndDrop";
-
+import withDragAndDrop, {
+  EventResizeArg,
+  EventDropArg,
+} from "react-big-calendar/lib/addons/dragAndDrop";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import { ru } from "date-fns/locale";
-
-import { Button, Modal, Input, DatePicker, TimePicker, Select, Space, Popconfirm, Checkbox } from "antd";
+import {
+  Button,
+  Modal,
+  Input,
+  DatePicker,
+  TimePicker,
+  Select,
+  Space,
+  Popconfirm,
+  Checkbox,
+} from "antd";
 import { PlusOutlined } from "@ant-design/icons";
-
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import dayjs, { Dayjs } from "dayjs";
 import "dayjs/locale/ru";
 
+
 dayjs.locale("ru");
 
-// ---- date-fns локализатор ----
 const locales = { ru };
 const localizer = dateFnsLocalizer({
-  format: (date, formatStr) => format(date, formatStr, { locale: ru }),
-  parse: (value, formatStr) => parse(value, formatStr, new Date(), { locale: ru }),
+  format: (date: string | number | Date, formatStr: string) => format(date, formatStr, { locale: ru }),
+  parse: (value: string, formatStr: string) =>
+    parse(value, formatStr, new Date(), { locale: ru }),
   startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 1 }),
   getDay,
   locales,
@@ -62,15 +71,35 @@ type ScheduleFormValues = {
 
 export const Schedule: React.FC = () => {
   const [events, setEvents] = useState<TrainingEvent[]>(() => {
-    const base = dayjs().startOf("week").add(1, "day"); // понедельник
+    const base = dayjs().startOf("week").add(1, "day");
     return [
-      { id: "1", title: "Йога", trainer: "Мария", start: base.hour(10).toDate(), end: base.hour(11).toDate(), color: "#34D399" },
-      { id: "2", title: "Кроссфит", trainer: "Иван", start: base.add(1, "day").hour(18).toDate(), end: base.add(1, "day").hour(19).toDate(), color: "#60A5FA" },
-      { id: "3", title: "Силовая", trainer: "Ольга", start: base.add(2, "day").hour(17).toDate(), end: base.add(2, "day").hour(18).toDate(), color: "#F59E0B" },
+      {
+        id: "1",
+        title: "Йога",
+        trainer: "Мария",
+        start: base.hour(10).toDate(),
+        end: base.hour(11).toDate(),
+        color: "#34D399",
+      },
+      {
+        id: "2",
+        title: "Кроссфит",
+        trainer: "Иван",
+        start: base.add(1, "day").hour(18).toDate(),
+        end: base.add(1, "day").hour(19).toDate(),
+        color: "#60A5FA",
+      },
+      {
+        id: "3",
+        title: "Силовая",
+        trainer: "Ольга",
+        start: base.add(2, "day").hour(17).toDate(),
+        end: base.add(2, "day").hour(18).toDate(),
+        color: "#F59E0B",
+      },
     ];
   });
 
-  const [view, setView] = useState<View>("week");
   const [selectedTrainer, setSelectedTrainer] = useState<string | null>(null);
   const [onlyShowSelected, setOnlyShowSelected] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -86,7 +115,10 @@ export const Schedule: React.FC = () => {
     },
   });
 
-  const trainerOptions = useMemo(() => sampleTrainers.map(t => ({ label: t.value, value: t.value })), []);
+  const trainerOptions = useMemo(
+    () => sampleTrainers.map((trainer) => ({ label: trainer.value, value: trainer.value })),
+    []
+  );
 
   const openCreateModal = ({ start, end }: SlotInfo) => {
     setEditingEvent(null);
@@ -117,6 +149,9 @@ export const Schedule: React.FC = () => {
     setEditingEvent(null);
   };
 
+  // -----------------------------
+  //      СОХРАНЕНИЕ ФОРМЫ
+  // -----------------------------
   const onSubmit: SubmitHandler<ScheduleFormValues> = async (values) => {
     const start = dayjs(values.date)
       .hour(values.timeStart.hour())
@@ -128,12 +163,33 @@ export const Schedule: React.FC = () => {
       .minute(values.timeEnd.minute())
       .toDate();
 
+    // -----------------------------
+    //       1. UPDATE (edit)
+    // -----------------------------
     if (editingEvent) {
-      const updatedEvent = { ...editingEvent, title: values.title, trainer: values.trainer, start, end };
+      const updatedEvent = {
+        ...editingEvent,
+        title: values.title,
+        trainer: values.trainer,
+        start,
+        end,
+      };
 
-      const body = { start, end, status: 'Test' };
-      // --- PUT запрос на обновление ---
+      // MOCK API CALL
+      console.log("📡 PUT /api/training/update");
+      const body1 = {
+        id: updatedEvent.id,
+        title: updatedEvent.title,
+        trainer: updatedEvent.trainer,
+        start,
+        end,
+      };
+      console.log("BODY:", body1);
+      console.log("JSON BODY:", JSON.stringify(body1))
+
+
       try {
+        const body = { start, end, status: 'Test' };
         const res = await fetch(`http://localhost:5209/api/Test/test`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -146,12 +202,45 @@ export const Schedule: React.FC = () => {
         console.error("Ошибка обновления:", err);
       }
 
-      setEvents(prev => prev.map(ev => ev.id === editingEvent.id ? updatedEvent : ev));
-    } else {
-      const color = sampleTrainers.find(t => t.value === values.trainer)?.color ?? "#60A5FA";
-      const newEvent: TrainingEvent = { id: String(Date.now()), title: values.title, trainer: values.trainer, start, end, color };
+      setEvents((prev) =>
+        prev.map((ev) => (ev.id === editingEvent.id ? updatedEvent : ev))
+      );
+    }
+    // -----------------------------
+    //      2. CREATE (new)
+    // -----------------------------
+    else {
+      const color =
+        sampleTrainers.find((t) => t.value === values.trainer)?.color ??
+        "#60A5FA";
 
-      // --- POST запрос на создание ---
+      const newEvent: TrainingEvent = {
+        id: String(Date.now()),
+        title: values.title,
+        trainer: values.trainer,
+        start,
+        end,
+        color,
+      };
+
+      // MOCK API CALL
+      console.log("📡 POST /api/training/create");
+      const body1 = {
+        title: newEvent.title,
+        trainer: newEvent.trainer,
+        start,
+        end,
+      };
+
+      console.log("start: ", start);
+      console.log(
+        "start type:",
+        Object.prototype.toString.call(start)
+      );
+      console.log("is Date:", start instanceof Date);
+      console.log("BODY:", body1);
+      console.log("JSON BODY: ", JSON.stringify(body1))
+
       try {
         const body = { start, end, status: 'Start' };
         const res = await fetch(`http://localhost:5209/api/Test/test`, {
@@ -162,32 +251,83 @@ export const Schedule: React.FC = () => {
         console.log("POST body:", JSON.stringify(newEvent, null, 2));
         const data = await res.json().catch(() => null);
         console.log("Response:", data);
+        setEvents((prev) => [...prev, newEvent]);
       } catch (err) {
         console.error("Ошибка создания:", err);
       }
 
-      setEvents(prev => [...prev, newEvent]);
+  
     }
 
     closeModal();
   };
 
+  // -----------------------------
+  //   3. DRAG & DROP (Перенос)
+  // -----------------------------
   const handleEventDrop = ({ event, start, end }: EventDropArg<TrainingEvent>) => {
-    setEvents(prev => prev.map(ev => ev.id === event.id ? { ...ev, start, end } : ev));
+    const updated = { ...event, start, end };
+
+    // MOCK API CALL
+    console.log("📡 PUT /api/training/move");
+    const body = {
+      id: updated.id,
+      newStart: start,
+      newEnd: end,
+    };
+    console.log("BODY:", body);
+    console.log("JSON BODY: ", JSON.stringify(body))
+
+    setEvents((prev) =>
+      prev.map((ev) => (ev.id === event.id ? updated : ev))
+    );
   };
 
-  const handleEventResize = ({ event, start, end }: EventResizeArg<TrainingEvent>) => {
-    setEvents(prev => prev.map(ev => ev.id === event.id ? { ...ev, start, end } : ev));
+  // -----------------------------
+  //     4. RESIZE (растянуть)
+  // -----------------------------
+  const handleEventResize = ({
+    event,
+    start,
+    end,
+  }: EventResizeArg<TrainingEvent>) => {
+    const updated = { ...event, start, end };
+
+    // MOCK API CALL
+    console.log("📡 PUT /api/training/resize");
+    const body = {
+      id: updated.id,
+      newStart: start,
+      newEnd: end,
+    };
+
+    console.log("start: ", start);
+    console.log(
+      "start type:",
+      Object.prototype.toString.call(start)
+    );
+    console.log("is Date:", start instanceof Date);
+    console.log("BODY:", body);
+    console.log("JSON BODY: ", JSON.stringify(body))
+
+    setEvents((prev) =>
+      prev.map((ev) => (ev.id === event.id ? updated : ev))
+    );
   };
 
   const handleDeleteEvent = (id: string) => {
-    setEvents(prev => prev.filter(e => e.id !== id));
+    console.log("📡 DELETE /api/training/delete");
+    console.log("BODY:", { id });
+
+    setEvents((prev) => prev.filter((e) => e.id !== id));
     closeModal();
   };
 
   const filteredEvents = useMemo(() => {
     if (!selectedTrainer) return events;
-    return onlyShowSelected ? events.filter(e => e.trainer === selectedTrainer) : events;
+    return onlyShowSelected
+      ? events.filter((e) => e.trainer === selectedTrainer)
+      : events;
   }, [events, selectedTrainer, onlyShowSelected]);
 
   const eventStyleGetter = (event: TrainingEvent) => {
@@ -195,7 +335,11 @@ export const Schedule: React.FC = () => {
     const baseColor = event.color ?? "#60A5FA";
     return {
       style: {
-        backgroundColor: isHighlighted ? baseColor : selectedTrainer ? "#E6E6E6" : baseColor,
+        backgroundColor: isHighlighted
+          ? baseColor
+          : selectedTrainer
+          ? "#E6E6E6"
+          : baseColor,
         border: "1px solid rgba(0,0,0,0.08)",
         color: "#0f172a",
         paddingLeft: 6,
@@ -216,6 +360,7 @@ export const Schedule: React.FC = () => {
 
   return (
     <div className="p-6">
+      {/* HEADER */}
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-semibold">Расписание</h1>
         <div className="flex items-center gap-3">
@@ -225,15 +370,23 @@ export const Schedule: React.FC = () => {
             value={selectedTrainer ?? undefined}
             style={{ width: 180 }}
             options={trainerOptions}
-            onChange={v => setSelectedTrainer(v ?? null)}
+            onChange={(v) => setSelectedTrainer(v ?? null)}
           />
-          <Checkbox checked={onlyShowSelected} onChange={e => setOnlyShowSelected(e.target.checked)}>
+          <Checkbox
+            checked={onlyShowSelected}
+            onChange={(e) => setOnlyShowSelected(e.target.checked)}
+          >
             Только выбранный
           </Checkbox>
           <Button
             type="primary"
             icon={<PlusOutlined />}
-            onClick={() => openCreateModal({ start: new Date(), end: dayjs().add(1, "hour").toDate() })}
+            onClick={() =>
+              openCreateModal({
+                start: new Date(),
+                end: dayjs().add(1, "hour").toDate(),
+              })
+            }
           >
             Создать
           </Button>
@@ -242,12 +395,10 @@ export const Schedule: React.FC = () => {
 
       <div style={{ height: "75vh" }}>
         <DnDCalendar
-          views={['month', 'week', 'day']}
+          views={["month", "week", "day"]}
           defaultView="week"
           localizer={localizer}
           events={filteredEvents as RBCEvent[]}
-          view={view}
-          onView={setView}
           startAccessor="start"
           endAccessor="end"
           selectable
@@ -271,11 +422,12 @@ export const Schedule: React.FC = () => {
             today: "Сегодня",
             agenda: "Повестка",
             noEventsInRange: "Нет событий",
-            showMore: total => `+ ещё ${total}`
+            showMore: (total) => `+ ещё ${total}`,
           }}
         />
       </div>
 
+      {/* MODAL */}
       <Modal
         title={editingEvent ? "Редактировать тренировку" : "Создать тренировку"}
         open={isModalOpen}
@@ -289,39 +441,73 @@ export const Schedule: React.FC = () => {
             rules={{ required: true }}
             render={({ field }) => <Input {...field} placeholder="Название" />}
           />
+
           <Controller
             name="trainer"
             control={control}
             rules={{ required: true }}
-            render={({ field }) => <Select {...field} options={trainerOptions} placeholder="Тренер" />}
+            render={({ field }) => (
+              <Select {...field} options={trainerOptions} placeholder="Тренер" />
+            )}
           />
+
           <Controller
             name="date"
             control={control}
             rules={{ required: true }}
-            render={({ field }) => <DatePicker className="w-full" format="DD.MM.YYYY" {...field} value={field.value} />}
+            render={({ field }) => (
+              <DatePicker
+                className="w-full"
+                format="DD.MM.YYYY"
+                {...field}
+                value={field.value}
+              />
+            )}
           />
+
           <div className="grid grid-cols-2 gap-3">
             <Controller
               name="timeStart"
               control={control}
-              render={({ field }) => <TimePicker className="w-full" format="HH:mm" {...field} value={field.value} />}
+              render={({ field }) => (
+                <TimePicker
+                  className="w-full"
+                  format="HH:mm"
+                  {...field}
+                  value={field.value}
+                />
+              )}
             />
             <Controller
               name="timeEnd"
               control={control}
-              render={({ field }) => <TimePicker className="w-full" format="HH:mm" {...field} value={field.value} />}
+              render={({ field }) => (
+                <TimePicker
+                  className="w-full"
+                  format="HH:mm"
+                  {...field}
+                  value={field.value}
+                />
+              )}
             />
           </div>
+
           <div className="flex justify-between items-center mt-4">
             <Space>
-              <Button type="primary" htmlType="submit">{editingEvent ? "Сохранить" : "Создать"}</Button>
+              <Button type="primary" htmlType="submit">
+                {editingEvent ? "Сохранить" : "Создать"}
+              </Button>
+
               {editingEvent && (
-                <Popconfirm title="Удалить тренировку?" onConfirm={() => handleDeleteEvent(editingEvent.id)}>
+                <Popconfirm
+                  title="Удалить тренировку?"
+                  onConfirm={() => handleDeleteEvent(editingEvent.id)}
+                >
                   <Button danger>Удалить</Button>
                 </Popconfirm>
               )}
             </Space>
+
             <Button onClick={closeModal}>Отмена</Button>
           </div>
         </form>

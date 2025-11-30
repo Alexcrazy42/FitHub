@@ -166,6 +166,8 @@ public class ApiRoutesV1
 
     public const string GymAdmins = Root + "/gym-admins";
 
+    public const string GymAdminMe = GymAdmins + "/me";
+
     public const string GymAdminById = GymAdmins + "/{id}";
 
     public const string GymAdminSetStatus = GymAdminById + "/set-status";
@@ -175,6 +177,8 @@ public class ApiRoutesV1
     #region Trainers
 
     public const string Trainers = Root + "/trainers";
+
+    public const string TrainerMe = Trainers + "/me";
 
     public const string TrainerById = Trainers + "/{id}";
 
@@ -186,9 +190,19 @@ public class ApiRoutesV1
 
     public const string Visitors = Root + "/visitors";
 
+    public const string VisitorMe = Visitors + "/me";
+
     public const string VisitorById = Visitors + "/{id}";
 
     public const string VisitorSetStatus = VisitorById + "/set-status";
+
+    #endregion
+
+    #region GroupTrainings
+
+    public const string GroupTrainings = Root + "/group-trainings";
+
+    public const string GroupTrainingById = GroupTrainings + "/{id}";
 
     #endregion
 

@@ -28,7 +28,7 @@ internal sealed class GymService : IGymService
         return gymRepository.GetGymsAsync(pagedQuery, ct);
     }
 
-    public async Task<Gym?> GetGymOrDefaultAsync(GymId id, CancellationToken ct = default)
+    public async Task<Gym> GetByIdAsync(GymId id, CancellationToken ct = default)
     {
         var gym = await gymRepository.GetSingleOrDefaultAsync(x => x.Id == id, ct);
         NotFoundException.ThrowIfNull(gym, "Зал не найден!");

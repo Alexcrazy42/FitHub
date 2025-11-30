@@ -8,7 +8,9 @@ public class Gym : IEntity<GymId>
 {
     private List<Equipment> equipments = [];
     private List<GymAdmin> admins = [];
+    private List<Trainer> trainers = [];
     private List<GymZone> zones = [];
+    private List<VisitorGymRelation> visitors = [];
 
     private Gym(GymId id, string name, string description)
     {
@@ -28,7 +30,11 @@ public class Gym : IEntity<GymId>
 
     public IReadOnlyList<GymAdmin> Admins => admins;
 
+    public IReadOnlyList<Trainer> Trainers => trainers;
+
     public IReadOnlyList<GymZone> Zones => zones;
+
+    public IReadOnlyList<VisitorGymRelation> Visitors => visitors;
 
     public IReadOnlyList<FileEntity> Files { get; private set; } = [];
 

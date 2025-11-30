@@ -49,11 +49,13 @@ const Login: React.FC = () => {
   }
 
   useEffect(() => {
-    if(user) {
+    if (user) {
       setLoading(true);
       setFirstLogin(false);
       setLoading(false);
     }
+    setLoading(false);
+    setFirstLogin(true);
   }, []);
 
 

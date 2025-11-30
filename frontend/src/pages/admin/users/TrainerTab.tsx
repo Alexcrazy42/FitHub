@@ -8,17 +8,18 @@ import {
 import { useApiService } from '../../../api/useApiService';
 import { ListResponse } from '../../../types/common';
 import { toast } from 'react-toastify';
-import { Table, Pagination, Button, Modal, Form, Input, Space, Menu } from 'antd';
+import { Table, Pagination, Button, Modal, Form, Input, Space, Menu, Select } from 'antd';
 import { useForm, Controller } from 'react-hook-form';
 import './styles/trainerTab.css'
 import { useAuth } from '../../../context/useAuth';
+import { IGymResponse } from '../../../types/gyms';
 
 interface TrainerTabProps {
   activeTab: UserPageTabType;
 }
 
 export const TrainerTab: React.FC<TrainerTabProps> = ({ activeTab }) => {
-  const { user } = useAuth();
+  const { user, currentGym } = useAuth();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [total, setTotal] = useState(0);
@@ -26,19 +27,22 @@ export const TrainerTab: React.FC<TrainerTabProps> = ({ activeTab }) => {
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const apiService = useApiService();
+  const [gymOptions, setGymOptions] = useState<{ value: string; label: string }[]>([]);
   const [contextMenu, setContextMenu] = useState<{ visible: boolean; x: number; y: number; record?: ITrainerResponse }>({ visible: false, x: 0, y: 0 });
-    const menuRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const {
     control,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<CreateTrainerAdminRequest>({
     defaultValues: {
       email: '',
       surname: '',
       name: '',
+      gymId: '',
     },
   });
 
@@ -87,6 +91,29 @@ export const TrainerTab: React.FC<TrainerTabProps> = ({ activeTab }) => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+      const loadGyms = async () => {
+        try {
+          const response = await apiService.get<ListResponse<IGymResponse>>('/v1/gyms?PageSize=1000');
+          if (response.success && response.data?.items) {
+            setGymOptions(
+              response.data.items.map((gym) => ({
+                value: gym.id,
+                label: `${gym.name}`,
+              }))
+            );
+          }
+        } catch (err) {
+          console.error('Failed to load gyms', err);
+          toast.warn('Не удалось загрузить список спортзалов');
+        }
+      };
+  
+      if (isModalOpen && gymOptions.length === 0) {
+        loadGyms();
+      }
+    }, [isModalOpen, apiService]);
 
   const handleCreate = async (data: CreateTrainerAdminRequest) => {
     try {
@@ -183,6 +210,25 @@ export const TrainerTab: React.FC<TrainerTabProps> = ({ activeTab }) => {
       key: 'email',
       ellipsis: true,
       render: (_: unknown, record: ITrainerResponse) => record.user.email,
+    },
+    {
+      title: 'Спортзалы',
+      key: 'gyms',
+      render: (_: unknown, record: ITrainerResponse) =>
+        record.gyms.length > 0 ? (
+          <Space size={[0, 4]} wrap>
+            {record.gyms.map((gym) => (
+              <span
+                key={gym.id}
+                style={{ background: '#e6f7ff', padding: '2px 8px', borderRadius: 4, border: '1px solid #91d5ff' }}
+              >
+                {gym.name}
+              </span>
+            ))}
+          </Space>
+        ) : (
+          <span style={{ color: '#ff4d4f' }}>—</span>
+        ),
     },
     {
       title: 'Роли',
@@ -340,6 +386,35 @@ export const TrainerTab: React.FC<TrainerTabProps> = ({ activeTab }) => {
               render={({ field }) => <Input {...field} placeholder="Дмитрий" />}
             />
           </Form.Item>
+
+          <div style={{ marginBottom: 24 }}>
+            <label style={{ display: 'block', marginBottom: 4, fontWeight: 500 }}>
+              Спортзал <span style={{ color: 'red' }}>*</span>
+            </label>
+            <Controller
+              name="gymId"
+              control={control}
+              rules={{ required: 'Выберите спортзал' }}
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  value={gymOptions.some(opt => opt.value === currentGym.id) ? currentGym.id : undefined}
+                  status={errors.gymId ? 'error' : ''}
+                  placeholder="Выберите спортзал"
+                  options={gymOptions}
+                  loading={gymOptions.length === 0 && isModalOpen}
+                  allowClear
+                  style={{ width: '100%' }}
+                  onChange={(value) => setValue('gymId', value || '')}
+                />
+              )}
+            />
+            {errors.gymId && (
+              <div style={{ color: '#ff4d4f', fontSize: 12, marginTop: 4 }}>
+                {errors.gymId.message}
+              </div>
+            )}
+          </div>
 
           <Form.Item>
             <Space>

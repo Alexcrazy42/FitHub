@@ -46,7 +46,6 @@ export const GymAdminTab: React.FC<GymAdminTabProps> = ({ activeTab }) => {
     },
   });
 
-  // Загружаем список спортзалов для выпадающего списка
   useEffect(() => {
     const loadGyms = async () => {
       try {
@@ -143,7 +142,6 @@ export const GymAdminTab: React.FC<GymAdminTabProps> = ({ activeTab }) => {
   };
 
   const onSubmit = async (data: CreateGymAdminRequest) => {
-    // Валидация перед отправкой
     const isValid = await trigger();
     if (isValid) {
       await handleCreate(data);

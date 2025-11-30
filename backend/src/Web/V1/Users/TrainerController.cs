@@ -1,5 +1,6 @@
 ﻿using FitHub.Application.Users;
 using FitHub.Application.Users.Trainers;
+using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.AspNetCore.Auth;
 using FitHub.Common.Entities;
 using FitHub.Contracts;
@@ -18,20 +19,31 @@ public class TrainerController : ControllerBase
     private readonly IUserService userService;
     private readonly ITrainerService trainerService;
     private readonly IAccessService accessService;
+    private readonly ICurrentIdentityUserIdAccessor accessor;
 
-    public TrainerController(IUserService userService, ITrainerService trainerService, IAccessService accessService)
+    public TrainerController(IUserService userService, ITrainerService trainerService, IAccessService accessService, ICurrentIdentityUserIdAccessor accessor)
     {
         this.userService = userService;
         this.trainerService = trainerService;
         this.accessService = accessService;
+        this.accessor = accessor;
+    }
+
+    [HttpGet(ApiRoutesV1.TrainerMe)]
+    [Authorize(Policy = AuthorizationPolicies.TrainerOnly)]
+    public async Task<TrainerResponse> GetMe(CancellationToken ct)
+    {
+        var userId = accessor.GetCurrentUserId();
+        var trainer = await trainerService.GetByUserIdAsync(userId, ct);
+        return trainer.ToResponse();
     }
 
     [HttpGet(ApiRoutesV1.Trainers)]
-    public async Task<ListResponse<TrainerResponse>> GetAll([FromQuery] PagedRequest? request, CancellationToken ct)
+    public async Task<ListResponse<TrainerResponse>> GetAll([FromQuery] PagedRequest? request, [FromQuery] TrainerQuery? trainerQuery, CancellationToken ct)
     {
         await accessService.EnsureHasAnyPolicyAsync(AuthorizationPolicies.CmsAdminOnly, AuthorizationPolicies.GymAdminOnly);
         var query = request.ToDomain();
-        var result = await trainerService.GetAll(query, ct);
+        var result = await trainerService.GetAll(query, trainerQuery, ct);
         return result.ToResponse(UserExtensions.ToResponse);
     }
 

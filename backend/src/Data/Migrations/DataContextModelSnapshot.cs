@@ -230,6 +230,35 @@ namespace FitHub.Data.Migrations
                     b.ToTable("gym_zone", (string)null);
                 });
 
+            modelBuilder.Entity("FitHub.Domain.Equipments.VisitorGymRelation", b =>
+                {
+                    b.Property<Guid>("VisitorId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("visitor_id");
+
+                    b.Property<Guid>("GymId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("gym_id");
+
+                    b.Property<bool>("IsDefaultGym")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_default_gym");
+
+                    b.Property<int>("VisitCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("visit_count");
+
+                    b.HasKey("VisitorId", "GymId")
+                        .HasName("pk_visitor_gym_relation");
+
+                    b.HasIndex("GymId")
+                        .HasDatabaseName("ix_visitor_gym_relation_gym_id");
+
+                    b.ToTable("visitor_gym_relation", (string)null);
+                });
+
             modelBuilder.Entity("FitHub.Domain.Files.FileEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -406,6 +435,15 @@ namespace FitHub.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("end_time");
 
+                    b.Property<Guid?>("GymId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("gym_id");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
                     b.Property<DateTimeOffset>("StartTime")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("start_time");
@@ -420,6 +458,9 @@ namespace FitHub.Data.Migrations
 
                     b.HasIndex("BaseGroupTrainingId")
                         .HasDatabaseName("ix_group_training_base_group_training_id");
+
+                    b.HasIndex("GymId")
+                        .HasDatabaseName("ix_group_training_gym_id");
 
                     b.HasIndex("TrainerId")
                         .HasDatabaseName("ix_group_training_trainer_id");
@@ -444,18 +485,11 @@ namespace FitHub.Data.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("parent_id");
 
-                    b.Property<Guid?>("VideoTrainingId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("video_training_id");
-
                     b.HasKey("Id")
                         .HasName("pk_muscle_group");
 
                     b.HasIndex("ParentId")
                         .HasDatabaseName("ix_muscle_group_parent_id");
-
-                    b.HasIndex("VideoTrainingId")
-                        .HasDatabaseName("ix_muscle_group_video_training_id");
 
                     b.ToTable("muscle_group", (string)null);
                 });
@@ -470,6 +504,10 @@ namespace FitHub.Data.Migrations
                     b.Property<DateTimeOffset>("EndTime")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("end_time");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
 
                     b.Property<DateTimeOffset>("StartTime")
                         .HasColumnType("timestamp with time zone")
@@ -513,45 +551,6 @@ namespace FitHub.Data.Migrations
                         .HasName("pk_training_type");
 
                     b.ToTable("training_type", (string)null);
-                });
-
-            modelBuilder.Entity("FitHub.Domain.Trainings.VideoTraining", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasMaxLength(255)
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<int>("Complexity")
-                        .HasColumnType("integer")
-                        .HasColumnName("complexity");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("description");
-
-                    b.Property<int>("DurationInMinutes")
-                        .HasColumnType("integer")
-                        .HasColumnName("duration_in_minutes");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("name");
-
-                    b.Property<Guid>("TrainingTypeId")
-                        .HasMaxLength(255)
-                        .HasColumnType("uuid")
-                        .HasColumnName("training_type_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_video_trainings");
-
-                    b.HasIndex("TrainingTypeId")
-                        .HasDatabaseName("ix_video_trainings_training_type_id");
-
-                    b.ToTable("video_trainings", (string)null);
                 });
 
             modelBuilder.Entity("FitHub.Domain.Users.GymAdmin", b =>
@@ -862,6 +861,25 @@ namespace FitHub.Data.Migrations
                     b.ToTable("gym_gym_zone", (string)null);
                 });
 
+            modelBuilder.Entity("GymTrainer", b =>
+                {
+                    b.Property<Guid>("GymsId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("gyms_id");
+
+                    b.Property<Guid>("TrainersId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("trainers_id");
+
+                    b.HasKey("GymsId", "TrainersId")
+                        .HasName("pk_gym_trainer");
+
+                    b.HasIndex("TrainersId")
+                        .HasDatabaseName("ix_gym_trainer_trainers_id");
+
+                    b.ToTable("gym_trainer", (string)null);
+                });
+
             modelBuilder.Entity("BaseGroupTrainingTrainingType", b =>
                 {
                     b.HasOne("FitHub.Domain.Trainings.BaseGroupTraining", null)
@@ -937,6 +955,27 @@ namespace FitHub.Data.Migrations
                     b.Navigation("Equipment");
                 });
 
+            modelBuilder.Entity("FitHub.Domain.Equipments.VisitorGymRelation", b =>
+                {
+                    b.HasOne("FitHub.Domain.Equipments.Gym", "Gym")
+                        .WithMany("Visitors")
+                        .HasForeignKey("GymId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_visitor_gym_relation_gym_gym_id");
+
+                    b.HasOne("FitHub.Domain.Users.Visitor", "Visitor")
+                        .WithMany("Gyms")
+                        .HasForeignKey("VisitorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_visitor_gym_relation_visitor_visitor_id");
+
+                    b.Navigation("Gym");
+
+                    b.Navigation("Visitor");
+                });
+
             modelBuilder.Entity("FitHub.Domain.Trainings.BaseGroupTrainingPhoto", b =>
                 {
                     b.HasOne("FitHub.Domain.Files.FileEntity", "File")
@@ -967,6 +1006,12 @@ namespace FitHub.Data.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_group_training_base_group_trainings_base_group_training_id");
 
+                    b.HasOne("FitHub.Domain.Equipments.Gym", "Gym")
+                        .WithMany()
+                        .HasForeignKey("GymId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_group_training_gym_gym_id");
+
                     b.HasOne("FitHub.Domain.Users.Trainer", "Trainer")
                         .WithMany()
                         .HasForeignKey("TrainerId")
@@ -975,6 +1020,8 @@ namespace FitHub.Data.Migrations
                         .HasConstraintName("fk_group_training_trainer_trainer_id");
 
                     b.Navigation("BaseGroupTraining");
+
+                    b.Navigation("Gym");
 
                     b.Navigation("Trainer");
                 });
@@ -986,12 +1033,6 @@ namespace FitHub.Data.Migrations
                         .HasForeignKey("ParentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_muscle_group_muscle_group_parent_id");
-
-                    b.HasOne("FitHub.Domain.Trainings.VideoTraining", null)
-                        .WithMany("MuscleGroups")
-                        .HasForeignKey("VideoTrainingId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("fk_muscle_group_video_trainings_video_training_id");
 
                     b.Navigation("Parent");
                 });
@@ -1015,18 +1056,6 @@ namespace FitHub.Data.Migrations
                     b.Navigation("Trainer");
 
                     b.Navigation("Visitor");
-                });
-
-            modelBuilder.Entity("FitHub.Domain.Trainings.VideoTraining", b =>
-                {
-                    b.HasOne("FitHub.Domain.Trainings.TrainingType", "TrainingType")
-                        .WithMany()
-                        .HasForeignKey("TrainingTypeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_video_trainings_training_type_training_type_id");
-
-                    b.Navigation("TrainingType");
                 });
 
             modelBuilder.Entity("FitHub.Domain.Users.GymAdmin", b =>
@@ -1140,9 +1169,31 @@ namespace FitHub.Data.Migrations
                         .HasConstraintName("fk_gym_gym_zone_gym_zone_zones_id");
                 });
 
+            modelBuilder.Entity("GymTrainer", b =>
+                {
+                    b.HasOne("FitHub.Domain.Equipments.Gym", null)
+                        .WithMany()
+                        .HasForeignKey("GymsId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_gym_trainer_gym_gyms_id");
+
+                    b.HasOne("FitHub.Domain.Users.Trainer", null)
+                        .WithMany()
+                        .HasForeignKey("TrainersId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_gym_trainer_trainer_trainers_id");
+                });
+
             modelBuilder.Entity("FitHub.Domain.Equipments.Equipment", b =>
                 {
                     b.Navigation("Instructions");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Equipments.Gym", b =>
+                {
+                    b.Navigation("Visitors");
                 });
 
             modelBuilder.Entity("FitHub.Domain.Trainings.BaseGroupTraining", b =>
@@ -1155,13 +1206,10 @@ namespace FitHub.Data.Migrations
                     b.Navigation("Childrens");
                 });
 
-            modelBuilder.Entity("FitHub.Domain.Trainings.VideoTraining", b =>
-                {
-                    b.Navigation("MuscleGroups");
-                });
-
             modelBuilder.Entity("FitHub.Domain.Users.Visitor", b =>
                 {
+                    b.Navigation("Gyms");
+
                     b.Navigation("PersonalTrainings");
                 });
 #pragma warning restore 612, 618

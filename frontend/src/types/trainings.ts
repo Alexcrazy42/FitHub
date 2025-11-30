@@ -1,4 +1,7 @@
-﻿export interface IMuscleGroup {
+﻿import { IGymResponse } from "./gyms";
+import { ITrainerResponse, IVisitorResponse } from "./users";
+
+export interface IMuscleGroup {
     id: string;
     name: string;
     imageId: string | null;
@@ -44,4 +47,24 @@ export interface ICreateBaseGroupTraining {
 export interface IAttachPhoto {
     baseGroupTrainingId : string;
     fileId : string;
+}
+
+export interface IAddOrUpdateGroupTrainingRequest {
+    baseGroupTrainingId: string;
+    gymId: string;
+    trainerId: string;
+    startTime: Date;
+    endTime: Date;
+    isActive: boolean;
+}
+
+export interface IGroupTrainingResponse {
+    id: string;
+    baseGroupTraining: IBaseGroupTraining;
+    gym: IGymResponse;
+    trainer: ITrainerResponse;
+    participants: IVisitorResponse[];
+    startTime: Date;
+    endTime: Date;
+    isActive: boolean;
 }
