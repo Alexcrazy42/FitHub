@@ -3,6 +3,7 @@ using FitHub.Application.Trainings.GroupTrainings;
 using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.Entities.Storage;
 using FitHub.Contracts.V1.Users.Trainers;
+using FitHub.Domain.Trainings;
 using FitHub.Domain.Users;
 
 namespace FitHub.Application.Users.Trainers;
@@ -37,10 +38,11 @@ public class TrainerService : ITrainerService
         return trainerRepository.GetAsync(id, ct);
     }
 
-    public async Task<bool> IsAvailableAsync(Trainer trainer, DateTimeOffset start, DateTimeOffset end, CancellationToken ct)
+    public async Task<bool> IsAvailableAsync(Trainer trainer, GroupTraining groupTraining, DateTimeOffset start, DateTimeOffset end, CancellationToken ct)
     {
         var existingTraining = await groupTrainingRepository.GetFirstOrDefaultAsync(
             x => x.TrainerId == trainer.Id &&
+                 x.Id != groupTraining.Id &&
                  x.StartTime < end &&
                  x.EndTime > start,
             ct);

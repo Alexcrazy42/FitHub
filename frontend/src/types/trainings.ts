@@ -50,12 +50,12 @@ export interface IAttachPhoto {
 }
 
 export interface IAddOrUpdateGroupTrainingRequest {
-    baseGroupTrainingId: string;
-    gymId: string;
-    trainerId: string;
-    startTime: Date;
-    endTime: Date;
-    isActive: boolean;
+    baseGroupTrainingId: string | null;
+    gymId: string | null;
+    trainerId: string | null;
+    startTime: Date | null;
+    endTime: Date | null;
+    isActive: boolean | null;
 }
 
 export interface IGroupTrainingResponse {

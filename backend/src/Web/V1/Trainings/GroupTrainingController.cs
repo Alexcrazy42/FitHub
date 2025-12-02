@@ -9,7 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FitHub.Web.V1.Trainings;
 
-internal sealed class GroupTrainingController : ControllerBase
+[ApiController]
+public class GroupTrainingController : ControllerBase
 {
     private readonly IGroupTrainingService groupTrainingService;
 

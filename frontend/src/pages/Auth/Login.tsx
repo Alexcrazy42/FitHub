@@ -53,9 +53,10 @@ const Login: React.FC = () => {
       setLoading(true);
       setFirstLogin(false);
       setLoading(false);
+    } else {
+      setLoading(false);
+      setFirstLogin(true);
     }
-    setLoading(false);
-    setFirstLogin(true);
   }, []);
 
 

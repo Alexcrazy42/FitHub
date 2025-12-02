@@ -16,7 +16,9 @@ internal sealed class GroupTrainingRepository : DefaultPendingRepository<GroupTr
     protected override IQueryable<GroupTraining> ReadRaw()
     {
         return base.ReadRaw()
+            .Include(x => x.Gym)
             .Include(x => x.Trainer)
+                .ThenInclude(x => x.User)
             .Include(x => x.Participants)
                 .ThenInclude(x => x.User)
             .Include(x => x.BaseGroupTraining)

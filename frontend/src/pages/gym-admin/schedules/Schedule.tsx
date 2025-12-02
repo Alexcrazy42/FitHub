@@ -1,4 +1,4 @@
-﻿import React, { useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
 import {
@@ -28,6 +28,10 @@ import { PlusOutlined } from "@ant-design/icons";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import dayjs, { Dayjs } from "dayjs";
 import "dayjs/locale/ru";
+import { IAddOrUpdateGroupTrainingRequest, IGroupTrainingResponse } from "../../../types/trainings"
+import { useApiService } from "../../../api/useApiService";
+import { ListResponse } from "../../../types/common";
+import { toast } from "react-toastify";
 
 
 dayjs.locale("ru");
@@ -52,15 +56,6 @@ const sampleTrainers: Trainer[] = [
   { value: "Ольга", color: "#F59E0B" },
 ];
 
-export type TrainingEvent = {
-  id: string;
-  title: string;
-  trainer: string;
-  start: Date;
-  end: Date;
-  color?: string;
-};
-
 type ScheduleFormValues = {
   title: string;
   trainer: string;
@@ -69,41 +64,17 @@ type ScheduleFormValues = {
   timeEnd: Dayjs;
 };
 
-export const Schedule: React.FC = () => {
-  const [events, setEvents] = useState<TrainingEvent[]>(() => {
-    const base = dayjs().startOf("week").add(1, "day");
-    return [
-      {
-        id: "1",
-        title: "Йога",
-        trainer: "Мария",
-        start: base.hour(10).toDate(),
-        end: base.hour(11).toDate(),
-        color: "#34D399",
-      },
-      {
-        id: "2",
-        title: "Кроссфит",
-        trainer: "Иван",
-        start: base.add(1, "day").hour(18).toDate(),
-        end: base.add(1, "day").hour(19).toDate(),
-        color: "#60A5FA",
-      },
-      {
-        id: "3",
-        title: "Силовая",
-        trainer: "Ольга",
-        start: base.add(2, "day").hour(17).toDate(),
-        end: base.add(2, "day").hour(18).toDate(),
-        color: "#F59E0B",
-      },
-    ];
-  });
 
+export const Schedule: React.FC = () => {
+  const [events, setEvents] = useState<IGroupTrainingResponse[]>([]);
+
+  const [currentView, setCurrentView] = useState<"month" | "week" | "day">("week");
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedTrainer, setSelectedTrainer] = useState<string | null>(null);
   const [onlyShowSelected, setOnlyShowSelected] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingEvent, setEditingEvent] = useState<TrainingEvent | null>(null);
+  const [editingEvent, setEditingEvent] = useState<IGroupTrainingResponse | null>(null);
+  const apiService = useApiService();
 
   const { control, handleSubmit, reset } = useForm<ScheduleFormValues>({
     defaultValues: {
@@ -115,31 +86,81 @@ export const Schedule: React.FC = () => {
     },
   });
 
+
+  const fetchAll = async () => {
+    try {
+      const response = await apiService.get<ListResponse<IGroupTrainingResponse>>(`v1/group-trainings?PageNumber=1&PageSize=100`);
+
+      if(response.success && response.data) {
+        const items = response.data.items ?? [];
+        const normalized = items.map(x => ({
+          ...x,
+          startTime: new Date(x.startTime),
+          endTime: new Date(x.endTime)
+        }));
+
+        setEvents(normalized);
+      } else {
+        toast.error(response.error?.detail ?? 'Не удалось загрузить тренировки!');
+        setEvents([]);
+      }
+    } catch(err)  {
+      console.error('fetch trainings errors: ', err);
+      toast.error("Ошибка при загрузке тренеров!");
+      setEvents([]);
+    }
+  }
+
+  const createTraining = async (request : IAddOrUpdateGroupTrainingRequest) : Promise<IGroupTrainingResponse> => {
+    const response = await apiService.post<IGroupTrainingResponse>('/v1/group-trainings', request);
+    if (response.success && response.data) {
+      return response.data;
+    } else {
+      toast.error(response.error?.detail ?? 'Ошибка при создании тренировки!');
+      throw new Error(response.error?.detail);
+    }
+  }
+
+  const updateTraining = async (id: string, request  :IAddOrUpdateGroupTrainingRequest) : Promise<IGroupTrainingResponse> => {
+    const response = await apiService.put<IGroupTrainingResponse>(`/v1/group-trainings/${id}`, request);
+    if (response.success && response.data) {
+      return response.data;
+    } else {
+      toast.error(response.error?.detail ?? 'Ошибка при создании тренировки!');
+      throw new Error(response.error?.detail);
+    }
+  }
+
+  useEffect(() => {
+    fetchAll();
+  }, []);
+
+
   const trainerOptions = useMemo(
     () => sampleTrainers.map((trainer) => ({ label: trainer.value, value: trainer.value })),
     []
   );
 
   const openCreateModal = ({ start, end }: SlotInfo) => {
-    setEditingEvent(null);
-    reset({
-      title: "",
-      trainer: "",
-      date: dayjs(start),
-      timeStart: dayjs(start),
-      timeEnd: dayjs(end),
-    });
-    setIsModalOpen(true);
-  };
+      setEditingEvent(null);
+      reset({
+        title: "",
+        trainer: "",
+        date: dayjs(start),
+        timeStart: dayjs(start),
+        timeEnd: dayjs(end),
+      });
+      setIsModalOpen(true);
+    };
 
-  const openEditModal = (ev: TrainingEvent) => {
+  const openEditModal = (ev: IGroupTrainingResponse) => {
     setEditingEvent(ev);
     reset({
-      title: ev.title,
-      trainer: ev.trainer,
-      date: dayjs(ev.start),
-      timeStart: dayjs(ev.start),
-      timeEnd: dayjs(ev.end),
+      title: ev.baseGroupTraining.name,
+      trainer: ev.trainer.user.email,
+      date: dayjs(ev.startTime),
+      timeStart: dayjs(ev.startTime),
+      timeEnd: dayjs(ev.endTime),
     });
     setIsModalOpen(true);
   };
@@ -149,10 +170,8 @@ export const Schedule: React.FC = () => {
     setEditingEvent(null);
   };
 
-  // -----------------------------
-  //      СОХРАНЕНИЕ ФОРМЫ
-  // -----------------------------
-  const onSubmit: SubmitHandler<ScheduleFormValues> = async (values) => {
+
+  const onSubmit: SubmitHandler<ScheduleFormValues> = async (values : ScheduleFormValues) => {
     const start = dayjs(values.date)
       .hour(values.timeStart.hour())
       .minute(values.timeStart.minute())
@@ -163,156 +182,121 @@ export const Schedule: React.FC = () => {
       .minute(values.timeEnd.minute())
       .toDate();
 
-    // -----------------------------
-    //       1. UPDATE (edit)
-    // -----------------------------
+
     if (editingEvent) {
-      const updatedEvent = {
-        ...editingEvent,
-        title: values.title,
-        trainer: values.trainer,
-        start,
-        end,
+      const request : IAddOrUpdateGroupTrainingRequest = {
+        baseGroupTrainingId: editingEvent.baseGroupTraining.id,
+        gymId: editingEvent.gym.id,
+        trainerId: editingEvent.trainer.id,
+        startTime: values.timeStart.toDate(),
+        endTime: values.timeEnd.toDate(),
+        isActive: editingEvent.isActive
       };
 
-      // MOCK API CALL
-      console.log("📡 PUT /api/training/update");
-      const body1 = {
-        id: updatedEvent.id,
-        title: updatedEvent.title,
-        trainer: updatedEvent.trainer,
-        start,
-        end,
-      };
-      console.log("BODY:", body1);
-      console.log("JSON BODY:", JSON.stringify(body1))
+      const updatedTraining = await updateTraining(editingEvent.id, request);
+      toast.success("Тренировка успешно обновлена!");
+      setEditingEvent(null);
 
-
-      try {
-        const body = { start, end, status: 'Test' };
-        const res = await fetch(`http://localhost:5209/api/Test/test`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        });
-        console.log("PUT body:", JSON.stringify(updatedEvent, null, 2));
-        const data = await res.json().catch(() => null);
-        console.log("Response:", data);
-      } catch (err) {
-        console.error("Ошибка обновления:", err);
-      }
+      const normalizedUpdatedTraining = {
+          ...updatedTraining,
+          startTime: new Date(updatedTraining.startTime),
+          endTime: new Date(updatedTraining.endTime)
+        };
 
       setEvents((prev) =>
-        prev.map((ev) => (ev.id === editingEvent.id ? updatedEvent : ev))
+        prev.map((ev) => (ev.id === editingEvent.id ? normalizedUpdatedTraining : ev))
       );
     }
-    // -----------------------------
-    //      2. CREATE (new)
-    // -----------------------------
     else {
-      const color =
-        sampleTrainers.find((t) => t.value === values.trainer)?.color ??
-        "#60A5FA";
+      
 
-      const newEvent: TrainingEvent = {
-        id: String(Date.now()),
-        title: values.title,
-        trainer: values.trainer,
-        start,
-        end,
-        color,
-      };
+      // const color =
+      //   sampleTrainers.find((t) => t.value === values.trainer)?.color ??
+      //   "#60A5FA";
 
-      // MOCK API CALL
-      console.log("📡 POST /api/training/create");
-      const body1 = {
-        title: newEvent.title,
-        trainer: newEvent.trainer,
-        start,
-        end,
-      };
+      // const newEvent: IGroupTrainingResponse = {
+      //   id: String(Date.now()),
+      //   title: values.title,
+      //   trainer: values.trainer,
+      //   start,
+      //   end,
+      //   color,
+      // };
 
-      console.log("start: ", start);
-      console.log(
-        "start type:",
-        Object.prototype.toString.call(start)
-      );
-      console.log("is Date:", start instanceof Date);
-      console.log("BODY:", body1);
-      console.log("JSON BODY: ", JSON.stringify(body1))
 
-      try {
-        const body = { start, end, status: 'Start' };
-        const res = await fetch(`http://localhost:5209/api/Test/test`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        });
-        console.log("POST body:", JSON.stringify(newEvent, null, 2));
-        const data = await res.json().catch(() => null);
-        console.log("Response:", data);
-        setEvents((prev) => [...prev, newEvent]);
-      } catch (err) {
-        console.error("Ошибка создания:", err);
-      }
-
-  
+      // try {
+      //   const body = { start, end, status: 'Start' };
+      //   const res = await fetch(`http://localhost:5209/api/Test/test`, {
+      //     method: "POST",
+      //     headers: { "Content-Type": "application/json" },
+      //     body: JSON.stringify(body),
+      //   });
+      //   console.log("POST body:", JSON.stringify(newEvent, null, 2));
+      //   const data = await res.json().catch(() => null);
+      //   console.log("Response:", data);
+      //   setEvents((prev) => [...prev, newEvent]);
+      // } catch (err) {
+      //   console.error("Ошибка создания:", err);
+      // }
     }
 
     closeModal();
   };
 
-  // -----------------------------
-  //   3. DRAG & DROP (Перенос)
-  // -----------------------------
-  const handleEventDrop = ({ event, start, end }: EventDropArg<TrainingEvent>) => {
-    const updated = { ...event, start, end };
 
-    // MOCK API CALL
-    console.log("📡 PUT /api/training/move");
-    const body = {
-      id: updated.id,
-      newStart: start,
-      newEnd: end,
-    };
-    console.log("BODY:", body);
-    console.log("JSON BODY: ", JSON.stringify(body))
+  const handleEventDrop = async ({ event, start, end }: EventDropArg<IGroupTrainingResponse>) => {
+    const request : IAddOrUpdateGroupTrainingRequest = {
+        baseGroupTrainingId: null,
+        gymId: null,
+        trainerId: null,
+        startTime: start,
+        endTime: end,
+        isActive: null
+      };
 
-    setEvents((prev) =>
-      prev.map((ev) => (ev.id === event.id ? updated : ev))
-    );
+      const updatedTraining = await updateTraining(event.id, request);
+      toast.success("Тренировка успешно обновлена!");
+      setEditingEvent(null);
+
+      const normalizedUpdatedTraining = {
+          ...updatedTraining,
+          startTime: new Date(updatedTraining.startTime),
+          endTime: new Date(updatedTraining.endTime)
+        };
+
+      setEvents((prev) =>
+        prev.map((ev) => (ev.id === event.id ? normalizedUpdatedTraining : ev))
+      );
   };
 
-  // -----------------------------
-  //     4. RESIZE (растянуть)
-  // -----------------------------
-  const handleEventResize = ({
+
+  const handleEventResize = async ({
     event,
     start,
     end,
-  }: EventResizeArg<TrainingEvent>) => {
-    const updated = { ...event, start, end };
+  }: EventResizeArg<IGroupTrainingResponse>) => {
+    const request : IAddOrUpdateGroupTrainingRequest = {
+        baseGroupTrainingId: null,
+        gymId: null,
+        trainerId: null,
+        startTime: start,
+        endTime: end,
+        isActive: null
+      };
 
-    // MOCK API CALL
-    console.log("📡 PUT /api/training/resize");
-    const body = {
-      id: updated.id,
-      newStart: start,
-      newEnd: end,
-    };
+      const updatedTraining = await updateTraining(event.id, request);
+      toast.success("Тренировка успешно обновлена!");
+      setEditingEvent(null);
 
-    console.log("start: ", start);
-    console.log(
-      "start type:",
-      Object.prototype.toString.call(start)
-    );
-    console.log("is Date:", start instanceof Date);
-    console.log("BODY:", body);
-    console.log("JSON BODY: ", JSON.stringify(body))
+      const normalizedUpdatedTraining = {
+          ...updatedTraining,
+          startTime: new Date(updatedTraining.startTime),
+          endTime: new Date(updatedTraining.endTime)
+        };
 
-    setEvents((prev) =>
-      prev.map((ev) => (ev.id === event.id ? updated : ev))
-    );
+      setEvents((prev) =>
+        prev.map((ev) => (ev.id === event.id ? normalizedUpdatedTraining : ev))
+      );
   };
 
   const handleDeleteEvent = (id: string) => {
@@ -326,13 +310,13 @@ export const Schedule: React.FC = () => {
   const filteredEvents = useMemo(() => {
     if (!selectedTrainer) return events;
     return onlyShowSelected
-      ? events.filter((e) => e.trainer === selectedTrainer)
+      ? events.filter((e) => e.trainer.id === selectedTrainer)
       : events;
   }, [events, selectedTrainer, onlyShowSelected]);
 
-  const eventStyleGetter = (event: TrainingEvent) => {
-    const isHighlighted = selectedTrainer && event.trainer === selectedTrainer;
-    const baseColor = event.color ?? "#60A5FA";
+  const eventStyleGetter = (event: IGroupTrainingResponse) => {
+    const isHighlighted = selectedTrainer && event.trainer.id === selectedTrainer;
+    const baseColor = "#60A5FA";
     return {
       style: {
         backgroundColor: isHighlighted
@@ -349,18 +333,17 @@ export const Schedule: React.FC = () => {
     };
   };
 
-  const EventRenderer: React.FC<{ event: TrainingEvent }> = ({ event }) => (
+  const EventRenderer: React.FC<{ event: IGroupTrainingResponse }> = ({ event }) => (
     <div className="flex items-center justify-between">
       <div className="text-xs">
-        <div className="font-medium truncate">{event.title}</div>
-        <div className="text-[11px] text-gray-700 truncate">{event.trainer}</div>
+        <div className="font-medium truncate">{event.baseGroupTraining.name}</div>
+        <div className="text-[11px] text-gray-700 truncate">{event.trainer.user.surname} {event.trainer.user.name}</div>
       </div>
     </div>
   );
 
   return (
     <div className="p-6">
-      {/* HEADER */}
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-semibold">Расписание</h1>
         <div className="flex items-center gap-3">
@@ -396,11 +379,14 @@ export const Schedule: React.FC = () => {
       <div style={{ height: "75vh" }}>
         <DnDCalendar
           views={["month", "week", "day"]}
-          defaultView="week"
+          view={currentView}
+          date={currentDate}
+          onView={(view) => setCurrentView(view)}
+          onNavigate={(date) => setCurrentDate(date)}
           localizer={localizer}
           events={filteredEvents as RBCEvent[]}
-          startAccessor="start"
-          endAccessor="end"
+          startAccessor="startTime"
+          endAccessor="endTime"
           selectable
           resizable
           onSelectEvent={openEditModal}
@@ -427,7 +413,7 @@ export const Schedule: React.FC = () => {
         />
       </div>
 
-      {/* MODAL */}
+
       <Modal
         title={editingEvent ? "Редактировать тренировку" : "Создать тренировку"}
         open={isModalOpen}
