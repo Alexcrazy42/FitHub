@@ -56,12 +56,7 @@ internal sealed class GroupTrainingService : IGroupTrainingService
 
         var groupTraining = GroupTraining.Create(baseGroupTraining, gym, trainer, startTime, endTime);
 
-        var isTrainerAvailable = await trainerService.IsAvailableAsync(trainer, groupTraining, startTime, endTime, ct);
-
-        if (!isTrainerAvailable)
-        {
-            throw new ValidationException("Тренер занят в этот временной промежуток!");
-        }
+        await CheckTrainerAvailabilityAsync(trainer, groupTraining, startTime, endTime, ct);
 
         await groupTrainingRepository.PendingAddAsync(groupTraining, ct);
         await unitOfWork.SaveChangesAsync(ct);
@@ -99,22 +94,31 @@ internal sealed class GroupTrainingService : IGroupTrainingService
         {
             var trainerId = TrainerId.Parse(request.TrainerId);
             var trainer = await trainerService.GetByIdAsync(trainerId, ct);
-
-            var isTrainerAvailable = await trainerService.IsAvailableAsync(trainer, training, training.StartTime, training.EndTime, ct);
-
-            if (!isTrainerAvailable)
-            {
-                throw new ValidationException("Тренер занят в этот временной промежуток!");
-            }
-
+            await CheckTrainerAvailabilityAsync(trainer, training, training.StartTime, training.EndTime, ct);
             training.SetTrainer(trainer);
         }
+
+        await CheckTrainerAvailabilityAsync(training.Trainer, training, training.StartTime, training.EndTime, ct);
 
         if (request.BaseGroupTrainingId is not null)
         {
             var baseGroupTrainingId = BaseGroupTrainingId.Parse(request.BaseGroupTrainingId);
             var baseGroupTraining = await baseGroupTrainingService.GetByIdAsync(baseGroupTrainingId, ct);
             training.SetBaseGroupTraining(baseGroupTraining);
+        }
+    }
+
+    private async Task CheckTrainerAvailabilityAsync(Trainer trainer,
+        GroupTraining groupTraining,
+        DateTimeOffset startTime,
+        DateTimeOffset endTime,
+        CancellationToken ct)
+    {
+        var isTrainerAvailable = await trainerService.IsAvailableAsync(trainer, groupTraining, startTime, endTime, ct);
+
+        if (!isTrainerAvailable)
+        {
+            throw new ValidationException("Тренер занят в этот временной промежуток!");
         }
     }
 }

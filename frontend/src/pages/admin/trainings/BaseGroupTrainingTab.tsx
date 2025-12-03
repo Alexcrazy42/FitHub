@@ -22,7 +22,7 @@ import {
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useForm, Controller } from "react-hook-form";
-import { ValidationError } from "../../../api/ApiService";
+import { mapServerValidationErrors } from "../../../api/ApiService";
 import { toast } from "react-toastify";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import ImageUploader, { ImageUploaderHandle } from "../../../components/ImageUploader/ImageUploader";
@@ -144,21 +144,6 @@ export const BaseGroupTrainingTab: React.FC<BaseGroupTrainingTabProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, page, pageSize]);
 
-  function mapServerValidationErrors(errors?: ValidationError[]) {
-    if (!errors || errors.length === 0) return;
-
-    const mapPropertyToField = (propertyName: string): string => {
-      if (!propertyName) return propertyName;
-      return propertyName.charAt(0).toLowerCase() + propertyName.slice(1);
-    };
-
-    for (const err of errors) {
-      const field = mapPropertyToField(err.propertyName);
-      if (!field) continue;
-      setError(field as any, { type: "server", message: err.message });
-    }
-  }
-
   const deletePhoto = async () => {
       if(editingItem?.photoId) {
         const response = await apiService.delete(`/v1/base-group-trainings/photos?fileId=${editingItem.photoId}`);
@@ -232,8 +217,8 @@ export const BaseGroupTrainingTab: React.FC<BaseGroupTrainingTabProps> = ({
         fetch();
       } else {
         const problem = resp.error;
-        if (problem?.errors && problem.errors.length) {
-          mapServerValidationErrors(problem.errors);
+        if (problem?.errors && problem.errors.length > 0) {
+          mapServerValidationErrors(problem.errors, setError);
           toast.error(
             <div
               dangerouslySetInnerHTML={{
@@ -267,8 +252,8 @@ export const BaseGroupTrainingTab: React.FC<BaseGroupTrainingTabProps> = ({
         fetch();
       } else {
         const problem = resp.error;
-        if (problem?.errors && problem.errors.length) {
-          mapServerValidationErrors(problem.errors);
+        if (problem?.errors && problem.errors.length > 0) {
+          mapServerValidationErrors(problem.errors, setError);
           toast.error(
             <div
               dangerouslySetInnerHTML={{

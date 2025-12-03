@@ -17,7 +17,7 @@ import {
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useForm, Controller } from "react-hook-form";
-import { ValidationError } from "../../../api/ApiService";
+import { mapServerValidationErrors } from "../../../api/ApiService";
 import { toast } from "react-toastify";
 
 interface TrainingTypeTabProps {
@@ -74,15 +74,6 @@ export const TrainingTypeTab: React.FC<TrainingTypeTabProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, page, pageSize]);
 
-  function mapServerValidationErrors(errors?: ValidationError[]) {
-    if (!errors || errors.length === 0) return;
-    for (const err of errors) {
-      const field =
-        err.propertyName.charAt(0).toLowerCase() + err.propertyName.slice(1);
-      setError(field as any, { type: "server", message: err.message });
-    }
-  }
-
   const openCreateModal = () => {
     clearErrors();
     reset({ name: "" });
@@ -110,7 +101,7 @@ export const TrainingTypeTab: React.FC<TrainingTypeTabProps> = ({
       } else {
         const problem = resp.error;
         if (problem?.errors?.length) {
-          mapServerValidationErrors(problem.errors);
+          mapServerValidationErrors(problem.errors, setError);
         }
         toast.error(problem?.detail ?? "Ошибка создания");
       }
@@ -137,7 +128,7 @@ export const TrainingTypeTab: React.FC<TrainingTypeTabProps> = ({
       } else {
         const problem = resp.error;
         if (problem?.errors?.length) {
-          mapServerValidationErrors(problem.errors);
+          mapServerValidationErrors(problem.errors, setError);
         }
         toast.error(problem?.detail ?? "Ошибка обновления");
       }

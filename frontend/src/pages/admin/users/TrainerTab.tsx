@@ -398,7 +398,6 @@ export const TrainerTab: React.FC<TrainerTabProps> = ({ activeTab }) => {
               render={({ field }) => (
                 <Select
                   {...field}
-                  value={gymOptions.some(opt => opt.value === currentGym.id) ? currentGym.id : undefined}
                   status={errors.gymId ? 'error' : ''}
                   placeholder="Выберите спортзал"
                   options={gymOptions}

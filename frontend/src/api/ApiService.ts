@@ -1,4 +1,5 @@
 ﻿import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
+import { FieldValues, UseFormSetError } from "react-hook-form";
 
 export type ValidationError = {
   message: string;
@@ -128,4 +129,31 @@ export class ApiService {
     public async delete<T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
         return await this.query<T>(this.api.delete.bind(this.api), url, undefined, config);
     }
+}
+
+/**
+ * Маппит серверные ошибки валидации на поля формы react-hook-form
+ * @param errors - массив ошибок с бэкенда
+ * @param setError - функция setError из useForm
+ */
+export function mapServerValidationErrors<T extends FieldValues>(
+  errors: ValidationError[] | undefined,
+  setError: UseFormSetError<T>
+): void {
+  if (!errors || errors.length === 0) return;
+
+  const mapPropertyToField = (propertyName: string): string => {
+    if (!propertyName) return propertyName;
+    return propertyName.charAt(0).toLowerCase() + propertyName.slice(1);
+  };
+
+  for (const err of errors) {
+    const field = mapPropertyToField(err.propertyName);
+    if (!field) continue;
+    
+    setError(field as unknown, { 
+      type: "server", 
+      message: err.message 
+    });
+  }
 }

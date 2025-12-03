@@ -16,22 +16,25 @@ import { ru } from "date-fns/locale";
 import {
   Button,
   Modal,
-  Input,
   DatePicker,
   TimePicker,
-  Select,
   Space,
   Popconfirm,
   Checkbox,
+  Switch
 } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
-import dayjs, { Dayjs } from "dayjs";
+import dayjs from "dayjs";
 import "dayjs/locale/ru";
-import { IAddOrUpdateGroupTrainingRequest, IGroupTrainingResponse } from "../../../types/trainings"
+import { IAddOrUpdateGroupTrainingRequest, IBaseGroupTraining, IGroupTrainingResponse } from "../../../types/trainings"
 import { useApiService } from "../../../api/useApiService";
 import { ListResponse } from "../../../types/common";
 import { toast } from "react-toastify";
+import { useAuth } from "../../../context/useAuth";
+import { UniversalSelect } from "../../../components/UniversalSelector/UniversalSelect";
+import { IGymResponse } from "../../../types/gyms";
+import { ITrainerResponse } from "../../../types/auth";
 
 
 dayjs.locale("ru");
@@ -48,41 +51,28 @@ const localizer = dateFnsLocalizer({
 
 const DnDCalendar = withDragAndDrop(RBC);
 
-type Trainer = { value: string; color: string };
-
-const sampleTrainers: Trainer[] = [
-  { value: "Иван", color: "#60A5FA" },
-  { value: "Мария", color: "#34D399" },
-  { value: "Ольга", color: "#F59E0B" },
-];
-
-type ScheduleFormValues = {
-  title: string;
-  trainer: string;
-  date: Dayjs;
-  timeStart: Dayjs;
-  timeEnd: Dayjs;
-};
-
-
 export const Schedule: React.FC = () => {
   const [events, setEvents] = useState<IGroupTrainingResponse[]>([]);
+  const { currentGym } = useAuth();
 
   const [currentView, setCurrentView] = useState<"month" | "week" | "day">("week");
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [dateRange, setDateRange] = useState<{ start: Date; end: Date } | null>(null);
   const [selectedTrainer, setSelectedTrainer] = useState<string | null>(null);
   const [onlyShowSelected, setOnlyShowSelected] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<IGroupTrainingResponse | null>(null);
   const apiService = useApiService();
 
-  const { control, handleSubmit, reset } = useForm<ScheduleFormValues>({
+  const { control, handleSubmit, reset } = useForm<IAddOrUpdateGroupTrainingRequest>({
     defaultValues: {
-      title: "",
-      trainer: "",
-      date: dayjs(),
-      timeStart: dayjs().hour(10).minute(0),
-      timeEnd: dayjs().hour(11).minute(0),
+      baseGroupTrainingId: null,
+      gymId: null,
+      trainerId: null,
+      date: null,
+      startTime: dayjs().hour(10).minute(0).toDate(),
+      endTime: dayjs().hour(11).minute(0).toDate(),
+      isActive: null
     },
   });
 
@@ -121,7 +111,7 @@ export const Schedule: React.FC = () => {
     }
   }
 
-  const updateTraining = async (id: string, request  :IAddOrUpdateGroupTrainingRequest) : Promise<IGroupTrainingResponse> => {
+  const updateTraining = async (id: string, request : IAddOrUpdateGroupTrainingRequest) : Promise<IGroupTrainingResponse> => {
     const response = await apiService.put<IGroupTrainingResponse>(`/v1/group-trainings/${id}`, request);
     if (response.success && response.data) {
       return response.data;
@@ -133,22 +123,19 @@ export const Schedule: React.FC = () => {
 
   useEffect(() => {
     fetchAll();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-
-  const trainerOptions = useMemo(
-    () => sampleTrainers.map((trainer) => ({ label: trainer.value, value: trainer.value })),
-    []
-  );
 
   const openCreateModal = ({ start, end }: SlotInfo) => {
       setEditingEvent(null);
       reset({
-        title: "",
-        trainer: "",
-        date: dayjs(start),
-        timeStart: dayjs(start),
-        timeEnd: dayjs(end),
+        baseGroupTrainingId: null,
+        gymId: null,
+        trainerId: null,
+        startTime: start,
+        endTime: end,
+        isActive: null
       });
       setIsModalOpen(true);
     };
@@ -156,12 +143,14 @@ export const Schedule: React.FC = () => {
   const openEditModal = (ev: IGroupTrainingResponse) => {
     setEditingEvent(ev);
     reset({
-      title: ev.baseGroupTraining.name,
-      trainer: ev.trainer.user.email,
-      date: dayjs(ev.startTime),
-      timeStart: dayjs(ev.startTime),
-      timeEnd: dayjs(ev.endTime),
-    });
+        baseGroupTrainingId: ev.baseGroupTraining.id,
+        gymId: ev.gym.id,
+        trainerId: ev.trainer.id,
+        date: dayjs(ev.startTime),
+        startTime: ev.startTime,
+        endTime: ev.endTime,
+        isActive: ev.isActive
+      });
     setIsModalOpen(true);
   };
 
@@ -171,28 +160,18 @@ export const Schedule: React.FC = () => {
   };
 
 
-  const onSubmit: SubmitHandler<ScheduleFormValues> = async (values : ScheduleFormValues) => {
-    const start = dayjs(values.date)
-      .hour(values.timeStart.hour())
-      .minute(values.timeStart.minute())
-      .toDate();
-
-    const end = dayjs(values.date)
-      .hour(values.timeEnd.hour())
-      .minute(values.timeEnd.minute())
-      .toDate();
-
-
-    if (editingEvent) {
-      const request : IAddOrUpdateGroupTrainingRequest = {
-        baseGroupTrainingId: editingEvent.baseGroupTraining.id,
-        gymId: editingEvent.gym.id,
-        trainerId: editingEvent.trainer.id,
-        startTime: values.timeStart.toDate(),
-        endTime: values.timeEnd.toDate(),
-        isActive: editingEvent.isActive
+  const onSubmit: SubmitHandler<IAddOrUpdateGroupTrainingRequest> = async (values : IAddOrUpdateGroupTrainingRequest) => {
+    const request : IAddOrUpdateGroupTrainingRequest = {
+        baseGroupTrainingId: values.baseGroupTrainingId,
+        gymId: values.gymId,
+        trainerId: values.trainerId,
+        date: null,
+        startTime: values.startTime,
+        endTime: values.endTime,
+        isActive: values.isActive
       };
-
+    
+    if (editingEvent) {
       const updatedTraining = await updateTraining(editingEvent.id, request);
       toast.success("Тренировка успешно обновлена!");
       setEditingEvent(null);
@@ -208,36 +187,16 @@ export const Schedule: React.FC = () => {
       );
     }
     else {
-      
 
-      // const color =
-      //   sampleTrainers.find((t) => t.value === values.trainer)?.color ??
-      //   "#60A5FA";
+      const createdTraining = await createTraining(request);
+      toast.success("Тренировка успешно создана!");
+      const normalizedCreatedTraining = {
+        ...createdTraining,
+        startTime: new Date(createdTraining.startTime),
+        endTime: new Date(createdTraining.endTime)
+      };
 
-      // const newEvent: IGroupTrainingResponse = {
-      //   id: String(Date.now()),
-      //   title: values.title,
-      //   trainer: values.trainer,
-      //   start,
-      //   end,
-      //   color,
-      // };
-
-
-      // try {
-      //   const body = { start, end, status: 'Start' };
-      //   const res = await fetch(`http://localhost:5209/api/Test/test`, {
-      //     method: "POST",
-      //     headers: { "Content-Type": "application/json" },
-      //     body: JSON.stringify(body),
-      //   });
-      //   console.log("POST body:", JSON.stringify(newEvent, null, 2));
-      //   const data = await res.json().catch(() => null);
-      //   console.log("Response:", data);
-      //   setEvents((prev) => [...prev, newEvent]);
-      // } catch (err) {
-      //   console.error("Ошибка создания:", err);
-      // }
+      setEvents((prev) => [...prev, normalizedCreatedTraining]);
     }
 
     closeModal();
@@ -249,6 +208,7 @@ export const Schedule: React.FC = () => {
         baseGroupTrainingId: null,
         gymId: null,
         trainerId: null,
+        date: null,
         startTime: start,
         endTime: end,
         isActive: null
@@ -279,6 +239,7 @@ export const Schedule: React.FC = () => {
         baseGroupTrainingId: null,
         gymId: null,
         trainerId: null,
+        date: null,
         startTime: start,
         endTime: end,
         isActive: null
@@ -299,11 +260,17 @@ export const Schedule: React.FC = () => {
       );
   };
 
-  const handleDeleteEvent = (id: string) => {
-    console.log("📡 DELETE /api/training/delete");
-    console.log("BODY:", { id });
-
-    setEvents((prev) => prev.filter((e) => e.id !== id));
+  const handleDeleteEvent = async (id: string) => {
+    try {
+      const response = await apiService.delete<never>(`/v1/group-trainings/${id}`);
+      if(response.success) {
+        toast.success("Тренировка успешно удалена!");
+      }
+      setEvents((prev) => prev.filter((ev) => ev.id !== id));
+    } catch(err) {
+      console.error(err);
+      toast.error("Произошла ошибка при удалении зала!");
+    }
     closeModal();
   };
 
@@ -314,16 +281,44 @@ export const Schedule: React.FC = () => {
       : events;
   }, [events, selectedTrainer, onlyShowSelected]);
 
+  const getTrainerColor = (trainerId: string): string => {
+    let hash = 0;
+    for (let i = 0; i < trainerId.length; i++) {
+      hash = trainerId.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    
+    // Палитра приятных цветов для календаря
+    const colors = [
+      '#60A5FA', // blue
+      '#34D399', // green
+      '#F59E0B', // amber
+      '#EC4899', // pink
+      '#8B5CF6', // purple
+      '#10B981', // emerald
+      '#F97316', // orange
+      '#06B6D4', // cyan
+      '#EF4444', // red
+      '#14B8A6', // teal
+      '#A78BFA', // violet
+      '#FB923C', // orange-400
+    ];
+    
+    // Выбираем цвет на основе хеша
+    const index = Math.abs(hash) % colors.length;
+    return colors[index];
+  };
+
   const eventStyleGetter = (event: IGroupTrainingResponse) => {
     const isHighlighted = selectedTrainer && event.trainer.id === selectedTrainer;
-    const baseColor = "#60A5FA";
+    const trainerColor = getTrainerColor(event.trainer.id);
+    
     return {
       style: {
         backgroundColor: isHighlighted
-          ? baseColor
+          ? trainerColor
           : selectedTrainer
           ? "#E6E6E6"
-          : baseColor,
+          : trainerColor,
         border: "1px solid rgba(0,0,0,0.08)",
         color: "#0f172a",
         paddingLeft: 6,
@@ -347,13 +342,46 @@ export const Schedule: React.FC = () => {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-semibold">Расписание</h1>
         <div className="flex items-center gap-3">
-          <Select
+          <UniversalSelect
+            mode="infinite"
+            pageSize={20}
+            fetchPage={async (page, pageSize) => {
+              const gymId = currentGym?.id;
+              const params = new URLSearchParams({
+                PageNumber: page.toString(),
+                PageSize: pageSize.toString(),
+                ...(gymId && { GymId: gymId.toString() })
+              });
+
+              const query = `/v1/trainers?${params}`;
+              const response = await apiService.get<ListResponse<ITrainerResponse>>(query);
+              
+              if (response.success && response.data) {
+                const items = gymId 
+                  ? response.data.items.filter((u: ITrainerResponse) => 
+                      u.gyms.some(gym => gym.id === gymId)
+                    )
+                  : response.data.items;
+                
+                return {
+                  items: items.map((u: ITrainerResponse) => ({
+                    value: u.id,
+                    label: `${u.user.surname} ${u.user.name}`,
+                  })),
+                  hasMore: (response.data.totalPages ?? 0) > page
+                };
+              }
+              
+              return {
+                items: [],
+                hasMore: false
+              };
+            }}
             placeholder="Выделить тренера"
             allowClear
             value={selectedTrainer ?? undefined}
+            onChange={(v) => setSelectedTrainer((v as string) ?? null)}
             style={{ width: 180 }}
-            options={trainerOptions}
-            onChange={(v) => setSelectedTrainer(v ?? null)}
           />
           <Checkbox
             checked={onlyShowSelected}
@@ -383,6 +411,20 @@ export const Schedule: React.FC = () => {
           date={currentDate}
           onView={(view) => setCurrentView(view)}
           onNavigate={(date) => setCurrentDate(date)}
+          // TODO доделать так, чтобы выдавались события толкьо по определенному залу + определенным датам
+          onRangeChange={(range) => {
+            if (Array.isArray(range)) {
+              const rangeItem = {
+                start: range[0],
+                end: range[range.length - 1]
+              }
+              setDateRange(rangeItem);
+              console.log(rangeItem)
+            } else if (range.start && range.end) {
+              setDateRange(range);
+              console.log(range)
+            }
+          }}
           localizer={localizer}
           events={filteredEvents as RBCEvent[]}
           startAccessor="startTime"
@@ -419,65 +461,235 @@ export const Schedule: React.FC = () => {
         open={isModalOpen}
         onCancel={closeModal}
         footer={null}
+        destroyOnHidden
       >
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-          <Controller
-            name="title"
-            control={control}
-            rules={{ required: true }}
-            render={({ field }) => <Input {...field} placeholder="Название" />}
-          />
-
-          <Controller
-            name="trainer"
-            control={control}
-            rules={{ required: true }}
-            render={({ field }) => (
-              <Select {...field} options={trainerOptions} placeholder="Тренер" />
-            )}
-          />
-
-          <Controller
-            name="date"
-            control={control}
-            rules={{ required: true }}
-            render={({ field }) => (
-              <DatePicker
-                className="w-full"
-                format="DD.MM.YYYY"
-                {...field}
-                value={field.value}
-              />
-            )}
-          />
-
-          <div className="grid grid-cols-2 gap-3">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium">Тип тренировки</label>
             <Controller
-              name="timeStart"
+              name="baseGroupTrainingId"
               control={control}
-              render={({ field }) => (
-                <TimePicker
-                  className="w-full"
-                  format="HH:mm"
-                  {...field}
-                  value={field.value}
-                />
+              rules={{ required: 'Выберите тип тренировки' }}
+              render={({ field, fieldState: { error } }) => (
+                <>
+                  <UniversalSelect
+                    mode="infinite"
+                    fetchPage={async (page, pageSize) => {
+                      const response = await apiService.get<ListResponse<IBaseGroupTraining>>(
+                        `/v1/base-group-trainings?PageNumber=${page}&PageSize=${pageSize}`
+                      );
+                      if(response.success && response.data) {
+                        const items = response.data.items;
+                        return {
+                          items: items.map((u: IBaseGroupTraining) => ({
+                            value: u.id,
+                            label: u.name ?? "",
+                            payload: u.description
+                          })),
+                          hasMore: (response.data.totalPages ?? 0) > page
+                        };
+                      }
+                      return {
+                        items: [],
+                        hasMore: false
+                      };
+                    }}
+                    placeholder="Выберите тип"
+                    value={(field.value as string) ?? undefined}
+                    onChange={field.onChange}
+                  />
+                  {error && <span className="text-red-500 text-xs">{error.message}</span>}
+                </>
               )}
             />
+        </div>
+
+
+        <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium">Зал</label>
             <Controller
-              name="timeEnd"
+              name="gymId"
+              control={control}
+              rules={{ required: 'Выберите зал' }}
+              render={({ field, fieldState: { error } }) => (
+                <>
+                  <UniversalSelect
+                    mode="infinite"
+                    fetchPage={async (page, pageSize) => {
+                      const response = await apiService.get<ListResponse<IGymResponse>>(
+                        `/v1/gyms?PageNumber=${page}&PageSize=${pageSize}`
+                      );
+                      if(response.success && response.data) {
+                        const gymId = currentGym?.id;
+                        const items = gymId 
+                          ? response.data.items.filter((u: IGymResponse) => u.id === gymId)
+                          : response.data.items;
+                        return {
+                          items: items.map((u: IGymResponse) => ({
+                            value: u.id,
+                            label: u.name,
+                            payload: u.description
+                          })),
+                          hasMore: (response.data.totalPages ?? 0) > page
+                        };
+                      }
+                      return {
+                        items: [],
+                        hasMore: false
+                      };
+                    }}
+                    placeholder="Выберите зал" 
+                    value={(field.value as string) ?? undefined}
+                    onChange={field.onChange}
+                  />
+                  {error && <span className="text-red-500 text-xs">{error.message}</span>}
+                </>
+              )}
+            />
+        </div>
+
+
+         <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium">Тренер</label>
+            <Controller
+              name="trainerId"
+              control={control}
+              rules={{ required: 'Выберите тренера' }}
+              render={({ field, fieldState: { error } }) => (
+                <>
+                  <UniversalSelect
+                    mode="infinite"
+                    fetchPage={async (page, pageSize) => {
+                      const gymId = currentGym?.id;
+                      const params = new URLSearchParams({
+                        PageNumber: page.toString(),
+                        PageSize: pageSize.toString(),
+                        ...(gymId && { GymId: gymId.toString() })
+                      });
+
+                      const query = `/v1/trainers?${params}`;
+                      const response = await apiService.get<ListResponse<ITrainerResponse>>(query);
+                      if(response.success && response.data) {
+                        const gymId = currentGym?.id;
+                        const items = gymId 
+                          ? response.data.items.filter((u: ITrainerResponse) => 
+                              u.gyms.some(gym => gym.id === gymId)
+                            )
+                          : response.data.items;
+                        return {
+                          items: items.map((u: ITrainerResponse) => ({
+                            value: u.id,
+                            label: `${u.user.surname} ${u.user.name}`,
+                          })),
+                          hasMore: (response.data.totalPages ?? 0) > page
+                        };
+                      }
+                      return {
+                        items: [],
+                        hasMore: false
+                      };
+                    }}
+                    placeholder="Выберите тренера" 
+                    value={(field.value as string) ?? undefined}
+                    onChange={field.onChange}
+                  />
+                  {error && <span className="text-red-500 text-xs">{error.message}</span>}
+                </>
+              )}
+            />
+        </div>
+
+          {/* Date */}
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium">Дата</label>
+            <Controller
+              name="date"
+              control={control}
+              rules={{ 
+                required: 'Дата обязательна для заполнения' // или любой другой текст
+              }}
+              render={({ field, fieldState: { error } }) => (
+                <>
+                  <DatePicker
+                    className="w-full"
+                    format="DD.MM.YYYY"
+                    value={field.value}
+                    onChange={(date) => field.onChange(date)}
+                    placeholder="Выберите дату" 
+                    status={error ? 'error' : ''} // подсветка красным
+                  />
+                  {error && <span className="text-red-500 text-xs">{error.message}</span>}
+                </>
+              )}
+            />
+          </div>
+
+          {/* Time */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium">Начало</label>
+              <Controller
+                name="startTime"
+                control={control}
+                rules={{ 
+                  required: 'Дата начала обязательна для заполнения' // или любой другой текст
+                }}
+                render={({ field, fieldState: { error } }) => (
+                  <>
+                  <TimePicker
+                    className="w-full"
+                    format="HH:mm"
+                    value={field.value ? dayjs(field.value) : null}
+                    placeholder="Время начала" 
+                    onChange={(value) => field.onChange(value ? value.toDate() : null)}
+                  />
+                  {error && <span className="text-red-500 text-xs">{error.message}</span>}
+                  </>
+                )}
+              />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium">Окончание</label>
+              <Controller
+                name="endTime"
+                control={control}
+                rules={{ 
+                  required: 'Дата окончания обязательна для заполнения' // или любой другой текст
+                }}
+                render={({ field, fieldState: { error } }) => (
+                  <>
+                    <TimePicker
+                      className="w-full"
+                      format="HH:mm"
+                      placeholder="Выберите конца" 
+                      value={field.value ? dayjs(field.value) : null}
+                      onChange={(value) => field.onChange(value ? value.toDate() : null)}
+                    />
+                    {error && <span className="text-red-500 text-xs">{error.message}</span>}
+                  </>
+                )}
+              />
+            </div>
+          </div>
+
+          {/* isActive */}
+          <div className="flex items-center gap-3">
+            <label className="text-sm font-medium">Активна</label>
+
+            <Controller
+              name="isActive"
               control={control}
               render={({ field }) => (
-                <TimePicker
-                  className="w-full"
-                  format="HH:mm"
-                  {...field}
-                  value={field.value}
+                <Switch
+                  checked={field.value ?? false}
+                  onChange={(checked) => field.onChange(checked)}
                 />
               )}
             />
           </div>
 
+          {/* Buttons */}
           <div className="flex justify-between items-center mt-4">
             <Space>
               <Button type="primary" htmlType="submit">
@@ -496,6 +708,7 @@ export const Schedule: React.FC = () => {
 
             <Button onClick={closeModal}>Отмена</Button>
           </div>
+
         </form>
       </Modal>
     </div>

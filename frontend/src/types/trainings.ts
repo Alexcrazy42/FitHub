@@ -1,4 +1,5 @@
-﻿import { IGymResponse } from "./gyms";
+﻿import { Dayjs } from "dayjs";
+import { IGymResponse } from "./gyms";
 import { ITrainerResponse, IVisitorResponse } from "./users";
 
 export interface IMuscleGroup {
@@ -15,8 +16,8 @@ export interface ICreateMuscleGroup {
 }
 
 export interface ITrainingType {
-    id: string | null;
-    name: string | null;
+    id: string;
+    name: string;
 }
 
 export interface ICreateTrainingType {
@@ -54,6 +55,7 @@ export interface IAddOrUpdateGroupTrainingRequest {
     gymId: string | null;
     trainerId: string | null;
     startTime: Date | null;
+    date: Dayjs | null;
     endTime: Date | null;
     isActive: boolean | null;
 }
