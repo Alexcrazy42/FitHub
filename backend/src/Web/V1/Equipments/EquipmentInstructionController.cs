@@ -38,7 +38,7 @@ public class EquipmentInstructionController : ControllerBase
 
         var entity = await service.CreateAsync(request, ct);
 
-        return entity.ToShortInstructionResponse();
+        return entity.ToResponse();
     }
 
     [HttpPut(ApiRoutesV1.EquipmentsInstructions)]
@@ -48,7 +48,7 @@ public class EquipmentInstructionController : ControllerBase
 
         var entity = await service.UpdateAsync(request, ct);
 
-        return entity.ToShortInstructionResponse();
+        return entity.ToResponse();
     }
 
     [HttpDelete(ApiRoutesV1.EquipmentInstructionById)]

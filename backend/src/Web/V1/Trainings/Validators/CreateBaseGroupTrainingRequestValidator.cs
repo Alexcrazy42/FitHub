@@ -13,3 +13,5 @@ public class CreateBaseGroupTrainingRequestValidator : AbstractValidator<CreateB
         RuleFor(x => x.Complexity).MustBe(BaseGroupTraining.ValidateComplexity);
     }
 }
+
+

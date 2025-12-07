@@ -1,9 +1,7 @@
 ﻿using FitHub.Contracts.V1.Equipments.MuscleGroups;
-using FitHub.Contracts.V1.Trainings;
 using FitHub.Contracts.V1.Trainings.BaseGroupTrainings;
 using FitHub.Contracts.V1.Trainings.GroupTrainings;
 using FitHub.Contracts.V1.Trainings.TrainingTypes;
-using FitHub.Contracts.V1.Trainings.VideoTrainings;
 using FitHub.Domain.Trainings;
 using FitHub.Web.V1.Equipments;
 using FitHub.Web.V1.Users;
@@ -63,7 +61,7 @@ public static class TrainingResponseExtensions
         {
             Id = groupTraining.Id.ToString(),
             BaseGroupTraining = groupTraining.BaseGroupTraining.ToResponse(),
-            Gym = groupTraining.Gym.ToGymResponse(),
+            Gym = groupTraining.Gym.ToResponse(),
             Trainer = groupTraining.Trainer?.ToResponse(),
             Participants = groupTraining.Participants.Select(UserExtensions.ToResponse).ToList(),
             StartTime = groupTraining.StartTime,

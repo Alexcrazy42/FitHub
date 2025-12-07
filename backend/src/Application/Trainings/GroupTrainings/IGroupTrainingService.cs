@@ -8,7 +8,7 @@ public interface IGroupTrainingService
 {
     Task<GroupTraining> GetByIdAsync(GroupTrainingId id, CancellationToken ct);
 
-    Task<PagedResult<GroupTraining>> GetAsync(PagedQuery query, CancellationToken ct);
+    Task<PagedResult<GroupTraining>> GetAsync(PagedQuery query, GroupTrainingSearchRequest? searchRequest, CancellationToken ct);
 
     Task<GroupTraining> CreateGroupTraining(AddOrUpdateGroupTrainingRequest request, CancellationToken ct);
 

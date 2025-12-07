@@ -20,10 +20,10 @@ public class GroupTrainingController : ControllerBase
     }
 
     [HttpGet(ApiRoutesV1.GroupTrainings)]
-    public async Task<ListResponse<GroupTrainingResponse>> GetAsync([FromQuery] PagedRequest? pagedRequest, CancellationToken ct)
+    public async Task<ListResponse<GroupTrainingResponse>> GetAsync([FromQuery] PagedRequest? pagedRequest, [FromQuery] GroupTrainingSearchRequest? searchRequest, CancellationToken ct)
     {
-        var domain = pagedRequest.ToDomain();
-        var result = await groupTrainingService.GetAsync(domain, ct);
+        var paged = pagedRequest.ToDomain();
+        var result = await groupTrainingService.GetAsync(paged, searchRequest, ct);
 
         return result.ToResponse(TrainingResponseExtensions.ToResponse);
     }

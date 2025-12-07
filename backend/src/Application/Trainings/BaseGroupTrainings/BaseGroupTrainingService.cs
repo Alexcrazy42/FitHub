@@ -6,6 +6,7 @@ using FitHub.Common.Entities.Storage;
 using FitHub.Contracts.V1.Trainings.BaseGroupTrainings;
 using FitHub.Domain.Files;
 using FitHub.Domain.Trainings;
+using FitHub.Shared.Common;
 
 namespace FitHub.Application.Trainings.BaseGroupTrainings;
 

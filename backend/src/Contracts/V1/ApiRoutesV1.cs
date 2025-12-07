@@ -206,6 +206,14 @@ public class ApiRoutesV1
 
     #endregion
 
+    #region GymEquipment
+
+    public const string GymEquipments = Root + "/gym-equipments";
+
+    public const string GymEquipmentById = GymEquipments + "/{id}";
+
+    #endregion
+
 
 
     public const string Organizations = Root + "/organizations";

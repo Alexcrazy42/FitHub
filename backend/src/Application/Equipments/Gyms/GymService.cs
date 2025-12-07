@@ -5,6 +5,7 @@ using FitHub.Common.Entities.Storage;
 using FitHub.Contracts.V1.Equipments.Gyms;
 using FitHub.Domain.Equipments;
 using FitHub.Domain.Files;
+using FitHub.Shared.Common;
 
 namespace FitHub.Application.Equipments.Gyms;
 

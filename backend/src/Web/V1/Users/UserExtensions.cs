@@ -32,7 +32,7 @@ public static class UserExtensions
         {
             Id = gymAdmin.Id.ToString(),
             User = gymAdmin.User.ToResponse(),
-            Gyms = gymAdmin.Gyms.Select(EquipmentResponseExtensions.ToGymResponse).ToList(),
+            Gyms = gymAdmin.Gyms.Select(EquipmentResponseExtensions.ToResponse).ToList(),
         };
     }
 
@@ -42,7 +42,7 @@ public static class UserExtensions
         {
             Id = trainer.Id.ToString(),
             User = trainer.User.ToResponse(),
-            Gyms = trainer.Gyms.Select(EquipmentResponseExtensions.ToGymResponse).ToList(),
+            Gyms = trainer.Gyms.Select(EquipmentResponseExtensions.ToResponse).ToList(),
         };
     }
 
@@ -52,7 +52,7 @@ public static class UserExtensions
         {
             Id = visitor.Id.ToString(),
             User = visitor.User.ToResponse(),
-            Gyms = visitor.Gyms.Select(x => x.Gym.ToGymResponse()).ToList()
+            Gyms = visitor.Gyms.Select(x => x.Gym.ToResponse()).ToList()
         };
     }
 }

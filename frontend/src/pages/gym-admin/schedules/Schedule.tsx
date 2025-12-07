@@ -77,9 +77,22 @@ export const Schedule: React.FC = () => {
   });
 
 
-  const fetchAll = async () => {
+  const fetchAll = async (gymId: string | null, start: Date | null, end: Date | null) => {
     try {
-      const response = await apiService.get<ListResponse<IGroupTrainingResponse>>(`v1/group-trainings?PageNumber=1&PageSize=100`);
+      const params = new URLSearchParams();
+      if (start) {
+        params.append('StartTime', start instanceof Date ? start.toISOString() : start);
+      }
+      if(end) {
+        params.append('EndTime', end instanceof Date ? end.toISOString() : end);
+      }
+      if (gymId) {
+        params.append('GymId', gymId.toString());
+      }
+
+      const query = `v1/group-trainings?PageNumber=1&PageSize=1000&${params}`;
+
+      const response = await apiService.get<ListResponse<IGroupTrainingResponse>>(query);
 
       if(response.success && response.data) {
         const items = response.data.items ?? [];
@@ -122,9 +135,9 @@ export const Schedule: React.FC = () => {
   }
 
   useEffect(() => {
-    fetchAll();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    fetchAll(currentGym?.id ?? null, dateRange?.start ?? null, dateRange?.end ?? null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateRange, currentGym]);
 
 
   const openCreateModal = ({ start, end }: SlotInfo) => {
@@ -177,10 +190,10 @@ export const Schedule: React.FC = () => {
       setEditingEvent(null);
 
       const normalizedUpdatedTraining = {
-          ...updatedTraining,
-          startTime: new Date(updatedTraining.startTime),
-          endTime: new Date(updatedTraining.endTime)
-        };
+        ...updatedTraining,
+        startTime: new Date(updatedTraining.startTime),
+        endTime: new Date(updatedTraining.endTime)
+      };
 
       setEvents((prev) =>
         prev.map((ev) => (ev.id === editingEvent.id ? normalizedUpdatedTraining : ev))
@@ -276,8 +289,14 @@ export const Schedule: React.FC = () => {
 
   const filteredEvents = useMemo(() => {
     if (!selectedTrainer) return events;
+;
+
     return onlyShowSelected
-      ? events.filter((e) => e.trainer.id === selectedTrainer)
+      ? events.filter((e) => e.trainer.id === selectedTrainer).map(event => ( {
+          ...event,
+          startTime: new Date(event.startTime),
+          endTime: new Date(event.endTime)
+        }))
       : events;
   }, [events, selectedTrainer, onlyShowSelected]);
 
@@ -406,7 +425,7 @@ export const Schedule: React.FC = () => {
 
       <div style={{ height: "75vh" }}>
         <DnDCalendar
-          views={["month", "week", "day"]}
+          views={["week"]}
           view={currentView}
           date={currentDate}
           onView={(view) => setCurrentView(view)}

@@ -1,4 +1,4 @@
-﻿namespace FitHub.Domain.Equipments;
+﻿namespace FitHub.Shared.Equipments;
 
 public enum EquipmentInstructionType
 {

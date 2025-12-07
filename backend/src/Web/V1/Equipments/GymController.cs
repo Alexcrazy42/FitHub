@@ -26,7 +26,7 @@ public class GymController : ControllerBase
     {
         var query = request.ToDomain();
         var gymPagedResult = await gymService.GetGymsAsync(query, ct);
-        return gymPagedResult.ToResponse(EquipmentResponseExtensions.ToGymResponse);
+        return gymPagedResult.ToResponse(EquipmentResponseExtensions.ToResponse);
     }
 
     [HttpGet(ApiRoutesV1.GymById)]
@@ -41,7 +41,7 @@ public class GymController : ControllerBase
             throw new NotFoundException("Зал не найден!");
         }
 
-        return gym.ToGymResponse();
+        return gym.ToResponse();
     }
 
     [HttpPost(ApiRoutesV1.Gyms)]
@@ -51,7 +51,7 @@ public class GymController : ControllerBase
 
         var gym = await gymService.CreateGymAsync(request, ct);
 
-        return gym.ToGymResponse();
+        return gym.ToResponse();
     }
 
 
@@ -62,7 +62,7 @@ public class GymController : ControllerBase
 
         var gym = await gymService.UpdateGymAsync(request, ct);
 
-        return gym.ToGymResponse();
+        return gym.ToResponse();
     }
 
     [HttpDelete(ApiRoutesV1.GymById)]

@@ -1,7 +1,15 @@
-﻿export enum ComplexityType {
+﻿import { IGymResponse } from "../types/gyms"
+
+export enum ComplexityType {
   Low = "Low",
   Medium = "Medium",
   Hard = "Hard",
+}
+
+export enum EquipmentCondition {
+  Operational = "Operational",
+  Maintenance = "Maintenance",
+  UnderRepair = "UnderRepair"
 }
 
 export interface IEquipmentForm {
@@ -17,6 +25,11 @@ export const complexityTypeOptions : { label: string; value: ComplexityType }[] 
   { label: "Тяжелый", value: ComplexityType.Hard },
 ];
 
+export const equipmentConditionsOptions : {label: string; value : EquipmentCondition}[] = [
+  { label: "Готов к использованию", value: EquipmentCondition.Operational },
+  { label: "На профилактике", value: EquipmentCondition.Maintenance },
+  { label: "На ремонте", value: EquipmentCondition.UnderRepair },
+];
 
 
 export interface IBrandResponse {
@@ -42,4 +55,21 @@ export interface ICreateEquipmentRequest {
   additionalDescroption?: string | null;
   instructionAddBefore?: Date | null;
   isActive?: boolean | null;
+}
+
+export interface IGymEquipmentResponse {
+  id: string;
+  equipment: IEquipmentResponse,
+  gym: IGymResponse,
+  isActive: boolean,
+  openedAt: Date | null;
+  condition: EquipmentCondition
+}
+
+export interface IAddOrUpdateGymEquipmentRequest {
+  equipmentId: string;
+  gymId: string;
+  isActive: boolean;
+  openedAt: Date | null;
+  condition: EquipmentCondition;
 }

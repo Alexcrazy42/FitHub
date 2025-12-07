@@ -6,7 +6,6 @@ namespace FitHub.Domain.Equipments;
 public class Equipment : IEntity<EquipmentId>
 {
     private readonly List<EquipmentInstruction> instructions = [];
-    private readonly List<Gym> gyms = [];
     private Brand? brand;
 
     private Equipment(EquipmentId id, string name, BrandId brandId, bool isActive)
@@ -38,8 +37,6 @@ public class Equipment : IEntity<EquipmentId>
     }
 
     public IReadOnlyList<EquipmentInstruction> Instructions => instructions;
-
-    public IReadOnlyList<Gym> Gyms => gyms;
 
     public void SetName(string name) => Name = name;
     public void SetDescription(string description) => Description = description;

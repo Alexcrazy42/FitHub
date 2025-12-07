@@ -1,10 +1,10 @@
 ﻿using FitHub.Application.Files;
 using FitHub.Common.Entities;
 using FitHub.Contracts;
-using FitHub.Contracts.Common;
 using FitHub.Contracts.V1;
 using FitHub.Contracts.V1.Files;
 using FitHub.Domain.Files;
+using FitHub.Shared.Common;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FitHub.Web.V1.Files;
@@ -39,10 +39,10 @@ public class FileController : ControllerBase
     }
 
     [HttpGet(ApiRoutesV1.Files)]
-    public async Task<ListResponse<FileResponse>> GetFiles([FromQuery] string? entityId, [FromQuery] EntityTypeDto? entityType, CancellationToken ct)
+    public async Task<ListResponse<FileResponse>> GetFiles([FromQuery] string? entityId, [FromQuery] EntityType? entityType, CancellationToken ct)
     {
         var entityIdRequired = ValidationException.ThrowIfNull(entityId, "EntityId is required!");
-        var entityTypeRequired = ValidationException.ThrowIfNull(entityType, "Тип сущности обязателен!").FromDto();
+        var entityTypeRequired = ValidationException.ThrowIfNull(entityType, "Тип сущности обязателен!");
         var files = await fileService.GetFiles(entityTypeRequired, entityIdRequired, ct);
         return ListResponse<FileResponse>.Create(files.Select(FileExtensions.ToFileResponse).ToList());
     }
@@ -76,7 +76,7 @@ public class FileController : ControllerBase
     public async Task<ActionResult> MakeFilesActive([FromBody] MakeFileActiveRequest? request, CancellationToken ct)
     {
         var ids = request?.FileIds.Select(FileId.Parse).ToList() ?? throw new ValidationException("Файлы не могут быть пустыми!");
-        var entityType = ValidationException.ThrowIfNull(request.EntityType, "Не передан entityType").FromDto();
+        var entityType = ValidationException.ThrowIfNull(request.EntityType, "Не передан entityType");
         var entityId = ValidationException.ThrowIfNull(request.EntityId, "EntityId не может быть пустым!");
 
         await fileService.MakeFilesActiveAsync(ids, entityId, entityType, ct);

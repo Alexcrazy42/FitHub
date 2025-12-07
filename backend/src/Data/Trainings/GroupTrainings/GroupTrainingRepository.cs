@@ -2,7 +2,10 @@
 using FitHub.Application.Trainings.GroupTrainings;
 using FitHub.Common.Entities;
 using FitHub.Common.EntityFramework;
+using FitHub.Contracts.V1.Trainings.GroupTrainings;
+using FitHub.Domain.Equipments;
 using FitHub.Domain.Trainings;
+using FitHub.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 
 namespace FitHub.Data.Trainings.GroupTrainings;
@@ -25,10 +28,43 @@ internal sealed class GroupTrainingRepository : DefaultPendingRepository<GroupTr
             .AsQueryable();
     }
 
-    public async Task<PagedResult<GroupTraining>> GetAsync(PagedQuery query, CancellationToken ct)
+    public async Task<PagedResult<GroupTraining>> GetAsync(PagedQuery query, GroupTrainingSearchRequest? searchRequest, CancellationToken ct)
     {
-        var dbQuery = ReadRaw()
-            .AsQueryable();
+        var dbQuery = ReadRaw();
+
+        if (searchRequest?.GymId is not null)
+        {
+            dbQuery = dbQuery.Where(x => x.GymId == GymId.Parse(searchRequest.GymId));
+        }
+
+        if (searchRequest?.TrainerId is not null)
+        {
+            dbQuery = dbQuery.Where(x => x.TrainerId == TrainerId.Parse(searchRequest.TrainerId));
+        }
+
+        if (searchRequest?.StartTime is not null && searchRequest.EndTime is not null)
+        {
+            if (searchRequest.StartTime > searchRequest.EndTime)
+            {
+                throw new ValidationException("Дата начала поиска должна быть раньше чем дата конца!");
+            }
+
+            var startUtc = searchRequest.StartTime.Value.UtcDateTime.Date;
+            var endUtc = searchRequest.EndTime.Value.UtcDateTime.Date;
+
+            if (startUtc == endUtc)
+            {
+                var dayStart = new DateTimeOffset(startUtc, TimeSpan.Zero);
+                var dayEnd = dayStart.AddDays(1).AddTicks(-1);
+
+                dbQuery = dbQuery.Where(x => x.StartTime >= dayStart && x.StartTime <= dayEnd);
+            }
+            else
+            {
+                dbQuery = dbQuery.Where(x => x.StartTime >= searchRequest.StartTime);
+                dbQuery = dbQuery.Where(x => x.StartTime <= searchRequest.EndTime);
+            }
+        }
 
         var total = await dbQuery.CountAsync(ct);
 

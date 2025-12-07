@@ -38,9 +38,9 @@ internal sealed class GroupTrainingService : IGroupTrainingService
         return groupTrainingRepository.GetAsync(id, ct);
     }
 
-    public Task<PagedResult<GroupTraining>> GetAsync(PagedQuery query, CancellationToken ct)
+    public Task<PagedResult<GroupTraining>> GetAsync(PagedQuery query, GroupTrainingSearchRequest? searchRequest, CancellationToken ct)
     {
-        return groupTrainingRepository.GetAsync(query, ct);
+        return groupTrainingRepository.GetAsync(query, searchRequest, ct);
     }
 
     public async Task<GroupTraining> CreateGroupTraining(AddOrUpdateGroupTrainingRequest request, CancellationToken ct)

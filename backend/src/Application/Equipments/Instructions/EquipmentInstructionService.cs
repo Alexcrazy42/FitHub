@@ -41,7 +41,7 @@ public class EquipmentInstructionService : IEquipmentInstructionService
     public async Task<EquipmentInstruction> CreateAsync(CreateEquipmentInstructionRequest request, CancellationToken ct)
     {
         var name = ValidationException.ThrowIfNull(request.Name, "Имя не может быть пустым!");
-        var instructionType = ValidationException.ThrowIfNull(request.EquipmentInstructionType, "Тип инструкции не должен быть пустым!").FromInstructionDto();
+        var instructionType = ValidationException.ThrowIfNull(request.EquipmentInstructionType, "Тип инструкции не должен быть пустым!");
 
         var equipment = await equipmentService.GetByIdAsync(EquipmentId.Parse(request.EquipmentId), ct);
         var muscleGroupIds = request.MuscleGroupIds.Select(MuscleGroupId.Parse).ToList();
@@ -59,7 +59,7 @@ public class EquipmentInstructionService : IEquipmentInstructionService
         var instruction = await GetById(EquipmentInstructionId.Parse(request.Id), ct);
 
         var name = ValidationException.ThrowIfNull(request.Name, "Имя не может быть пустым!");
-        var instructionType = ValidationException.ThrowIfNull(request.EquipmentInstructionType, "Тип инструкции не должен быть пустым!").FromInstructionDto();
+        var instructionType = ValidationException.ThrowIfNull(request.EquipmentInstructionType, "Тип инструкции не должен быть пустым!");
 
         var equipment = await equipmentService.GetByIdAsync(instruction.EquipmentId, ct);
         var muscleGroupIds = request.MuscleGroupIds.Select(MuscleGroupId.Parse).ToList();

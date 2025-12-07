@@ -1,4 +1,4 @@
-﻿namespace FitHub.Domain.Files;
+﻿namespace FitHub.Shared.Common;
 
 public enum EntityType
 {

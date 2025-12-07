@@ -1,4 +1,5 @@
 ﻿using FitHub.Domain.Files;
+using FitHub.Shared.Common;
 
 namespace FitHub.Application.Files;
 
