@@ -5,6 +5,7 @@ using FitHub.Common.Entities.Storage;
 using FitHub.Contracts.V1.Equipments.Gyms;
 using FitHub.Domain.Equipments;
 using FitHub.Domain.Files;
+using FitHub.Shared.Common;
 
 namespace FitHub.Application.Equipments.Gyms;
 
@@ -28,7 +29,7 @@ internal sealed class GymService : IGymService
         return gymRepository.GetGymsAsync(pagedQuery, ct);
     }
 
-    public async Task<Gym?> GetGymOrDefaultAsync(GymId id, CancellationToken ct = default)
+    public async Task<Gym> GetByIdAsync(GymId id, CancellationToken ct = default)
     {
         var gym = await gymRepository.GetSingleOrDefaultAsync(x => x.Id == id, ct);
         NotFoundException.ThrowIfNull(gym, "Зал не найден!");

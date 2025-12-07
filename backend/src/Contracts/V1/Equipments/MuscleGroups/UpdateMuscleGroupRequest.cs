@@ -6,5 +6,5 @@ public class UpdateMuscleGroupRequest
 
     public string? Name { get; set; }
 
-    public Guid? ParentId { get; set; }
+    public string? ParentId { get; set; }
 }

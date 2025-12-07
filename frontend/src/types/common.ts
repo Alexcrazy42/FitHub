@@ -5,3 +5,8 @@
     totalItems: number | null;
     totalPages: number | null;
 }
+
+export interface IPagedRequest {
+    PageNumber: number;
+    PageSize: number;
+}

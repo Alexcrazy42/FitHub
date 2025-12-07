@@ -14,6 +14,8 @@ import { EquipmentPage } from '../pages/admin/equipments/EquipmentPage';
 import { ResetPassword } from '../pages/Auth/ResetPassword';
 import { ConfirmEmail } from '../pages/Auth/ConfirmEmail';
 import { SetPassword } from '../pages/Auth/SetPassword';
+import { Main } from '../pages/Main';
+import { gymAdminMenuConfig } from './gymAdminMenuConfig';
 
 
 const getAdminRoutePath = (fullPath: string): string => {
@@ -24,9 +26,15 @@ const getUserRoutePath = (fullPath: string) : string => {
   return fullPath.replace(/^\/user\//, '');
 }
 
+const getGymAdminRoutePath = (fullPath: string) : string => {
+  return fullPath.replace(/^\/gym-admin\//, '');
+}
+
+
 export enum UserType {
   Admin,
-  User
+  User,
+  GymAdmin
 }
 
 const extractRoutesFromMenu = (items: MenuItem[], userType: UserType): { path: string; element: React.ReactNode }[] => {
@@ -44,6 +52,11 @@ const extractRoutesFromMenu = (items: MenuItem[], userType: UserType): { path: s
           path: getUserRoutePath(item.path),
           element: item.element,
         });
+      } else if (userType === UserType.GymAdmin) {
+        routes.push({
+          path: getGymAdminRoutePath(item.path),
+          element: item.element
+        })
       }
       
     }
@@ -56,6 +69,7 @@ const extractRoutesFromMenu = (items: MenuItem[], userType: UserType): { path: s
 };
 
 export const routes: RouteObject[] = [
+  {path: '', element: <Main />},
   { path: '/login', element: <Login /> },
   { path: '/register', element: <Register /> },
   { path: '/access-denied', element: <AccessDenied /> },
@@ -64,7 +78,7 @@ export const routes: RouteObject[] = [
   { path: "/reset-password", element: <ResetPassword /> },
   { path: "/set-password", element: <SetPassword /> },
   {
-    element: <ProtectedRoute allowedRoles={['CmsAdmin', 'GymVisitor']} />,
+    element: <ProtectedRoute allowedRoles={['CmsAdmin', 'GymVisitor', 'GymAdmin']} />,
     children: [
       {
         element: <DashboardLayout />,
@@ -85,6 +99,13 @@ export const routes: RouteObject[] = [
               { path: 'home/:orderId/order', element: <OrderDetailsPage /> },
             ],
           },
+          {
+            path: '/gym-admin/*',
+            element: <ProtectedRoute allowedRoles={['GymAdmin']} />,
+            children: [
+              ...extractRoutesFromMenu(gymAdminMenuConfig, UserType.GymAdmin)
+            ]
+          }
         ],
       },
     ],

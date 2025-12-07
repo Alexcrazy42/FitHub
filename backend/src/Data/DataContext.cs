@@ -14,8 +14,6 @@ public sealed class DataContext : DbContext
     {
     }
 
-    public DbSet<VideoTraining> VideoTrainings => Set<VideoTraining>();
-
     public DbSet<BaseGroupTraining> BaseGroupTrainings => Set<BaseGroupTraining>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

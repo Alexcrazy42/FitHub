@@ -116,8 +116,6 @@ public class ApiRoutesV1
 
     public const string Auth = Root + "/auth";
 
-    public const string Me = Auth + "/me";
-
     public const string Login = Auth + "/login";
 
     public const string Logout = Auth + "/logout";
@@ -136,12 +134,6 @@ public class ApiRoutesV1
 
     public const string StartRegister = Auth + "/start-register";
 
-    public const string CreateCmsAdmin = Auth + "/create-cms-admin";
-
-    public const string CreateGymAdmin = Auth + "/create-gym-admin";
-
-    public const string CreateTrainer = Auth + "/create-trainer";
-
     #endregion
 
     #region Email
@@ -149,6 +141,76 @@ public class ApiRoutesV1
     public const string Email = Root + "/emails";
 
     public const string EmailAvailable = Email + "/available";
+
+    #endregion
+
+    #region Users
+
+    public const string Users = Root + "/users";
+
+    public const string Me = Users + "/me";
+
+    #endregion
+
+    #region CmsAdmins
+
+    public const string CmsAdmins = Root + "/cms-admins";
+
+    public const string CmsAdminById = CmsAdmins + "/{id}";
+
+    public const string CmsAdminSetStatus = CmsAdminById + "/set-status";
+
+    #endregion
+
+    #region GymAdmins
+
+    public const string GymAdmins = Root + "/gym-admins";
+
+    public const string GymAdminMe = GymAdmins + "/me";
+
+    public const string GymAdminById = GymAdmins + "/{id}";
+
+    public const string GymAdminSetStatus = GymAdminById + "/set-status";
+
+    #endregion
+
+    #region Trainers
+
+    public const string Trainers = Root + "/trainers";
+
+    public const string TrainerMe = Trainers + "/me";
+
+    public const string TrainerById = Trainers + "/{id}";
+
+    public const string TrainerSetStatus = TrainerById + "/set-status";
+
+    #endregion
+
+    #region Visitors
+
+    public const string Visitors = Root + "/visitors";
+
+    public const string VisitorMe = Visitors + "/me";
+
+    public const string VisitorById = Visitors + "/{id}";
+
+    public const string VisitorSetStatus = VisitorById + "/set-status";
+
+    #endregion
+
+    #region GroupTrainings
+
+    public const string GroupTrainings = Root + "/group-trainings";
+
+    public const string GroupTrainingById = GroupTrainings + "/{id}";
+
+    #endregion
+
+    #region GymEquipment
+
+    public const string GymEquipments = Root + "/gym-equipments";
+
+    public const string GymEquipmentById = GymEquipments + "/{id}";
 
     #endregion
 

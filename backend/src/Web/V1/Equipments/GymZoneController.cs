@@ -23,7 +23,7 @@ public class GymZoneController : ControllerBase
     public async Task<ListResponse<GymZoneResponse>> GetAllAsync(CancellationToken ct)
     {
         var all = await gymZoneRepository.GetAllAsync(x => true, ct);
-        return ListResponse<GymZoneResponse>.Create(all.ToGymZoneResponses());
+        return ListResponse<GymZoneResponse>.Create(all.ToResponses());
     }
 
 
@@ -39,7 +39,7 @@ public class GymZoneController : ControllerBase
             throw new NotFoundException("Зона зала не найдена!");
         }
 
-        return gymZone.ToZoneResponse();
+        return gymZone.ToResponse();
     }
 
     [HttpPost(ApiRoutesV1.GymZones)]
@@ -49,7 +49,7 @@ public class GymZoneController : ControllerBase
 
         var gym = await gymZoneService.CreateGymZoneAsync(request, ct);
 
-        return gym.ToZoneResponse();
+        return gym.ToResponse();
     }
 
 
@@ -60,7 +60,7 @@ public class GymZoneController : ControllerBase
 
         var gym = await gymZoneService.UpdateGymZoneAsync(request, ct);
 
-        return gym.ToZoneResponse();
+        return gym.ToResponse();
     }
 
     [HttpDelete(ApiRoutesV1.GymZoneById)]

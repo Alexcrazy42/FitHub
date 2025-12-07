@@ -1,10 +1,10 @@
 ﻿import { FireOutlined, HomeOutlined, RocketOutlined, ToolOutlined, UserOutlined } from "@ant-design/icons";
-import AdminDashboard from "../pages/admin/Dashboard";
 import { MenuItem } from "./MenuItem";
 import { Gyms } from "../pages/admin/gyms/Gyms";
 import { Equipments } from "../pages/admin/equipments/Equipments";
 import { Trainings } from "../pages/admin/trainings/Trainings";
 import { Users } from "../pages/admin/users/Users";
+import AdminDashboard from "../pages/admin/AdminDashboard";
 
 export const adminMenuConfig: MenuItem[] = [
   {

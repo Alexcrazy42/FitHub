@@ -9,7 +9,7 @@ public interface IGymService
 {
     Task<PagedResult<Gym>> GetGymsAsync(PagedQuery pagedQuery, CancellationToken ct);
 
-    Task<Gym?> GetGymOrDefaultAsync(GymId id, CancellationToken ct = default);
+    Task<Gym> GetByIdAsync(GymId id, CancellationToken ct = default);
 
     Task<Gym> CreateGymAsync(CreateGymRequest request, CancellationToken ct = default);
 

@@ -2,7 +2,7 @@
 
 namespace FitHub.Domain.Trainings;
 
-public class BaseGroupTrainingPhotoId: GuidIdentifier<BaseGroupTrainingPhotoId>, IIdentifierDescription
+public class BaseGroupTrainingPhotoId : GuidIdentifier<BaseGroupTrainingPhotoId>, IIdentifierDescription
 {
     public BaseGroupTrainingPhotoId(Guid value) : base(value)
     {

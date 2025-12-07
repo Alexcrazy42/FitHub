@@ -1,10 +1,11 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApiService } from '../../api/useApiService';
 import { useAuth } from '../../context/useAuth';
 import { useTheme } from '../../context/useTheme';
 import { LoginResponse, roleMapping, roleRoutes, User, UserRole } from '../../types/auth';
 import { toast } from 'react-toastify';
+import { Alert, Button, Space } from "antd";
 
 interface LoginRequest {
   username: string;
@@ -19,9 +20,11 @@ const Login: React.FC = () => {
   const [availableRoles, setAvailableRoles] = useState<{ role: UserRole; displayName: string; }[]>([]);
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [showRoleSelection, setShowRoleSelection] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [firstLogin, setFirstLogin] = useState(true);
   
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const { theme } = useTheme();
   const apiService = useApiService();
   
@@ -44,6 +47,17 @@ const Login: React.FC = () => {
       toast.error("Ошибка!");
     }
   }
+
+  useEffect(() => {
+    if (user) {
+      setLoading(true);
+      setFirstLogin(false);
+      setLoading(false);
+    } else {
+      setLoading(false);
+      setFirstLogin(true);
+    }
+  }, []);
 
 
   const handleLogin = async () => {
@@ -143,7 +157,48 @@ const Login: React.FC = () => {
     }
   };
 
-  // Если показываем выбор роли
+  if(loading) {
+    return <div>Загрузка...</div>
+  }
+
+  if (!firstLogin) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-gray-100 px-4">
+        <div className="max-w-md w-full">
+          <Alert
+            message="Вы уже зарегистрированы"
+            description={
+              <Space direction="vertical" size="middle" className="w-full">
+                <span>
+                  Вы уже вошли в аккаунт: <strong>{user?.email}</strong>
+                </span>
+                <span>Хотите выполнить повторный вход?</span>
+                <Space>
+                  <Button type="primary" onClick={() => setFirstLogin(true)}>
+                    Да
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      if(user?.currentRole) {
+                        const route = roleRoutes[user?.currentRole];
+                        navigate(route);
+                      }
+                      
+                    }}
+                  >
+                    Нет, перейти в личный кабинет
+                  </Button>
+                </Space>
+              </Space>
+            }
+            type="info"
+            showIcon
+          />
+        </div>
+      </div>
+    );
+  }
+
   if (showRoleSelection) {
     return (
       <div className={`min-h-screen flex items-center justify-center p-4 ${isDark ? 'bg-gray-900' : 'bg-gray-100'}`}>

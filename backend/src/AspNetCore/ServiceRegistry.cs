@@ -53,21 +53,6 @@ public static class ServiceRegistry
 
         services.AddBindedOptionsAs<TAuthOptions, IAuthOptions>();
 
-        services.AddAuthorization(options =>
-        {
-            options.AddPolicy(AuthorizationPolicies.CmsAdminOnly, policy =>
-                policy.RequireAssertion(context => context.User.HasUserType(IdentityUserType.CmsAdmin)));
-
-            options.AddPolicy(AuthorizationPolicies.TrainerOnly, policy =>
-                policy.RequireAssertion(context => context.User.HasUserType(IdentityUserType.Trainer)));
-
-            options.AddPolicy(AuthorizationPolicies.GymAdminOnly, policy =>
-                policy.RequireAssertion(context => context.User.HasUserType(IdentityUserType.GymAdmin)));
-
-            options.AddPolicy(AuthorizationPolicies.GymVisitorOnly, policy =>
-                policy.RequireAssertion(context => context.User.HasUserType(IdentityUserType.GymVisitor)));
-        });
-
         services.AddTransient<ITokenService, TokenService>();
 
         services
@@ -121,6 +106,21 @@ public static class ServiceRegistry
 
                 configureOptions?.Invoke(options);
             });
+
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy(AuthorizationPolicies.CmsAdminOnly, policy =>
+                policy.RequireAssertion(context => context.User.HasUserType(IdentityUserType.CmsAdmin)));
+
+            options.AddPolicy(AuthorizationPolicies.TrainerOnly, policy =>
+                policy.RequireAssertion(context => context.User.HasUserType(IdentityUserType.Trainer)));
+
+            options.AddPolicy(AuthorizationPolicies.GymAdminOnly, policy =>
+                policy.RequireAssertion(context => context.User.HasUserType(IdentityUserType.GymAdmin)));
+
+            options.AddPolicy(AuthorizationPolicies.GymVisitorOnly, policy =>
+                policy.RequireAssertion(context => context.User.HasUserType(IdentityUserType.GymVisitor)));
+        });
     }
 
     public static void UseAuthenticationAndAuthorization(
@@ -151,7 +151,7 @@ public static class ServiceRegistry
 
                     return Results.Ok(loginResponse);
                 })
-                .WithTags("Auth");
+                .AllowAnonymous();
         });
     }
 
@@ -163,5 +163,7 @@ public static class ServiceRegistry
         services.AddScoped<ICurrentIdentityUserIdAccessor, CurrentIdentityUserIdAccessor>();
 
         services.AddScoped<ICurrentIdentityUserAccessor, CurrentIdentityUserAccessor>();
+
+        services.AddScoped<IAccessService, AccessService>();
     }
 }

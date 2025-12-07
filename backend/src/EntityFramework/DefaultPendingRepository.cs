@@ -21,7 +21,7 @@ public abstract class DefaultPendingRepository<TEntity, TEntityId, TContext> : I
         DbSet = context.Set<TEntity>();
     }
 
-    protected IQueryable<TEntity> ReadRaw() => DbSet.AsQueryable();
+    protected virtual IQueryable<TEntity> ReadRaw() => DbSet.AsQueryable();
 
     public Task<TEntity?> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken)
         => ReadRaw()

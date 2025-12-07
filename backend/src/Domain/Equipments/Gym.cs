@@ -6,9 +6,11 @@ namespace FitHub.Domain.Equipments;
 
 public class Gym : IEntity<GymId>
 {
-    private List<Equipment> equipments = [];
     private List<GymAdmin> admins = [];
+    private List<Trainer> trainers = [];
     private List<GymZone> zones = [];
+    private List<VisitorGymRelation> visitors = [];
+    private List<GymEquipment> gymEquipments = [];
 
     private Gym(GymId id, string name, string description)
     {
@@ -23,12 +25,15 @@ public class Gym : IEntity<GymId>
 
     public string Description { get; private set; }
 
-
-    public IReadOnlyList<Equipment> Equipments => equipments;
+    public IReadOnlyList<GymEquipment> GymEquipments => gymEquipments;
 
     public IReadOnlyList<GymAdmin> Admins => admins;
 
+    public IReadOnlyList<Trainer> Trainers => trainers;
+
     public IReadOnlyList<GymZone> Zones => zones;
+
+    public IReadOnlyList<VisitorGymRelation> Visitors => visitors;
 
     public IReadOnlyList<FileEntity> Files { get; private set; } = [];
 

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FitHub.Web.V1.Equipments;
 
+[ApiController]
 public class BrandController : ControllerBase
 {
     private readonly IBrandService brandService;
@@ -21,9 +22,9 @@ public class BrandController : ControllerBase
     public async Task<ListResponse<BrandResponse>> GetAll([FromQuery] SearchBrandRequest? searchRequest, [FromQuery] PagedRequest? request, CancellationToken ct)
     {
         var query = request.ToDomain();
-        var search = searchRequest.ToSearchBrandCommand();
+        var search = searchRequest.ToCommand();
         var pagedResult = await brandService.GetAllAsync(search, query, ct);
-        return pagedResult.ToResponse(EquipmentResponseExtensions.ToBrandResponse);
+        return pagedResult.ToResponse(EquipmentResponseExtensions.ToResponse);
     }
 
     [HttpGet(ApiRoutesV1.BrandsById)]
@@ -31,14 +32,14 @@ public class BrandController : ControllerBase
     {
         var brandId = BrandId.Parse(id);
         var brand = await brandService.GetByIdAsync(brandId, ct);
-        return brand.ToBrandResponse();
+        return brand.ToResponse();
     }
 
     [HttpPost(ApiRoutesV1.Brands)]
     public async Task<BrandResponse> Create([FromBody] CreateBrandRequest? createBrandRequest, CancellationToken ct)
     {
         var brand = await brandService.CreateAsync(createBrandRequest, ct);
-        return brand.ToBrandResponse();
+        return brand.ToResponse();
     }
 
     [HttpPut(ApiRoutesV1.BrandsById)]
@@ -46,7 +47,7 @@ public class BrandController : ControllerBase
     {
         var brandId = BrandId.Parse(id);
         var brand = await brandService.UpdateAsync(brandId, updateBrandRequest, ct);
-        return brand.ToBrandResponse();
+        return brand.ToResponse();
     }
 
     [HttpDelete(ApiRoutesV1.BrandsById)]

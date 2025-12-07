@@ -1,4 +1,6 @@
-﻿namespace FitHub.Contracts.V1.Equipments.Instructions;
+﻿using FitHub.Shared.Equipments;
+
+namespace FitHub.Contracts.V1.Equipments.Instructions;
 
 public sealed class CreateEquipmentInstructionRequest
 {
@@ -10,7 +12,7 @@ public sealed class CreateEquipmentInstructionRequest
 
     public string? AdditionalDescription { get; set; }
 
-    public EquipmentInstructionTypeDto? EquipmentInstructionType { get; set; }
+    public EquipmentInstructionType? EquipmentInstructionType { get; set; }
 
     public List<string> MuscleGroupIds { get; set; } = [];
 

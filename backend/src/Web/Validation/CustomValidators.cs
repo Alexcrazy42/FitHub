@@ -8,17 +8,35 @@ public static class CustomValidators
 {
     public static IRuleBuilderOptionsConditions<T, TElement> MustBe<T, TElement>(
         this IRuleBuilder<T, TElement> ruleBuilder,
-        Action<TElement> factoryMethod)
+        Action<TElement> validationMethod)
     {
         return ruleBuilder.Custom((value, context) =>
         {
             try
             {
-                factoryMethod(value);
+                validationMethod(value);
             }
             catch (CommonException e)
             {
                 context.AddFailure(e.Message);
+            }
+        });
+    }
+
+    public static IRuleBuilderOptionsConditions<T, T> MustBeValid<T>(
+        this IRuleBuilder<T, T> ruleBuilder,
+        Action<T> validationMethod,
+        string propertyName)
+    {
+        return ruleBuilder.Custom((model, context) =>
+        {
+            try
+            {
+                validationMethod(model);
+            }
+            catch (CommonException e)
+            {
+                context.AddFailure(propertyName, e.Message);
             }
         });
     }

@@ -26,7 +26,7 @@ public class GymController : ControllerBase
     {
         var query = request.ToDomain();
         var gymPagedResult = await gymService.GetGymsAsync(query, ct);
-        return gymPagedResult.ToResponse(EquipmentResponseExtensions.ToGymResponse);
+        return gymPagedResult.ToResponse(EquipmentResponseExtensions.ToResponse);
     }
 
     [HttpGet(ApiRoutesV1.GymById)]
@@ -34,14 +34,14 @@ public class GymController : ControllerBase
     {
         ValidationException.ThrowIfNull(id, "Id cannot be null");
         var gymId = GymId.Parse(id);
-        var gym = await gymService.GetGymOrDefaultAsync(gymId, ct);
+        var gym = await gymService.GetByIdAsync(gymId, ct);
 
         if (gym == null)
         {
             throw new NotFoundException("Зал не найден!");
         }
 
-        return gym.ToGymResponse();
+        return gym.ToResponse();
     }
 
     [HttpPost(ApiRoutesV1.Gyms)]
@@ -51,7 +51,7 @@ public class GymController : ControllerBase
 
         var gym = await gymService.CreateGymAsync(request, ct);
 
-        return gym.ToGymResponse();
+        return gym.ToResponse();
     }
 
 
@@ -62,7 +62,7 @@ public class GymController : ControllerBase
 
         var gym = await gymService.UpdateGymAsync(request, ct);
 
-        return gym.ToGymResponse();
+        return gym.ToResponse();
     }
 
     [HttpDelete(ApiRoutesV1.GymById)]

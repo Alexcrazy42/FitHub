@@ -20,7 +20,7 @@ const DashboardLayout: React.FC = () => {
     if (response.success) {
       navigate('/login')
     } else {
-      //toast.error(response.error?.detail);
+      toast.error(response.error?.detail);
     }
   }
 
@@ -68,9 +68,7 @@ const DashboardLayout: React.FC = () => {
             className={theme === "dark" ? "hover:!bg-gray-800" : "hover:!bg-gray-100"}
           />
 
-          {/* Правая зона */}
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            {/* Смена темы */}
             <Button
               type="text"
               icon={theme === "dark" ? <SunOutlined /> : <MoonOutlined />}

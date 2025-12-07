@@ -1,4 +1,6 @@
-﻿export type UserRole = 'GymVisitor' | 'GymAdmin' | 'Trainer' | 'CmsAdmin';
+﻿import { IGymResponse } from "./gyms";
+
+export type UserRole = 'GymVisitor' | 'GymAdmin' | 'Trainer' | 'CmsAdmin';
 
 export const roleMapping: Record<UserRole, string> = {
   'GymVisitor': "Посетитель",
@@ -6,7 +8,6 @@ export const roleMapping: Record<UserRole, string> = {
   "Trainer": "Тренер",
   "CmsAdmin": "Администратор"
 };
-
 
 export const roleRoutes: Record<UserRole, string> = {
   'GymVisitor': '/user',
@@ -28,9 +29,12 @@ export interface LoginRequest {
 }
 
 export interface UserResponse {
+  id: string;
   surname: string;
   name: string;
   email: string;
+  isActive: boolean;
+  startActiveAt: Date;
   roleNames: UserRole[];
 }
 
@@ -65,4 +69,37 @@ export interface SetPasswordRequest {
   token: string;
   userId: string;
   password: string;
+}
+
+
+export interface CreateCmsAdminRequest {
+  email: string;
+  surname: string;
+  name: string;
+}
+
+export interface CreateGymAdminRequest {
+  email: string;
+  surname: string;
+  name: string;
+  gymId: string;
+}
+
+export interface CreateTrainerAdminRequest {
+  email: string;
+  surname: string;
+  name: string;
+  gymId: string;
+}
+
+export interface IGymAdminResponse {
+  id: string;
+  user: UserResponse;
+  gyms: IGymResponse[];
+}
+
+export interface ITrainerResponse {
+  id: string;
+  user: UserResponse;
+  gyms: IGymResponse[];
 }

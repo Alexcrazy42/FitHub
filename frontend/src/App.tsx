@@ -2,6 +2,7 @@
 import { router } from './routes/router';
 import { useTheme } from './context/useTheme';
 import { ConfigProvider, theme as antdTheme } from 'antd';
+import { AuthProvider } from './context/AuthProvider';
 
 const ThemedApp = () => {
   const { theme } = useTheme();
@@ -15,7 +16,9 @@ const ThemedApp = () => {
             : antdTheme.defaultAlgorithm,
       }}
     >
-      <RouterProvider router={router} />
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
     </ConfigProvider>
   );
 };

@@ -13,9 +13,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
     return <Navigate to="/login" replace />;
   }
 
+
   if (!allowedRoles.includes(user.currentRole)) {
-    return <Navigate to={`/${roleRoutes[user.currentRole]}`} replace />;
+    //const target = roleRoutes[user.currentRole];
+   // const safeTarget = target ? `${target}` : '/';
+    return <Navigate to={'/'} replace />;
   }
+  
 
   return <Outlet />;
 };

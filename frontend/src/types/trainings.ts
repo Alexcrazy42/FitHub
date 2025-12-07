@@ -1,4 +1,8 @@
-﻿export interface IMuscleGroup {
+﻿import { Dayjs } from "dayjs";
+import { IGymResponse } from "./gyms";
+import { ITrainerResponse, IVisitorResponse } from "./users";
+
+export interface IMuscleGroup {
     id: string;
     name: string;
     imageId: string | null;
@@ -12,8 +16,8 @@ export interface ICreateMuscleGroup {
 }
 
 export interface ITrainingType {
-    id: string | null;
-    name: string | null;
+    id: string;
+    name: string;
 }
 
 export interface ICreateTrainingType {
@@ -44,4 +48,25 @@ export interface ICreateBaseGroupTraining {
 export interface IAttachPhoto {
     baseGroupTrainingId : string;
     fileId : string;
+}
+
+export interface IAddOrUpdateGroupTrainingRequest {
+    baseGroupTrainingId: string | null;
+    gymId: string | null;
+    trainerId: string | null;
+    startTime: Date | null;
+    date: Dayjs | null;
+    endTime: Date | null;
+    isActive: boolean | null;
+}
+
+export interface IGroupTrainingResponse {
+    id: string;
+    baseGroupTraining: IBaseGroupTraining;
+    gym: IGymResponse;
+    trainer: ITrainerResponse;
+    participants: IVisitorResponse[];
+    startTime: Date;
+    endTime: Date;
+    isActive: boolean;
 }

@@ -1,5 +1,8 @@
 ﻿using FitHub.Application.EmailNotifications;
 using FitHub.Application.Equipments.Gyms;
+using FitHub.Application.Users.GymAdmins;
+using FitHub.Application.Users.Trainers;
+using FitHub.Application.Users.Visitors;
 using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.AspNetCore.Auth;
 using FitHub.Common.AspNetCore.Tokens;
@@ -7,6 +10,8 @@ using FitHub.Common.Entities;
 using FitHub.Common.Entities.Storage;
 using FitHub.Common.Utilities.System;
 using FitHub.Contracts.V1.Auth;
+using FitHub.Contracts.V1.Users.GymAdmins;
+using FitHub.Contracts.V1.Users.Trainers;
 using FitHub.Domain.Equipments;
 using FitHub.Domain.Notifications;
 using FitHub.Domain.Users;
@@ -30,6 +35,9 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
     private readonly ITokenService tokenService;
     private readonly ILogger<IdentityUserService> logger;
     private readonly ISessionService sessionService;
+    private readonly IVisitorRepository visitorRepository;
+    private readonly IGymService gymService;
+    private readonly IVisitorGymRelationRepository visitorGymRelationRepository;
 
     public IdentityUserService(IUserRepository userRepository,
         IGymAdminRepository gymAdminRepository,
@@ -42,7 +50,10 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
         IOptions<IAuthOptions> authOptions,
         ITokenService tokenService,
         ILogger<IdentityUserService> logger,
-        ISessionService sessionService)
+        ISessionService sessionService,
+        IVisitorRepository visitorRepository,
+        IGymService gymService,
+        IVisitorGymRelationRepository visitorGymRelationRepository)
     {
         this.userRepository = userRepository;
         this.gymAdminRepository = gymAdminRepository;
@@ -51,10 +62,13 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
         this.emailNotificationRepository = emailNotificationRepository;
         this.tokenRepository = tokenRepository;
         this.trainerRepository = trainerRepository;
-        this.context = httpContextAccessor.HttpContext ?? throw new ArgumentException("Не получается получить HttpContext");
+        context = httpContextAccessor.HttpContext ?? throw new ArgumentException("Не получается получить HttpContext");
         this.tokenService = tokenService;
         this.logger = logger;
         this.sessionService = sessionService;
+        this.visitorRepository = visitorRepository;
+        this.gymService = gymService;
+        this.visitorGymRelationRepository = visitorGymRelationRepository;
         this.authOptions = authOptions.Value;
     }
 
@@ -90,6 +104,10 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
 
     public async Task<User> StartRegister(StartRegisterRequest request, CancellationToken ct)
     {
+        var gymId = GymId.Parse(request.GymId);
+
+        var gym = await gymService.GetByIdAsync(gymId, ct);
+
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(DefaultUserConsts.DefaultPassword).Required();
 
         var email = ValidationException.ThrowIfNull(request.Email, "Почта не может быть пустой");
@@ -109,6 +127,9 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
             lastSeenAt: DateTimeOffset.UtcNow
         );
 
+        var visitor = Visitor.Create(user);
+        var visitorGymRelation = VisitorGymRelation.Create(gym, visitor, true);
+
         var token = Token.Create(user, TokenType.ConfirmEmail);
 
         var notification = EmailNotification.Create(email, "Подтвердите свою почту", bodyHtml: $"userId: {user.Id} token: {token.TokenString}");
@@ -118,6 +139,8 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
         await userRepository.PendingAddAsync(user, ct);
         await emailNotificationRepository.PendingAddAsync(notification, ct);
         await tokenRepository.PendingAddAsync(token, ct);
+        await visitorRepository.PendingAddAsync(visitor, ct);
+        await visitorGymRelationRepository.PendingAddAsync(visitorGymRelation, ct);
         await unitOfWork.SaveChangesAsync(ct);
 
         return user;
@@ -139,7 +162,7 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
             name: ValidationException.ThrowIfNull(request.Name, "Имя не может быть пустым"),
             email: email,
             passwordHash: passwordHash,
-            userType: IdentityUserType.CmsAdmin | IdentityUserType.GymAdmin,
+            userType: IdentityUserType.CmsAdmin,
             startRegistrationAt: DateTimeOffset.UtcNow,
             lastSeenAt: DateTimeOffset.UtcNow
         );
@@ -183,7 +206,7 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
             lastSeenAt: DateTimeOffset.UtcNow
         );
 
-        var gymAdmin = GymAdmin.Create();
+        var gymAdmin = GymAdmin.Create(user);
         gymAdmin.SetGym(gym);
 
         var token = Token.Create(user, TokenType.ConfirmEmail);
@@ -203,6 +226,10 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
 
     public async Task<User> RegisterTrainerAsync(CreateTrainerRequest request, CancellationToken ct = default)
     {
+        var gymId = GymId.Parse(request.GymId);
+
+        var gym = await gymRepository.GetById(gymId, ct);
+
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(DefaultUserConsts.DefaultPassword).Required();
 
         var email = ValidationException.ThrowIfNull(request.Email, "Почта не может быть пустой");
@@ -223,6 +250,7 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
         );
 
         var trainer = Trainer.Create(user);
+        trainer.SetGym(gym);
 
         var token = Token.Create(user, TokenType.ConfirmEmail);
 
@@ -242,14 +270,9 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
     public async Task<bool> CheckConfirmEmail(ConfirmEmailRequest request, CancellationToken ct = default)
     {
         var userId = IdentityUserId.Parse(request.UserId);
+        var user = await GetAsync(userId, ct);
 
-        var user = await GetOrDefaultAsync(userId, ct);
-        if (user == null)
-        {
-            throw new NotFoundException("Пользователь не найден!");
-        }
-
-        await CheckToken(request.Token.Required(), TokenType.ConfirmEmail, userId, ct);
+        await CheckToken(request.Token.Required(), TokenType.ConfirmEmail, user, ct);
         return true;
     }
 
@@ -257,13 +280,9 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
     {
         var userId = IdentityUserId.Parse(request.UserId);
 
-        var user = await GetOrDefaultAsync(userId, ct);
-        if (user == null)
-        {
-            throw new NotFoundException("Пользователь не найден!");
-        }
+        var user = await GetAsync(userId, ct);
 
-        await CheckToken(request.Token.Required(), TokenType.ConfirmEmail, userId, ct);
+        await CheckToken(request.Token.Required(), TokenType.ConfirmEmail, user, ct);
 
         user.SetEmailConfirmed(true);
         await unitOfWork.SaveChangesAsync(ct);
@@ -275,22 +294,19 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
     {
         var userId = IdentityUserId.Parse(request.UserId);
 
-        var user = await GetOrDefaultAsync(userId, ct);
-        if (user == null)
-        {
-            throw new NotFoundException("Пользователь не найден!");
-        }
+        var user = await GetAsync(userId, ct);
 
         if (!user.IsTemporaryPassword)
         {
             throw new AlreadyExistsException("Пароль не является временным!");
         }
 
-        var token = await CheckToken(request.Token.Required(), TokenType.ConfirmEmail, userId, ct);
+        var token = await CheckToken(request.Token.Required(), TokenType.ConfirmEmail, user, ct);
 
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password.Required()).Required();
         user.SetPassword(passwordHash);
         user.SetActive(true);
+        user.SetActiveAt(DateTimeOffset.UtcNow);
         token.SetAppliedAt(DateTimeOffset.UtcNow);
 
         await unitOfWork.SaveChangesAsync(ct);
@@ -315,7 +331,8 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
     public async Task<bool> CheckResetPasswordAsync(ResetPasswordRequest request, CancellationToken ct = default)
     {
         var userId = IdentityUserId.Parse(request.UserId);
-        await CheckToken(request.Token.Required(), TokenType.ResetPassword, userId, ct);
+        var user = await GetAsync(userId, ct);
+        await CheckToken(request.Token.Required(), TokenType.ResetPassword, user, ct);
         return true;
     }
 
@@ -326,7 +343,7 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
         var userId = IdentityUserId.Parse(request.UserId);
         var user = await GetAsync(userId, ct);
 
-        var token = await CheckToken(request.Token.Required(), TokenType.ResetPassword, userId, ct);
+        var token = await CheckToken(request.Token.Required(), TokenType.ResetPassword, user, ct);
 
         if (BCrypt.Net.BCrypt.Verify(request.NewPassword.Required(), user.PasswordHash))
         {
@@ -404,9 +421,9 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
         return loginResponse;
     }
 
-    private async Task<Token> CheckToken(string token, TokenType tokenType, IdentityUserId userId, CancellationToken ct)
+    private async Task<Token> CheckToken(string token, TokenType tokenType, IdentityUser user, CancellationToken ct)
     {
-        var tokenEntity = await tokenRepository.GetFirstOrDefaultAsync(x => x.TokenType == tokenType && x.UserId == userId && x.TokenString == token, ct);
+        var tokenEntity = await tokenRepository.GetFirstOrDefaultAsync(x => x.TokenType == tokenType && x.UserId == user.Id && x.TokenString == token, ct);
 
         if (tokenEntity is not null && tokenEntity.ExpiresOn > DateTimeOffset.UtcNow && tokenEntity.AppliedAt is null)
         {
