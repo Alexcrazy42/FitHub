@@ -1,4 +1,5 @@
-﻿using FitHub.Common.AspNetCore.Accounting;
+﻿using FitHub.Authentication;
+using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.AspNetCore.Auth;
 using FitHub.Contracts.V1.Auth;
 using FitHub.Contracts.V1.Users.GymAdmins;

@@ -1,4 +1,5 @@
 ﻿using FitHub.Application.Users.Visitors;
+using FitHub.Authentication;
 using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.AspNetCore.Auth;
 using FitHub.Contracts;

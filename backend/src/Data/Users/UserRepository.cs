@@ -1,5 +1,6 @@
 ﻿using FitHub.Application.Common;
 using FitHub.Application.Users;
+using FitHub.Authentication;
 using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.EntityFramework;
 using FitHub.Domain.Users;
@@ -25,5 +26,12 @@ public class UserRepository : DefaultPendingRepository<User, IdentityUserId, Dat
         var items = await dbQuery.ToListAsync(ct);
 
         return PagedResult<User>.Create(items, totalItems: totalCount, currentPage: query.PageNumber, pageSize: query.PageSize);
+    }
+
+    public Task<IReadOnlyList<User>> GetUsersAsync(List<IdentityUserId> userIds, CancellationToken ct)
+    {
+        return ReadRaw()
+            .Where(x => userIds.Contains(x.Id))
+            .ToReadOnlyListAsync(ct);
     }
 }

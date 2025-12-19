@@ -1,7 +1,7 @@
 ﻿using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.Entities.Identity;
 
-namespace FitHub.Domain.Users;
+namespace FitHub.Authentication;
 
 public class User : IdentityUser, IAuditableEntity
 {
@@ -28,16 +28,6 @@ public class User : IdentityUser, IAuditableEntity
     public DateTimeOffset CreatedAt { get; private set; }
 
     public DateTimeOffset UpdatedAt { get; private set; }
-
-    public void SetCreatedAt(DateTimeOffset date)
-    {
-        CreatedAt = date;
-    }
-
-    public void SetUpdatedAt(DateTimeOffset date)
-    {
-        UpdatedAt = date;
-    }
 
     public static User Create(IdentityUserId id,
         string surname,

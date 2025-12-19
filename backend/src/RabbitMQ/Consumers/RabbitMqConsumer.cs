@@ -149,6 +149,7 @@ internal sealed class RabbitMqConsumer<TMessage, TOptions> : BackgroundService
                     }
                 };
 
+                await channel.BasicQosAsync(0, prefetchCount: 1, global: false, cancellationToken: ct);
                 await channel.BasicConsumeAsync(queue: queueName.Required(), autoAck: false, consumer: consumer, cancellationToken: ct);
                 logger.LogInformation("Starting consuming {QueueName}", queueName);
                 return;
@@ -188,3 +189,4 @@ internal sealed class RabbitMqConsumer<TMessage, TOptions> : BackgroundService
         }
     }
 }
+

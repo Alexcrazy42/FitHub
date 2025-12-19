@@ -1,4 +1,4 @@
-﻿namespace FitHub.Common.AspNetCore.Accounting;
+﻿namespace FitHub.Authentication;
 
 /// <summary>
 /// Сервис для получения идентификатора текущего пользователя

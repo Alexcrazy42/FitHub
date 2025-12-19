@@ -1,4 +1,4 @@
-﻿namespace FitHub.Common.AspNetCore.Accounting;
+﻿namespace FitHub.Authentication;
 
 [Flags]
 public enum IdentityUserType

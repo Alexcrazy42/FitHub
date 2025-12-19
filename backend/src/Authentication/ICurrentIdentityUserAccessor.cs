@@ -1,4 +1,6 @@
-﻿namespace FitHub.Common.AspNetCore.Accounting;
+﻿using FitHub.Common.AspNetCore.Accounting;
+
+namespace FitHub.Authentication;
 
 /// <summary>
 /// Сервис, для получения текущего пользователя

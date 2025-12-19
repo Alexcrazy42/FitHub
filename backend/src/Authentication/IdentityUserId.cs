@@ -1,6 +1,6 @@
 ﻿using FitHub.Common.Entities.Identity;
 
-namespace FitHub.Common.AspNetCore.Accounting;
+namespace FitHub.Authentication;
 
 public sealed class IdentityUserId : GuidIdentifier<IdentityUserId>, IIdentifierDescription
 {

@@ -1,5 +1,6 @@
 ﻿using FitHub.Application.Users;
 using FitHub.Application.Users.CmsAdmins;
+using FitHub.Authentication;
 using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.AspNetCore.Auth;
 using FitHub.Common.Entities;

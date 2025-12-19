@@ -214,6 +214,16 @@ public class ApiRoutesV1
 
     #endregion
 
+    #region Messaging
+
+    public const string Chats = Root + "/chats";
+
+    public const string ChatById = Chats + "/{id}";
+
+    public const string ChatEvents = ChatById + "/events";
+
+    #endregion
+
 
 
     public const string Organizations = Root + "/organizations";

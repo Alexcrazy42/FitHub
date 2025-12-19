@@ -1,5 +1,6 @@
 ﻿using FitHub.Common.Entities;
 using FitHub.Common.Entities.Storage;
+using FitHub.Common.EntityFramework.Interceptors;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,6 +30,8 @@ public static class ServiceRegistry
     public static IServiceCollection AddDataContext<TContext>(this IServiceCollection services, IDatabaseOptions options)
         where TContext : DbContext
     {
+        services.AddInterceptors();
+
         services.AddDbContextPool<TContext>((provider, builder) =>
         {
             var interceptors = provider.GetServices<IInterceptor>();
@@ -52,6 +55,15 @@ public static class ServiceRegistry
             builder.UseSnakeCaseNamingConvention()
                 .AddInterceptors(interceptors);
         });
+        return services;
+    }
+
+    public static IServiceCollection AddInterceptors(this IServiceCollection services)
+    {
+        services.AddTransient<IInterceptor, AuditableEntitiesInterceptor>();
+        services.AddTransient<IInterceptor, UserAuditableEntitiesInterceptor>();
+        services.AddTransient<IInterceptor, SoftDeletableEntitiesInterceptor>();
+        services.AddTransient<IInterceptor, UserSoftDeletableEntitiesInterceptor>();
         return services;
     }
 }

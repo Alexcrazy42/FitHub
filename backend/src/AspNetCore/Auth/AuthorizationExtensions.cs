@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using FitHub.Authentication;
 using FitHub.Common.AspNetCore.Accounting;
 
 namespace FitHub.Common.AspNetCore.Auth;

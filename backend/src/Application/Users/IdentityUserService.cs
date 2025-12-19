@@ -3,6 +3,7 @@ using FitHub.Application.Equipments.Gyms;
 using FitHub.Application.Users.GymAdmins;
 using FitHub.Application.Users.Trainers;
 using FitHub.Application.Users.Visitors;
+using FitHub.Authentication;
 using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.AspNetCore.Auth;
 using FitHub.Common.AspNetCore.Tokens;

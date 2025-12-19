@@ -1,4 +1,5 @@
-﻿using FitHub.Common.AspNetCore.Accounting;
+﻿using FitHub.Authentication;
+using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.Entities;
 using FitHub.Common.Entities.Identity;
 
@@ -33,10 +34,6 @@ public class Session : IEntity<SessionId>, IAuditableEntity
     public DateTimeOffset CreatedAt { get; private set; }
 
     public DateTimeOffset UpdatedAt { get; private set; }
-
-    public void SetCreatedAt(DateTimeOffset date) => CreatedAt = date;
-
-    public void SetUpdatedAt(DateTimeOffset date) => UpdatedAt = date;
 
 
     public void SetActive(bool isActive)

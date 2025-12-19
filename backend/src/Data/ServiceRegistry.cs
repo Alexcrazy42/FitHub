@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using FitHub.Common.Entities.Storage;
 using FitHub.Common.EntityFramework;
+using FitHub.Common.EntityFramework.Interceptors;
 using FitHub.Common.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
@@ -23,7 +24,6 @@ public static class ServiceRegistry
 
         services.AddRepositories();
         services.AddNoIdRepositories();
-        services.AddInterceptors();
     }
 
     private static IServiceCollection AddRepositories(this IServiceCollection services)
@@ -75,12 +75,6 @@ public static class ServiceRegistry
             }
         }
 
-        return services;
-    }
-
-    private static IServiceCollection AddInterceptors(this IServiceCollection services)
-    {
-        services.AddTransient<IInterceptor, AuditableEntitiesInterceptor>();
         return services;
     }
 }

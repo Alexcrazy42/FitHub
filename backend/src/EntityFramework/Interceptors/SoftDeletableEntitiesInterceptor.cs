@@ -2,9 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
-namespace FitHub.Data;
+namespace FitHub.Common.EntityFramework.Interceptors;
 
-public class AuditableEntitiesInterceptor : SaveChangesInterceptor
+public class SoftDeletableEntitiesInterceptor : SaveChangesInterceptor
 {
     public override InterceptionResult<int> SavingChanges(
         DbContextEventData eventData,
@@ -30,21 +30,18 @@ public class AuditableEntitiesInterceptor : SaveChangesInterceptor
             return;
         }
 
-        var entries = context.ChangeTracker.Entries<IAuditableEntity>();
+        var deletedEntities = context
+            .ChangeTracker
+            .Entries<ISoftDeletableEntity>()
+            .Where(e => e.State == EntityState.Deleted)
+            .ToList();
 
         var utcNow = DateTimeOffset.UtcNow;
 
-        foreach (var entry in entries)
+        foreach (var entity in deletedEntities)
         {
-            if (entry.State == EntityState.Added)
-            {
-                entry.Entity.SetCreatedAt(utcNow);
-                entry.Entity.SetUpdatedAt(utcNow);
-            }
-            else if (entry.State == EntityState.Modified)
-            {
-                entry.Entity.SetUpdatedAt(utcNow);
-            }
+            entity.Property(x => x.DeletedAt).CurrentValue = utcNow;
+            entity.Property(x => x.IsDeleted).CurrentValue = true;
         }
     }
 }
