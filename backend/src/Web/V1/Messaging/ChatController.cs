@@ -1,8 +1,10 @@
 ﻿using FitHub.Application.Messaging;
 using FitHub.Application.Messaging.Commands;
+using FitHub.Common.AspNetCore.Auth;
 using FitHub.Common.Entities;
 using FitHub.Contracts.V1;
 using FitHub.Contracts.V1.Messaging;
+using FitHub.Contracts.V1.Messaging.Chats;
 using FitHub.Domain.Messaging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -28,9 +30,10 @@ public class ChatController : ControllerBase
     }
 
     [HttpPost(ApiRoutesV1.Chats)]
+    [Authorize(Policy = AuthorizationPolicies.CmsAdminOnly)]
     public async Task<ChatResponse> CreateChat([FromBody] CreateChatRequest? request, CancellationToken ct)
     {
-        var command = ValidationException.ThrowIfNull(request, "request").FromRequest();
+        var command = UnexpectedException.ThrowIfNull(request, "request").FromRequest();
         var chat = await chatService.CreateChatAsync(command, ct);
         return chat.ToResponse();
     }

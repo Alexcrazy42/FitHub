@@ -22,7 +22,7 @@ public class GroupTrainingController : ControllerBase
     [HttpGet(ApiRoutesV1.GroupTrainings)]
     public async Task<ListResponse<GroupTrainingResponse>> GetAsync([FromQuery] PagedRequest? pagedRequest, [FromQuery] GroupTrainingSearchRequest? searchRequest, CancellationToken ct)
     {
-        var paged = pagedRequest.ToDomain();
+        var paged = pagedRequest.ToQuery();
         var result = await groupTrainingService.GetAsync(paged, searchRequest, ct);
 
         return result.ToResponse(TrainingResponseExtensions.ToResponse);
@@ -39,7 +39,7 @@ public class GroupTrainingController : ControllerBase
     [HttpPost(ApiRoutesV1.GroupTrainings)]
     public async Task<GroupTrainingResponse> CreateAsync([FromBody] AddOrUpdateGroupTrainingRequest? request, CancellationToken ct)
     {
-        ValidationException.ThrowIfNull(request, "request != null");
+        ValidationException.ThrowIfNull(request);
         var entity = await groupTrainingService.CreateGroupTraining(request, ct);
         return entity.ToResponse();
     }
@@ -48,7 +48,7 @@ public class GroupTrainingController : ControllerBase
     public async Task<GroupTrainingResponse> UpdateAsync([FromRoute] string? id, [FromBody] AddOrUpdateGroupTrainingRequest? request, CancellationToken ct)
     {
         var groupTrainingId = GroupTrainingId.Parse(id);
-        ValidationException.ThrowIfNull(request, "request != null");
+        ValidationException.ThrowIfNull(request);
         var entity = await groupTrainingService.UpdateGroupTraining(groupTrainingId, request, ct);
         return entity.ToResponse();
     }

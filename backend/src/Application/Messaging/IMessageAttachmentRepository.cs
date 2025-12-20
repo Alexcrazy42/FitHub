@@ -3,7 +3,7 @@ using FitHub.Domain.Messaging;
 
 namespace FitHub.Application.Messaging;
 
-public interface IChatEventRepository : IPendingRepository<ChatEvent, ChatEventId>
+public interface IMessageAttachmentRepository : IPendingRepository<MessageAttachment, MessageAttachmentId>
 {
 
 }

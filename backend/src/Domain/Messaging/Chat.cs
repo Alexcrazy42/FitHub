@@ -25,11 +25,58 @@ public class Chat : IEntity<ChatId>, IUserAuditableEntity<IdentityUserId, User>
     /// </summary>
     public ChatType Type { get; private set; }
 
+    public string? Name { get; private set; }
+
     /// <summary>
     /// Участники
     /// </summary>
     public IReadOnlyList<ChatParticipant> Participants => participants;
 
+    public void SetName(string name)
+    {
+        if (Type == ChatType.OneToOne)
+        {
+            throw new ValidationException("Нельзя дать имя приватному чату!");
+        }
+
+        Name = name;
+    }
+
+    public bool HasAccess(IdentityUserId userId)
+    {
+        if (Participants.Count == 0)
+        {
+            throw new UnexpectedException("Нет участников!");
+        }
+        return Participants.All(x => x.UserId != userId || x.Blocked);
+    }
+
+    public void CheckAccess(IdentityUserId userId)
+    {
+        if (!HasAccess(userId))
+        {
+            throw new ValidationException("Нет доступа к чату!");
+        }
+    }
+
+    public void AddParticipant(ChatParticipant participant)
+    {
+        if (Type != ChatType.Group)
+        {
+            throw new ValidationException("Добавить человека можно только в группу!");
+        }
+
+        if (participants.Count == 0)
+        {
+            throw new UnexpectedException("Нет участников!");
+        }
+
+        if (participants.Any(x => x.UserId == participant.UserId))
+        {
+            throw new ValidationException("Пользователь уже находится в чате!");
+        }
+        participants.Add(participant);
+    }
 
     public static Chat Create(ChatType type)
     {

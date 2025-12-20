@@ -43,7 +43,7 @@ public class TrainerController : ControllerBase
     public async Task<ListResponse<TrainerResponse>> GetAll([FromQuery] PagedRequest? request, [FromQuery] TrainerQuery? trainerQuery, CancellationToken ct)
     {
         await accessService.EnsureHasAnyPolicyAsync(AuthorizationPolicies.CmsAdminOnly, AuthorizationPolicies.GymAdminOnly);
-        var query = request.ToDomain();
+        var query = request.ToQuery();
         var result = await trainerService.GetAll(query, trainerQuery, ct);
         return result.ToResponse(UserExtensions.ToResponse);
     }

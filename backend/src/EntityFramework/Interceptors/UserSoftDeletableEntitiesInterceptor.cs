@@ -49,6 +49,7 @@ public class UserSoftDeletableEntitiesInterceptor : SaveChangesInterceptor
 
         foreach (var entity in deletedEntities)
         {
+            // TODO: сделать type-safe
             entity.Property(nameof(IUserSoftDeletableEntity<IdentityUserId, User>.DeletedAt)).CurrentValue = utcNow;
             entity.Property(nameof(IUserSoftDeletableEntity<IdentityUserId, User>.IsDeleted)).CurrentValue = true;
             entity.Property(nameof(IUserSoftDeletableEntity<IdentityUserId, User>.DeletedById)).CurrentValue = currentUserId;

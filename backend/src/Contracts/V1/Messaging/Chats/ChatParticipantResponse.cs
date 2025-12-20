@@ -1,6 +1,6 @@
 ﻿using FitHub.Contracts.V1.Users;
 
-namespace FitHub.Contracts.V1.Messaging;
+namespace FitHub.Contracts.V1.Messaging.Chats;
 
 public class ChatParticipantResponse
 {

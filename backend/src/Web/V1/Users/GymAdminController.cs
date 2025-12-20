@@ -43,7 +43,7 @@ public class GymAdminController : ControllerBase
     [Authorize(Policy = AuthorizationPolicies.CmsAdminOnly)]
     public async Task<ListResponse<GymAdminResponse>> GetAll([FromQuery] PagedRequest? paged, CancellationToken ct)
     {
-        var domain = paged.ToDomain();
+        var domain = paged.ToQuery();
         var gymAdminResult = await gymAdminService.GetAll(domain, ct);
         return gymAdminResult.ToResponse(UserExtensions.ToResponse);
     }

@@ -1,6 +1,6 @@
 ﻿using FitHub.Shared.Messaging;
 
-namespace FitHub.Contracts.V1.Messaging;
+namespace FitHub.Contracts.V1.Messaging.Chats;
 
 public sealed class ChatResponse
 {

@@ -26,7 +26,7 @@ public class EquipmentInstructionController : ControllerBase
     [HttpGet(ApiRoutesV1.EquipmentsInstructions)]
     public async Task<ListResponse<EquipmentInstructionResponse>> GetAllAsync([FromQuery] PagedRequest? request, CancellationToken ct)
     {
-        var query = request.ToDomain();
+        var query = request.ToQuery();
         var pagedResult = await service.GetAll(query, ct);
         return pagedResult.ToResponse(EquipmentResponseExtensions.ToFullInstructionResponse);
     }

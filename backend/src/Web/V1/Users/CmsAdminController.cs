@@ -33,7 +33,7 @@ public class CmsAdminController : ControllerBase
     [Authorize(Policy = AuthorizationPolicies.CmsAdminOnly)]
     public async Task<ListResponse<UserResponse>> Get([FromQuery] PagedRequest? paged, CancellationToken ct)
     {
-        var query = paged.ToDomain();
+        var query = paged.ToQuery();
         var usersResult = await cmsAdminService.GetCmsAdmins(query, ct);
         return usersResult.ToResponse(UserExtensions.ToResponse);
     }

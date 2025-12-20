@@ -15,6 +15,8 @@ public interface IUserService
     /// </summary>
     Task<User> GetUserAsync(IdentityUserId userId, CancellationToken ct);
 
+    Task<IReadOnlyList<User>> GetUsersAsync(List<IdentityUserId> userIds, CancellationToken ct);
+
     /// <summary>
     /// Начать регистрацию
     /// </summary>

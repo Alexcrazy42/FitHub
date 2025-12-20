@@ -41,7 +41,12 @@ public class ChatParticipant : IEntity<ChatParticipantId>
 
     public DateTimeOffset JoinedAt { get; private set; }
 
-    public bool IsLeft { get; private set; }
+    public bool Blocked { get; private set; }
+
+    public void Block()
+    {
+        Blocked = true;
+    }
 
     public static ChatParticipant Create(User user, Chat chat)
     {
@@ -49,7 +54,7 @@ public class ChatParticipant : IEntity<ChatParticipantId>
         {
             User = user,
             Chat = chat,
-            IsLeft = false
+            Blocked = false
         };
     }
 }

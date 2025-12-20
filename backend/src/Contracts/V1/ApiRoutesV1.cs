@@ -220,7 +220,9 @@ public class ApiRoutesV1
 
     public const string ChatById = Chats + "/{id}";
 
-    public const string ChatEvents = ChatById + "/events";
+    public const string Messages = Root + "/messages";
+
+    public const string MessagesById = Messages + "/{id}";
 
     #endregion
 

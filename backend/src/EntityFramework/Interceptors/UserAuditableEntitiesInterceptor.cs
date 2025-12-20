@@ -51,6 +51,7 @@ public class UserAuditableEntitiesInterceptor : SaveChangesInterceptor
         {
             if (entity.State == EntityState.Added)
             {
+                // TODO: сделать type-safe
                 entity.Property(nameof(IUserAuditableEntity<IdentityUserId, User>.CreatedAt)).CurrentValue = utcNow;
                 entity.Property(nameof(IUserAuditableEntity<IdentityUserId, User>.CreatedById)).CurrentValue = currentUserId;
             }

@@ -103,6 +103,17 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
         return user;
     }
 
+    public async Task<IReadOnlyList<User>> GetUsersAsync(List<IdentityUserId> userIds, CancellationToken ct)
+    {
+        var users = await userRepository.GetUsersAsync(userIds, ct);
+        if (users.Count != userIds.Count)
+        {
+            throw new NotFoundException("Не найдены все пользователи");
+        }
+
+        return users;
+    }
+
     public async Task<User> StartRegister(StartRegisterRequest request, CancellationToken ct)
     {
         var gymId = GymId.Parse(request.GymId);

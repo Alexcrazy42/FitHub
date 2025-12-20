@@ -2,9 +2,9 @@
 
 namespace FitHub.Domain.Messaging;
 
-public class ChatEventId : GuidIdentifier<ChatEventId>, IIdentifierDescription
+public class MessageId : GuidIdentifier<MessageId>, IIdentifierDescription
 {
-    public ChatEventId(Guid value) : base(value)
+    public MessageId(Guid value) : base(value)
     {
     }
 

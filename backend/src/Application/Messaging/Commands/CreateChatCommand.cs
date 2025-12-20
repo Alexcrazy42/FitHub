@@ -1,6 +1,7 @@
 ﻿using FitHub.Authentication;
 using FitHub.Common.Utilities.System;
 using FitHub.Contracts.V1.Messaging;
+using FitHub.Contracts.V1.Messaging.Chats;
 using FitHub.Shared.Messaging;
 
 namespace FitHub.Application.Messaging.Commands;
@@ -20,9 +21,5 @@ public class CreateChatCommand
 
 public static class CreateChatCommandExtensions
 {
-    public static CreateChatCommand FromRequest(this CreateChatRequest request)
-    {
-        var participantUserIds = request.ParticipantUserIds.Select(IdentityUserId.Parse).ToList();
-        return new CreateChatCommand(request.Type.Required(), participantUserIds);
-    }
+
 }

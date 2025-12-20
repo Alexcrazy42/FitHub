@@ -438,6 +438,10 @@ namespace FitHub.Data.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("created_by_id");
 
+                    b.Property<string>("Name")
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -459,7 +463,44 @@ namespace FitHub.Data.Migrations
                     b.ToTable("chat", (string)null);
                 });
 
-            modelBuilder.Entity("FitHub.Domain.Messaging.ChatEvent", b =>
+            modelBuilder.Entity("FitHub.Domain.Messaging.ChatParticipant", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("Blocked")
+                        .HasColumnType("boolean")
+                        .HasColumnName("blocked");
+
+                    b.Property<Guid>("ChatId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("chat_id");
+
+                    b.Property<DateTimeOffset>("JoinedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("joined_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_chat_participant");
+
+                    b.HasIndex("ChatId")
+                        .HasDatabaseName("ix_chat_participant_chat_id");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_chat_participant_user_id");
+
+                    b.ToTable("chat_participant", (string)null);
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Messaging.Message", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasMaxLength(255)
@@ -489,9 +530,20 @@ namespace FitHub.Data.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("deleted_by_id");
 
+                    b.Property<Guid?>("ForwardedMessageId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("forwarded_message_id");
+
                     b.Property<string>("MessageText")
+                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("message_text");
+
+                    b.Property<Guid?>("ReplyMessageId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("reply_message_id");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -503,52 +555,72 @@ namespace FitHub.Data.Migrations
                         .HasColumnName("updated_by_id");
 
                     b.HasKey("Id")
-                        .HasName("pk_chat_event");
+                        .HasName("pk_message");
 
                     b.HasIndex("ChatId")
-                        .HasDatabaseName("ix_chat_event_chat_id");
+                        .HasDatabaseName("ix_message_chat_id");
 
-                    b.HasIndex("CreatedAt")
-                        .HasDatabaseName("ix_chat_event_created_at");
+                    b.HasIndex("ForwardedMessageId")
+                        .HasDatabaseName("ix_message_forwarded_message_id");
 
-                    b.ToTable("chat_event", (string)null);
+                    b.HasIndex("ReplyMessageId")
+                        .HasDatabaseName("ix_message_reply_message_id");
+
+                    b.ToTable("message", (string)null);
                 });
 
-            modelBuilder.Entity("FitHub.Domain.Messaging.ChatParticipant", b =>
+            modelBuilder.Entity("FitHub.Domain.Messaging.MessageAttachment", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasMaxLength(255)
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<Guid>("ChatId")
-                        .HasMaxLength(255)
-                        .HasColumnType("uuid")
-                        .HasColumnName("chat_id");
-
-                    b.Property<bool>("IsLeft")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_left");
-
-                    b.Property<DateTimeOffset>("JoinedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("joined_at");
+                        .HasColumnName("created_at");
 
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid>("CreatedById")
                         .HasMaxLength(255)
                         .HasColumnType("uuid")
-                        .HasColumnName("user_id");
+                        .HasColumnName("created_by_id");
+
+                    b.Property<string>("Data")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("data");
+
+                    b.Property<string>("EntityId")
+                        .HasColumnType("text")
+                        .HasColumnName("entity_id");
+
+                    b.Property<Guid>("MessageId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("message_id");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("type");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("UpdatedById")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by_id");
 
                     b.HasKey("Id")
-                        .HasName("pk_chat_participant");
+                        .HasName("pk_message_attachment");
 
-                    b.HasIndex("ChatId")
-                        .HasDatabaseName("ix_chat_participant_chat_id");
+                    b.HasIndex("MessageId")
+                        .HasDatabaseName("ix_message_attachment_message_id");
 
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("ix_chat_participant_user_id");
-
-                    b.ToTable("chat_participant", (string)null);
+                    b.ToTable("message_attachment", (string)null);
                 });
 
             modelBuilder.Entity("FitHub.Domain.Notifications.EmailNotification", b =>
@@ -1133,18 +1205,6 @@ namespace FitHub.Data.Migrations
                     b.Navigation("Visitor");
                 });
 
-            modelBuilder.Entity("FitHub.Domain.Messaging.ChatEvent", b =>
-                {
-                    b.HasOne("FitHub.Domain.Messaging.Chat", "Chat")
-                        .WithMany()
-                        .HasForeignKey("ChatId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_chat_event_chat_chat_id");
-
-                    b.Navigation("Chat");
-                });
-
             modelBuilder.Entity("FitHub.Domain.Messaging.ChatParticipant", b =>
                 {
                     b.HasOne("FitHub.Domain.Messaging.Chat", "Chat")
@@ -1164,6 +1224,46 @@ namespace FitHub.Data.Migrations
                     b.Navigation("Chat");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Messaging.Message", b =>
+                {
+                    b.HasOne("FitHub.Domain.Messaging.Chat", "Chat")
+                        .WithMany()
+                        .HasForeignKey("ChatId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_message_chat_chat_id");
+
+                    b.HasOne("FitHub.Domain.Messaging.Message", "ForwardedMessage")
+                        .WithMany()
+                        .HasForeignKey("ForwardedMessageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_message_message_forwarded_message_id");
+
+                    b.HasOne("FitHub.Domain.Messaging.Message", "ReplyMessage")
+                        .WithMany("RepliedMessages")
+                        .HasForeignKey("ReplyMessageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_message_message_reply_message_id");
+
+                    b.Navigation("Chat");
+
+                    b.Navigation("ForwardedMessage");
+
+                    b.Navigation("ReplyMessage");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Messaging.MessageAttachment", b =>
+                {
+                    b.HasOne("FitHub.Domain.Messaging.Message", "Message")
+                        .WithMany("Attachments")
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_message_attachment_message_message_id");
+
+                    b.Navigation("Message");
                 });
 
             modelBuilder.Entity("FitHub.Domain.Trainings.BaseGroupTrainingPhoto", b =>
@@ -1391,6 +1491,13 @@ namespace FitHub.Data.Migrations
             modelBuilder.Entity("FitHub.Domain.Messaging.Chat", b =>
                 {
                     b.Navigation("Participants");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Messaging.Message", b =>
+                {
+                    b.Navigation("Attachments");
+
+                    b.Navigation("RepliedMessages");
                 });
 
             modelBuilder.Entity("FitHub.Domain.Trainings.BaseGroupTraining", b =>

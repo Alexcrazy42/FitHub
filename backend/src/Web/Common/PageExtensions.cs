@@ -6,7 +6,7 @@ namespace FitHub.Web.Common;
 
 public static class PageExtensions
 {
-    public static PagedQuery ToDomain(this PagedRequest? request)
+    public static PagedQuery ToQuery(this PagedRequest? request)
     {
         var pageNumber = 1;
         var pageSize = 10;
@@ -16,7 +16,7 @@ public static class PageExtensions
             pageNumber = request.PageNumber.Value;
         }
 
-        if (request?.PageSize is not null && request.PageSize > 0 && request.PageSize <= 100)
+        if (request?.PageSize is not null && request.PageSize > 0 && request.PageSize <= 1000)
         {
             pageSize = request.PageSize.Value;
         }
@@ -34,6 +34,14 @@ public static class PageExtensions
             return ListResponse<TTo>.Create(newItems);
         }
         return ListResponse<TTo>.Create(newItems, pagedResult.TotalItems.Required(), pagedResult.CurrentPage.Required(), pagedResult.PageSize.Required());
+    }
+
+    public static ListResponse<TTo> ToListResponse<TFrom, TTo>(this IReadOnlyList<TFrom> items, Func<TFrom, TTo> converter)
+        where TFrom : class
+        where TTo : class
+    {
+        var newItems = items.Select(converter).ToList();
+        return ListResponse<TTo>.Create(newItems);
     }
 }
 

@@ -1,0 +1,65 @@
+﻿using FitHub.Contracts.V1.Messaging;
+using FitHub.Contracts.V1.Messaging.Chats;
+using FitHub.Contracts.V1.Messaging.Messages;
+using FitHub.Domain.Messaging;
+using FitHub.Web.V1.Users;
+
+namespace FitHub.Web.V1.Messaging;
+
+public static class MessagesExtensions
+{
+    public static List<ChatParticipantResponse> ToResponses(this IReadOnlyList<ChatParticipant> participants)
+        => participants.Select(ToResponse).ToList();
+
+    public static ChatResponse ToResponse(this Chat chat)
+    {
+        return new ChatResponse()
+        {
+            Id = chat.Id.ToString(),
+            Type = chat.Type,
+            Participants = chat.Participants.ToResponses()
+        };
+    }
+
+    public static ChatParticipantResponse ToResponse(this ChatParticipant chatParticipant)
+    {
+        return new ChatParticipantResponse
+        {
+            Id = chatParticipant.Id.ToString(),
+            ChatId = chatParticipant.ChatId.ToString(),
+            User = chatParticipant.User.ToResponse(),
+            JoinedAt = chatParticipant.JoinedAt
+        };
+    }
+
+    public static MessageResponse ToResponse(this Message message)
+    {
+        return new MessageResponse()
+        {
+            Id = message.Id.ToString(),
+            ChatId = message.ChatId.ToString(),
+            MessageText = message.MessageText,
+            ReplyMessage = message.ReplyMessage?.ToResponse(),
+            ForwardedMessage = message.ReplyMessage?.ToResponse(),
+            CreatedAt = message.CreatedAt,
+            UpdatedAt = message.UpdatedAt,
+            CreatedBy = message.CreatedBy?.ToResponse(),
+            UpdatedBy = message.UpdatedBy?.ToResponse(),
+        };
+    }
+
+    public static MessageAttachmentResponse ToResponse(this MessageAttachment attachment)
+    {
+        return new MessageAttachmentResponse
+        {
+            Id = attachment.Id.ToString(),
+            MessageId = attachment.MessageId.ToString(),
+            Type = attachment.Type,
+            Data = attachment.Data,
+            CreatedAt = attachment.CreatedAt,
+            UpdatedAt = attachment.UpdatedAt,
+            CreatedBy = attachment.CreatedBy?.ToResponse(),
+            UpdatedBy = attachment.UpdatedBy?.ToResponse()
+        };
+    }
+}

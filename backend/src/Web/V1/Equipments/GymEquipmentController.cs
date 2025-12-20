@@ -27,7 +27,7 @@ public class GymEquipmentController : ControllerBase
     [Authorize(Policy = AuthorizationPolicies.GymAdminOnly)]
     public async Task<ListResponse<GymEquipmentResponse>> GetAllAsync([FromQuery] PagedRequest? pagedRequest, [FromQuery] SearchGymEquipmentRequest? request, CancellationToken ct)
     {
-        var pagedQuery = pagedRequest.ToDomain();
+        var pagedQuery = pagedRequest.ToQuery();
 
         var result = await gymEquipmentService.GetAsync(pagedQuery, request, ct);
 
@@ -53,11 +53,11 @@ public class GymEquipmentController : ControllerBase
         [FromServices] IValidator<AddOrUpdateGymEquipmentRequest>? validator,
         CancellationToken ct)
     {
-        request = ValidationException.ThrowIfNull(request, "request cannot be null");
+        request = ValidationException.ThrowIfNull(request);
 
         await validator.HandleValidationAsync(request, ct);
 
-        ValidationException.ThrowIfNull(request, "request != null");
+        ValidationException.ThrowIfNull(request);
 
         var entity = await gymEquipmentService.CreateAsync(request, ct);
 
@@ -77,7 +77,7 @@ public class GymEquipmentController : ControllerBase
         await validator.HandleValidationAsync(request, ct);
 
         ValidationException.ThrowIfNull(id, "id != null");
-        ValidationException.ThrowIfNull(request, "request != null");
+        ValidationException.ThrowIfNull(request);
 
         var entityId = GymEquipmentId.Parse(id);
 
