@@ -15,15 +15,17 @@ internal sealed class MessageRepository : DefaultPendingRepository<Message, Mess
 
     protected override IQueryable<Message> ReadRaw()
     {
-        return base.DbSet
-            .Include(x => x.Attachments)
+        return DbSet
             .Include(x => x.Chat)
-            .Where(x => !x.IsDeleted);
+            .Where(x => x.DeletedAt == null)
+            .Include(x => x.CreatedBy)
+            .AsSplitQuery();
     }
 
     public async Task<Message> GetMessageAsync(MessageId id, CancellationToken ct = default)
     {
         var message = await ReadRaw()
+            .Include(x => x.Attachments)
             .FirstOrDefaultAsync(x => x.Id == id, ct);
 
         NotFoundException.ThrowIfNull(message, "Сообщение не найдено!");
@@ -34,6 +36,7 @@ internal sealed class MessageRepository : DefaultPendingRepository<Message, Mess
     public Task<IReadOnlyList<Message>> GetMessagesAsync(ChatId chatId, PagedQuery paged, CancellationToken ct = default)
     {
         return ReadRaw()
+            .Include(x => x.Attachments)
             .Where(x => x.ChatId == chatId)
             .OrderByDescending(x => x.CreatedAt)
             .Skip((paged.PageNumber - 1) * paged.PageSize)

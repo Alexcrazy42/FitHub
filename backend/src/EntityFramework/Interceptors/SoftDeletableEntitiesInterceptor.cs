@@ -40,8 +40,8 @@ public class SoftDeletableEntitiesInterceptor : SaveChangesInterceptor
 
         foreach (var entity in deletedEntities)
         {
+            entity.State = EntityState.Modified;
             entity.Property(x => x.DeletedAt).CurrentValue = utcNow;
-            entity.Property(x => x.IsDeleted).CurrentValue = true;
         }
     }
 }

@@ -72,7 +72,6 @@ public class Message : IEntity<MessageId>, IUserAuditableEntity<IdentityUserId, 
     public User? UpdatedBy { get; }
 
     public DateTimeOffset? DeletedAt { get; }
-    public bool IsDeleted { get; }
 
     public IdentityUserId? DeletedById { get; }
     public User? DeletedBy { get; }

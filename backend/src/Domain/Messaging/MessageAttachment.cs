@@ -1,7 +1,7 @@
-﻿using System.Text.Json;
-using FitHub.Authentication;
+﻿using FitHub.Authentication;
 using FitHub.Common.Entities;
 using FitHub.Common.Entities.Identity;
+using FitHub.Common.Json;
 using FitHub.Domain.Messaging.Attachments;
 using FitHub.Shared.Messaging;
 
@@ -48,17 +48,17 @@ public class MessageAttachment : IEntity<MessageAttachmentId>, IUserAuditableEnt
 
     public static MessageAttachment CreatePhotoAttachment(Message message, PhotoAttachment photoAttachment)
     {
-        return new MessageAttachment(MessageAttachmentId.New(), message.Id, MessageAttachmentType.Photo, JsonSerializer.Serialize(photoAttachment));
+        return new MessageAttachment(MessageAttachmentId.New(), message.Id, MessageAttachmentType.Photo, CommonJsonSerializer.Serialize(photoAttachment));
     }
 
     public static MessageAttachment CreateTagUserAttachment(Message message, TagUserAttachment tagUserAttachment)
     {
-        return new MessageAttachment(MessageAttachmentId.New(), message.Id, MessageAttachmentType.TagUser, JsonSerializer.Serialize(tagUserAttachment));
+        return new MessageAttachment(MessageAttachmentId.New(), message.Id, MessageAttachmentType.TagUser, CommonJsonSerializer.Serialize(tagUserAttachment));
     }
 
     public static MessageAttachment CreateLinkAttachment(Message message, LinkAttachment linkAttachment)
     {
-        return new MessageAttachment(MessageAttachmentId.New(), message.Id, MessageAttachmentType.Link, JsonSerializer.Serialize(linkAttachment));
+        return new MessageAttachment(MessageAttachmentId.New(), message.Id, MessageAttachmentType.Link, CommonJsonSerializer.Serialize(linkAttachment));
     }
 
     #region CommonFields

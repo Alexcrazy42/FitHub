@@ -4,6 +4,7 @@ using FitHub.Application.Messaging.Commands;
 using FitHub.Application.Messaging.Commands.Attachments;
 using FitHub.Application.Users;
 using FitHub.Authentication;
+using FitHub.Common.Entities;
 using FitHub.Common.Entities.Storage;
 using FitHub.Domain.Files;
 using FitHub.Domain.Messaging;
@@ -35,7 +36,8 @@ internal sealed class MessageService : IMessageService
     public async Task<Message> GetMessageAsync(MessageId messageId, CancellationToken ct)
     {
         var message = await messageRepository.GetMessageAsync(messageId, ct);
-        message.Chat.CheckAccess(userIdAccessor.GetCurrentUserId());
+        var chat = await chatService.GetChatAsync(message.ChatId, ct);
+        chat.CheckAccess(userIdAccessor.GetCurrentUserId());
         return message;
     }
 
@@ -68,7 +70,6 @@ internal sealed class MessageService : IMessageService
     public async Task<Message> UpdateMessageAsync(MessageId id, UpdateMessageCommand command, CancellationToken ct)
     {
         var message = await GetMessageAsync(id, ct);
-        message.Chat.CheckAccess(userIdAccessor.GetCurrentUserId());
 
         var replyMessage = await GetReplyMessageIfNeededAsync(command.ReplyMessageId, ct);
         message.SetReplyMessage(replyMessage);
@@ -87,7 +88,11 @@ internal sealed class MessageService : IMessageService
 
     public async Task DeleteAsync(MessageId messageId, CancellationToken ct)
     {
-        var message = await GetMessageAsync(messageId, ct);
+        var message = await messageRepository.GetFirstOrDefaultAsync(x => x.Id == messageId, ct);
+        if (message == null)
+        {
+            throw new NotFoundException("Сообщение не найдено!");
+        }
         messageRepository.PendingRemove(message);
         await unitOfWork.SaveChangesAsync(ct);
     }

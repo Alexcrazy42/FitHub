@@ -48,7 +48,7 @@ public class Chat : IEntity<ChatId>, IUserAuditableEntity<IdentityUserId, User>
         {
             throw new UnexpectedException("Нет участников!");
         }
-        return Participants.All(x => x.UserId != userId || x.Blocked);
+        return Participants.All(x => x.UserId != userId || !x.Blocked);
     }
 
     public void CheckAccess(IdentityUserId userId)

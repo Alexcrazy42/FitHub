@@ -92,6 +92,24 @@ namespace FitHub.Data.Migrations
                         principalTable: "message",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "fk_message_user_created_by_id",
+                        column: x => x.created_by_id,
+                        principalTable: "user",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "fk_message_user_deleted_by_id",
+                        column: x => x.deleted_by_id,
+                        principalTable: "user",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "fk_message_user_updated_by_id",
+                        column: x => x.updated_by_id,
+                        principalTable: "user",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -117,6 +135,18 @@ namespace FitHub.Data.Migrations
                         principalTable: "message",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "fk_message_attachment_user_created_by_id",
+                        column: x => x.created_by_id,
+                        principalTable: "user",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "fk_message_attachment_user_updated_by_id",
+                        column: x => x.updated_by_id,
+                        principalTable: "user",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -135,6 +165,16 @@ namespace FitHub.Data.Migrations
                 column: "chat_id");
 
             migrationBuilder.CreateIndex(
+                name: "ix_message_created_by_id",
+                table: "message",
+                column: "created_by_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_message_deleted_by_id",
+                table: "message",
+                column: "deleted_by_id");
+
+            migrationBuilder.CreateIndex(
                 name: "ix_message_forwarded_message_id",
                 table: "message",
                 column: "forwarded_message_id");
@@ -145,9 +185,24 @@ namespace FitHub.Data.Migrations
                 column: "reply_message_id");
 
             migrationBuilder.CreateIndex(
+                name: "ix_message_updated_by_id",
+                table: "message",
+                column: "updated_by_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_message_attachment_created_by_id",
+                table: "message_attachment",
+                column: "created_by_id");
+
+            migrationBuilder.CreateIndex(
                 name: "ix_message_attachment_message_id",
                 table: "message_attachment",
                 column: "message_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_message_attachment_updated_by_id",
+                table: "message_attachment",
+                column: "updated_by_id");
         }
 
         /// <inheritdoc />

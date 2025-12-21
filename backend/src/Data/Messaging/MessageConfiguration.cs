@@ -10,7 +10,8 @@ public class MessageConfiguration : IEntityTypeConfiguration<Message>
     {
         builder.HasMany(msg => msg.Attachments)
             .WithOne(att => att.Message)
-            .HasForeignKey(att => att.MessageId);
+            .HasForeignKey(att => att.MessageId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(msg => msg.Chat)
             .WithMany()
@@ -23,5 +24,20 @@ public class MessageConfiguration : IEntityTypeConfiguration<Message>
         builder.HasOne(msg => msg.ForwardedMessage)
             .WithMany()
             .HasForeignKey(msg => msg.ForwardedMessageId);
+
+        builder.HasOne(m => m.CreatedBy)
+            .WithMany()
+            .HasForeignKey(m => m.CreatedById)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(m => m.UpdatedBy)
+            .WithMany()
+            .HasForeignKey(m => m.UpdatedById)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.DeletedBy)
+            .WithMany()
+            .HasForeignKey(x => x.DeletedById)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

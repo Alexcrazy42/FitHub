@@ -45,10 +45,11 @@ public class UserAuditableEntitiesInterceptor : SaveChangesInterceptor
             .ToList();
 
         var utcNow = DateTimeOffset.UtcNow;
-        var currentUserId = userIdAccessor.GetCurrentUserId();
 
         foreach (var entity in entities)
         {
+            var currentUserId = userIdAccessor.GetCurrentUserId();
+
             if (entity.State == EntityState.Added)
             {
                 // TODO: сделать type-safe

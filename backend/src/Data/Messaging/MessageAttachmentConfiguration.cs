@@ -10,9 +10,20 @@ public class MessageAttachmentConfiguration : IEntityTypeConfiguration<MessageAt
     {
         builder.HasOne(att => att.Message)
             .WithMany(m => m.Attachments)
-            .HasForeignKey(att => att.MessageId);
+            .HasForeignKey(att => att.MessageId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.Property(x => x.Data)
             .HasColumnType("jsonb");
+
+        builder.HasOne(m => m.CreatedBy)
+            .WithMany()
+            .HasForeignKey(m => m.CreatedById)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(m => m.UpdatedBy)
+            .WithMany()
+            .HasForeignKey(m => m.UpdatedById)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

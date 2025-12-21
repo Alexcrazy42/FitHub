@@ -560,11 +560,20 @@ namespace FitHub.Data.Migrations
                     b.HasIndex("ChatId")
                         .HasDatabaseName("ix_message_chat_id");
 
+                    b.HasIndex("CreatedById")
+                        .HasDatabaseName("ix_message_created_by_id");
+
+                    b.HasIndex("DeletedById")
+                        .HasDatabaseName("ix_message_deleted_by_id");
+
                     b.HasIndex("ForwardedMessageId")
                         .HasDatabaseName("ix_message_forwarded_message_id");
 
                     b.HasIndex("ReplyMessageId")
                         .HasDatabaseName("ix_message_reply_message_id");
+
+                    b.HasIndex("UpdatedById")
+                        .HasDatabaseName("ix_message_updated_by_id");
 
                     b.ToTable("message", (string)null);
                 });
@@ -617,8 +626,14 @@ namespace FitHub.Data.Migrations
                     b.HasKey("Id")
                         .HasName("pk_message_attachment");
 
+                    b.HasIndex("CreatedById")
+                        .HasDatabaseName("ix_message_attachment_created_by_id");
+
                     b.HasIndex("MessageId")
                         .HasDatabaseName("ix_message_attachment_message_id");
+
+                    b.HasIndex("UpdatedById")
+                        .HasDatabaseName("ix_message_attachment_updated_by_id");
 
                     b.ToTable("message_attachment", (string)null);
                 });
@@ -1235,6 +1250,19 @@ namespace FitHub.Data.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_message_chat_chat_id");
 
+                    b.HasOne("FitHub.Authentication.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_message_user_created_by_id");
+
+                    b.HasOne("FitHub.Authentication.User", "DeletedBy")
+                        .WithMany()
+                        .HasForeignKey("DeletedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_message_user_deleted_by_id");
+
                     b.HasOne("FitHub.Domain.Messaging.Message", "ForwardedMessage")
                         .WithMany()
                         .HasForeignKey("ForwardedMessageId")
@@ -1247,15 +1275,35 @@ namespace FitHub.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_message_message_reply_message_id");
 
+                    b.HasOne("FitHub.Authentication.User", "UpdatedBy")
+                        .WithMany()
+                        .HasForeignKey("UpdatedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_message_user_updated_by_id");
+
                     b.Navigation("Chat");
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("DeletedBy");
 
                     b.Navigation("ForwardedMessage");
 
                     b.Navigation("ReplyMessage");
+
+                    b.Navigation("UpdatedBy");
                 });
 
             modelBuilder.Entity("FitHub.Domain.Messaging.MessageAttachment", b =>
                 {
+                    b.HasOne("FitHub.Authentication.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_message_attachment_user_created_by_id");
+
                     b.HasOne("FitHub.Domain.Messaging.Message", "Message")
                         .WithMany("Attachments")
                         .HasForeignKey("MessageId")
@@ -1263,7 +1311,18 @@ namespace FitHub.Data.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_message_attachment_message_message_id");
 
+                    b.HasOne("FitHub.Authentication.User", "UpdatedBy")
+                        .WithMany()
+                        .HasForeignKey("UpdatedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_message_attachment_user_updated_by_id");
+
+                    b.Navigation("CreatedBy");
+
                     b.Navigation("Message");
+
+                    b.Navigation("UpdatedBy");
                 });
 
             modelBuilder.Entity("FitHub.Domain.Trainings.BaseGroupTrainingPhoto", b =>

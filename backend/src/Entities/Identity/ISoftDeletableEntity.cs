@@ -2,7 +2,5 @@
 
 public interface ISoftDeletableEntity
 {
-    public DateTimeOffset? DeletedAt { get; }
-
-    public bool IsDeleted { get; }
+    DateTimeOffset? DeletedAt { get; }
 }

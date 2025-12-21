@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using System.Text.Json;
+using FitHub.Common.Json;
 using FitHub.Common.Utilities.System;
 using FitHub.RabbitMQ.Configuration;
 using FitHub.RabbitMQ.Contracts;
@@ -118,7 +118,7 @@ internal sealed class RabbitMqConsumer<TMessage, TOptions> : BackgroundService
                     {
                         var body = eventArgs.Body.ToArray();
                         var messageString = Encoding.UTF8.GetString(body);
-                        var message = JsonSerializer.Deserialize<TMessage>(messageString).Required();
+                        var message = CommonJsonSerializer.Deserialize<TMessage>(messageString).Required();
                         logger.LogInformation("{QueueName} Message received: {Message}", queueName, message);
 
                         var scope = scopeFactory.CreateScope();

@@ -39,6 +39,7 @@ internal sealed class ChatService : IChatService
 
     public async Task<Chat> CreateChatAsync(CreateChatCommand command, CancellationToken ct)
     {
+
         if (command.Type == ChatType.OneToOne)
         {
             var possibleChat = await chatRepository.GetFirstOrDefaultOneToOneChatAsync(command.ParticipantUserIds, ct);

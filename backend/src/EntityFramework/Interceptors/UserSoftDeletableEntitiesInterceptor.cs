@@ -45,13 +45,13 @@ public class UserSoftDeletableEntitiesInterceptor : SaveChangesInterceptor
             .ToList();
 
         var utcNow = DateTimeOffset.UtcNow;
-        var currentUserId = userIdAccessor.GetCurrentUserId();
 
         foreach (var entity in deletedEntities)
         {
+            var currentUserId = userIdAccessor.GetCurrentUserId();
+            entity.State = EntityState.Modified;
             // TODO: сделать type-safe
             entity.Property(nameof(IUserSoftDeletableEntity<IdentityUserId, User>.DeletedAt)).CurrentValue = utcNow;
-            entity.Property(nameof(IUserSoftDeletableEntity<IdentityUserId, User>.IsDeleted)).CurrentValue = true;
             entity.Property(nameof(IUserSoftDeletableEntity<IdentityUserId, User>.DeletedById)).CurrentValue = currentUserId;
         }
     }

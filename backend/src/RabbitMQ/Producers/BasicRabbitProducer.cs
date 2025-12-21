@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using System.Text.Json;
+using FitHub.Common.Json;
 using FitHub.RabbitMQ.Configuration;
 using RabbitMQ.Client;
 
@@ -22,7 +22,7 @@ public class BasicRabbitProducer<TOptions> : IBasicProducer<TOptions>
     public async Task BasicPublishAsync(string exchangeName, object message, string routingKey, CancellationToken ct = default)
     {
         var channel = await channelFactory.Value;
-        var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
+        var body = Encoding.UTF8.GetBytes(CommonJsonSerializer.Serialize(message));
 
         var publishTimeout = TimeSpan.FromSeconds(5);
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);

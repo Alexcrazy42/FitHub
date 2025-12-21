@@ -16,7 +16,8 @@ internal sealed class ChatRepository : DefaultPendingRepository<Chat, ChatId, Da
     protected override IQueryable<Chat> ReadRaw()
     {
         return base.ReadRaw()
-            .Include(x => x.Participants);
+            .Include(x => x.Participants)
+                .ThenInclude(part => part.User);
     }
 
     public async Task<Chat> GetAsync(ChatId id, CancellationToken ct = default)

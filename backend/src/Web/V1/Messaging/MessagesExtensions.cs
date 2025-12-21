@@ -45,6 +45,7 @@ public static class MessagesExtensions
             UpdatedAt = message.UpdatedAt,
             CreatedBy = message.CreatedBy?.ToResponse(),
             UpdatedBy = message.UpdatedBy?.ToResponse(),
+            Attachments = message.Attachments.Select(ToResponse).ToList()
         };
     }
 
