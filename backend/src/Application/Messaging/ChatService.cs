@@ -11,20 +11,17 @@ namespace FitHub.Application.Messaging;
 internal sealed class ChatService : IChatService
 {
     private readonly IChatRepository chatRepository;
-    private readonly IChatParticipantRepository chatParticipantRepository;
     private readonly IUserService userService;
     private readonly IUnitOfWork unitOfWork;
     private readonly ICurrentIdentityUserIdAccessor userIdAccessor;
 
     public ChatService(IChatRepository chatRepository,
         IUnitOfWork unitOfWork,
-        IChatParticipantRepository chatParticipantRepository,
         ICurrentIdentityUserIdAccessor userIdAccessor,
         IUserService userService)
     {
         this.chatRepository = chatRepository;
         this.unitOfWork = unitOfWork;
-        this.chatParticipantRepository = chatParticipantRepository;
         this.userIdAccessor = userIdAccessor;
         this.userService = userService;
     }
@@ -39,7 +36,6 @@ internal sealed class ChatService : IChatService
 
     public async Task<Chat> CreateChatAsync(CreateChatCommand command, CancellationToken ct)
     {
-
         if (command.Type == ChatType.OneToOne)
         {
             var possibleChat = await chatRepository.GetFirstOrDefaultOneToOneChatAsync(command.ParticipantUserIds, ct);
@@ -52,25 +48,17 @@ internal sealed class ChatService : IChatService
 
         var currentUserId = userIdAccessor.GetCurrentUserId();
 
-        if (!command.ParticipantUserIds.Contains(currentUserId))
-        {
-            throw new ValidationException("Вы не можете создать чат без себя!");
-        }
-
         var chat = Chat.Create(command.Type);
 
         var users = await userService.GetUsersAsync(command.ParticipantUserIds, ct);
 
+        var participants = users.Select(user => ChatParticipant.Create(user, chat)).ToList();
+
+        chat.SetParticipants(participants, currentUserId);
+
         if (chat.Type == ChatType.Group)
         {
-            var groupChatName = GetGroupChatName(users, currentUserId);
-            chat.SetName(groupChatName);
-        }
-
-        foreach (var user in users)
-        {
-            var participant = ChatParticipant.Create(user, chat);
-            await chatParticipantRepository.PendingAddAsync(participant, ct);
+            chat.SetGroupName(currentUserId);
         }
 
         await chatRepository.PendingAddAsync(chat, ct);
@@ -78,34 +66,5 @@ internal sealed class ChatService : IChatService
         await unitOfWork.SaveChangesAsync(ct);
 
         return chat;
-    }
-
-    private string GetGroupChatName(IReadOnlyList<User> participants, IdentityUserId creatorId)
-    {
-        if (participants.Count == 0)
-        {
-            throw new ValidationException("Количество участников не может быть равным 0!");
-        }
-
-        const int maxNamesInTitle = 2;
-
-        var sortedParticipants = participants
-            .OrderByDescending(x => x.Id == creatorId) // true (1) идёт первым
-            .ThenBy(x => x.Name)
-            .ToList();
-
-        var displayedNames = sortedParticipants
-            .Take(maxNamesInTitle)
-            .Select(x => x.Name);
-
-        var chatName = String.Join(", ", displayedNames);
-
-        var remainingCount = participants.Count - maxNamesInTitle;
-        if (remainingCount > 0)
-        {
-            chatName += $" + {remainingCount}";
-        }
-
-        return chatName;
     }
 }
