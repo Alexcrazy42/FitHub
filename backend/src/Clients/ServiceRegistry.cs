@@ -1,4 +1,5 @@
-﻿using FitHub.Clients.Employees;
+﻿using FitHub.Clients.Chats;
+using FitHub.Clients.Messages;
 using FitHub.Common.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -9,7 +10,8 @@ public static class ServiceRegistry
     public static IServiceCollection AddFitHubClients(this IServiceCollection services)
     {
         services.AddBindedOptions<FitHubClientOptions>();
-        services.AddHttpClient<IEmployeeClient, EmployeeClient>();
+        services.AddHttpClient<IChatClient, ChatClient>();
+        services.AddHttpClient<IMessageClient, MessageClient>();
         return services;
     }
 }

@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>$(CompanyName).Common.$(MSBuildProjectName)</AssemblyName>
+    <RootNamespace>$(CompanyName).Common.$(MSBuildProjectName)</RootNamespace>
+    <IsPackable>true</IsPackable>
+    <IncludeJetBrainsAnnotations>false</IncludeJetBrainsAnnotations>
+    <TargetFrameworks>net9.0;</TargetFrameworks>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+      <PackageReference Include="Microsoft.Extensions.Http" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Utilities\Utilities.csproj" />
+    </ItemGroup>
+
+</Project>
