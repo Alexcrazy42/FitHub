@@ -4,6 +4,7 @@ using FitHub.Common.Extensions.Configuration;
 using FitHub.Common.Logging;
 using FitHub.Data;
 using FitHub.Web;
+using FitHub.Web.V1;
 
 namespace FitHub.Host;
 
@@ -74,6 +75,7 @@ public sealed class Startup
 
         app.UseEndpoints(configure =>
         {
+            configure.MapHub<ChatHub>("/chatHub");
             configure.MapControllers().RequireAuthorization();
         });
     }

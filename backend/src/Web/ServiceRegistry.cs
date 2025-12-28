@@ -27,7 +27,7 @@ public static class ServiceRegistry
             {
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             });
-
+        services.AddSignalR();
         services.AddExceptionAsProblemDetails();
         services.AddSignalR();
     }

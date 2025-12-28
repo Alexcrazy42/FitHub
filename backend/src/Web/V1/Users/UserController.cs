@@ -23,6 +23,8 @@ public class UserController : ControllerBase
     [Authorize]
     public async Task<UserResponse> GetCurrentUser(CancellationToken ct)
     {
+        var httpContextUser = HttpContext.User;
+
         var userId = accessor.GetCurrentUserId();
         var user = await userService.GetUserAsync(userId, ct);
         return user.ToResponse();

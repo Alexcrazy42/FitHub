@@ -36,7 +36,7 @@ public sealed class ChatTests : DomainTestsBase
         var act = () => chat.SetParticipants(participants, ThirdUserId);
 
         // assert
-        act.ShouldThrow<ValidationException>();
+        act.ShouldThrow<UnexpectedException>();
     }
 
     [Theory, DisplayName("Попытка создать приватный чат не на двух человек")]

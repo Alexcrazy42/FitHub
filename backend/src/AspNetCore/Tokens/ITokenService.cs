@@ -16,7 +16,7 @@ public interface ITokenService
         var rolesClaim = ((int)userType).ToString();
         return new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, sub),
+            new Claim(ClaimTypes.NameIdentifier, sub),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim(JwtRegisteredClaimNames.Sid, sessionId),
             new Claim(ClaimTypes.Role, rolesClaim)

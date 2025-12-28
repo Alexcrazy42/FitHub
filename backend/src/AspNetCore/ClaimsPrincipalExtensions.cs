@@ -5,14 +5,14 @@ namespace FitHub.Common.AspNetCore;
 
 public static class ClaimsPrincipalExtensions
 {
-    private static readonly string[] UserIdClaimNames = { ClaimTypes.NameIdentifier, JwtRegisteredClaimNames.Sub };
+    //private static readonly string[] UserIdClaimNames = { ClaimTypes.NameIdentifier, JwtRegisteredClaimNames.Sub };
 
     public static string? GetUserId(this ClaimsPrincipal principal)
     {
         var userIdClaim = principal
             .Identities
             .SelectMany(identity => identity.Claims)
-            .FirstOrDefault(claim => UserIdClaimNames.Contains(claim.Type));
+            .FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier);
 
         return userIdClaim?.Value;
     }
