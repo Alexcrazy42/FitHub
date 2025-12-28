@@ -17,18 +17,17 @@ public static class ServiceCollectionExtensions
             .AddHttpMessageHandler<ClientIdentityHandlerBase>();
     }
 
-    internal static bool TryAddIdentityClients<TIdentityOptions>(this IServiceCollection services)
+    internal static void TryAddIdentityClients<TIdentityOptions>(this IServiceCollection services)
         where TIdentityOptions : class, IClientIdentityOptions
     {
         if (!services.TryAddOnceSingleton<IdentityRegistredMarker>())
         {
-            return false;
+            return;
         }
 
         services.AddBindedOptionsAs<TIdentityOptions, IClientIdentityOptions>();
 
         services.TryAddTransient<ClientIdentityHandlerBase, ClientIdentityHandler>();
-        return true;
     }
 
     internal static bool TryAddOnceSingleton<T>(this IServiceCollection services)

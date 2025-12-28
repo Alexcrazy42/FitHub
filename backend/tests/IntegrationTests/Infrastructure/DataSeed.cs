@@ -30,7 +30,6 @@ public sealed class DataSeed
     {
         await using var scope = testApplication.Services.CreateAsyncScope();
         await using var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
-
         await dbContext.AddRangeAsync(AllUsers);
         await dbContext.SaveChangesAsync();
     }

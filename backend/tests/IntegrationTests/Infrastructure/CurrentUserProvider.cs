@@ -1,5 +1,4 @@
-﻿using FitHub.Application.Users;
-using FitHub.Authentication;
+﻿using FitHub.Authentication;
 using FitHub.Common.Testing;
 using Moq;
 

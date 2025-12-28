@@ -1,5 +1,4 @@
-﻿using FitHub.Common.Extensions.Configuration;
-using FitHub.Common.Identity.Client;
+﻿using FitHub.Common.Identity.Client;
 using FitHub.Common.Utilities.System;
 
 namespace FitHub.Clients;

@@ -15,11 +15,6 @@ public static class Program
             Log.Information("Запуск приложения");
             await MigrateDatabase(host);
 
-            // if (args.contains(MigrateAndExitKey))
-            //{
-            //    return; // Выходим из приложения, тк нас попросили только применить миграцию
-            //}
-
             await host.RunAsync();
         }
         catch (Exception exception)
@@ -36,6 +31,16 @@ public static class Program
 
     private static async Task MigrateDatabase(IHost host)
     {
+        var skipMigrations = host.Services.GetRequiredService<IConfiguration>()
+            .GetValue<bool?>("SkipMigration");
+
+        skipMigrations ??= false;
+
+        if (skipMigrations.Value)
+        {
+            return;
+        }
+
         await using var dataContext = host.Services.GetRequiredService<DataContext>();
         await dataContext.MigrateAsync();
     }
