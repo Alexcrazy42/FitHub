@@ -1,10 +1,12 @@
-﻿using FitHub.Clients;
+﻿using FitHub.Authentication;
+using FitHub.Clients;
 using FitHub.Clients.Chats;
 using FitHub.Clients.Messages;
 using FitHub.Common.Testing;
 using FitHub.Common.Utilities.System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Xunit;
 
 namespace FitHub.IntegrationTests.Infrastructure;
@@ -19,18 +21,30 @@ public sealed class ServerFixture : IAsyncLifetime
 
     private IServiceProvider ServiceProvider => serviceProvider.Required();
 
+    public DataSeed DataSeed { get; }
+
+    public CurrentUserProvider CurrentUserProvider { get; }
+
     // Клиенты нашей апишки
     public IChatClient ChatClient => ServiceProvider.GetRequiredService<IChatClient>();
     public IMessageClient MessageClient => ServiceProvider.GetRequiredService<IMessageClient>();
 
-    // Здесь мокаем внешние зависимости сервиса
-    // public Mock<ISomeExternalServiceClient> SomeExternalServiceClient { get; } = TestApplication.Services.GetRequiredService<ISomeExternalServiceClient>();
+    // Здесь мокаем зависимости сервиса
+    public readonly Mock<IIdentityUserService> IdentityUserServiceMock = new Mock<IIdentityUserService>();
+
+    public ServerFixture()
+    {
+        DataSeed = new DataSeed();
+        CurrentUserProvider = new CurrentUserProvider(DataSeed.AllUsers.First(), IdentityUserServiceMock);
+    }
 
     public async Task InitializeAsync()
     {
-        testApplication = new TestApplication();
+        testApplication = new TestApplication(ConfigureTestServices);
 
         await testApplication.InitializeAsync();
+
+        await DataSeed.SeedDataAsync(testApplication);
 
         serviceProvider = BuildConfiguredServiceProvider();
     }
@@ -62,6 +76,15 @@ public sealed class ServerFixture : IAsyncLifetime
         services.AddTransient<IConfiguration>(_ => configuration);
         services.AddFitHubClients();
 
+        services.AddSingleton<ITestDesiredUserIdProvider, CurrentUserProvider>(_ => CurrentUserProvider);
+        services.MockIdentityHttpClients();
+
         return services.BuildServiceProvider();
+    }
+
+    private void ConfigureTestServices(IServiceCollection services)
+    {
+        services.AddTransient(_ => IdentityUserServiceMock.Object);
+        services.MockAuthentication();
     }
 }

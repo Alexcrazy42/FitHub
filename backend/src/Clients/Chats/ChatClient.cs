@@ -1,4 +1,5 @@
 ﻿using FitHub.Common.Http;
+using FitHub.Contracts.V1;
 using FitHub.Contracts.V1.Messaging.Chats;
 using Microsoft.Extensions.Options;
 
@@ -23,7 +24,7 @@ internal sealed class ChatClient : IChatClient
 
     public Task<ChatResponse?> CreateChatAsync(CreateChatRequest request, CancellationToken ct)
     {
-        var url = new Uri(baseUri, $"/chats");
+        var url = new Uri(baseUri, ApiRoutesV1.Chats);
         return client.PostAsJsonAsync<CreateChatRequest, ChatResponse>(url, request, ct);
     }
 }

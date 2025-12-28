@@ -3,7 +3,9 @@ using FitHub.Data;
 using FitHub.Host;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Testcontainers.PostgreSql;
 using Xunit;
 
@@ -21,6 +23,13 @@ public sealed class TestApplication : WebApplicationFactory<Startup>, IAsyncLife
         .WithDatabase(database: ServiceName)
         .WithName($"{ContainerPrefixPrefix}_PostgreSql_{Guid.NewGuid()}")
         .Build();
+
+    public Action<IServiceCollection>? ConfigureTestServices { get; set; }
+
+    public TestApplication(Action<IServiceCollection>? configureTestServices = null)
+    {
+        ConfigureTestServices = configureTestServices;
+    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -43,9 +52,12 @@ public sealed class TestApplication : WebApplicationFactory<Startup>, IAsyncLife
 
         builder.ConfigureAppConfiguration(configurationBuilder =>
         {
-            // Добавляем базовый файл конфига (без конфига окружения)
-            configurationBuilder.AddJsonFile("appsettings.json");
             configurationBuilder.AddInMemoryCollection(configurationValues);
+        });
+
+        builder.ConfigureTestServices(services =>
+        {
+            ConfigureTestServices?.Invoke(services);
         });
     }
 

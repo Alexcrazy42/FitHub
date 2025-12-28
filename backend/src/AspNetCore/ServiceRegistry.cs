@@ -71,11 +71,7 @@ public static class ServiceRegistry
                         context.Token = context.Request.Cookies[IAuthOptions.CookieName];
                         return Task.CompletedTask;
                     },
-                    OnAuthenticationFailed = context =>
-                    {
-                        Console.WriteLine("JWT validation failed: " + context.Exception.Message);
-                        return Task.CompletedTask;
-                    },
+                    OnAuthenticationFailed = context => Task.CompletedTask,
                     OnTokenValidated = async context =>
                     {
                         var identityUserService = context.HttpContext.RequestServices.GetRequiredService<IIdentityUserService>();
@@ -100,7 +96,6 @@ public static class ServiceRegistry
                         if (!isValidSession)
                         {
                             context.NoResult();
-                            return;
                         }
                     }
                 };

@@ -38,6 +38,7 @@ public class MessageController : ControllerBase
         ValidationException.ThrowIfNull(request);
         var command = request.ToCommand();
         var message = await messageService.CreateMessageAsync(command, ct);
+
         return message.ToResponse();
     }
 

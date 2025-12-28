@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using FitHub.Common.AspNetCore;
 using FitHub.Common.Extensions.Configuration;
+using FitHub.Web.V1.Messaging;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
