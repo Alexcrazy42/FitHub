@@ -14,5 +14,5 @@ public interface IMessageService
 
     Task<Message> UpdateMessageAsync(MessageId id, UpdateMessageCommand command, CancellationToken ct);
 
-    Task DeleteAsync(MessageId messageId, CancellationToken ct);
+    Task<Message> DeleteAsync(MessageId messageId, CancellationToken ct);
 }

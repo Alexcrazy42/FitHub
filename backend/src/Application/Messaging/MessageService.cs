@@ -86,15 +86,13 @@ internal sealed class MessageService : IMessageService
         return message;
     }
 
-    public async Task DeleteAsync(MessageId messageId, CancellationToken ct)
+    public async Task<Message> DeleteAsync(MessageId messageId, CancellationToken ct)
     {
-        var message = await messageRepository.GetFirstOrDefaultAsync(x => x.Id == messageId, ct);
-        if (message == null)
-        {
-            throw new NotFoundException("Сообщение не найдено!");
-        }
+        var message = await GetMessageAsync(messageId, ct);
+        message.CheckAccess(userIdAccessor.GetCurrentUserId());
         messageRepository.PendingRemove(message);
         await unitOfWork.SaveChangesAsync(ct);
+        return message;
     }
 
     private async Task<Message?> GetReplyMessageIfNeededAsync(MessageId? replyMessageId, CancellationToken ct)

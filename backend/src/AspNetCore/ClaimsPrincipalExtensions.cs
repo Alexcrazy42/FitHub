@@ -17,6 +17,16 @@ public static class ClaimsPrincipalExtensions
         return userIdClaim?.Value;
     }
 
+    public static string? GetUsername(this ClaimsPrincipal principal)
+    {
+        var userNameClaim = principal
+            .Identities
+            .SelectMany(identity => identity.Claims)
+            .FirstOrDefault(claim => claim.Type == ClaimTypes.Name);
+
+        return userNameClaim?.Value;
+    }
+
     public static string? GetSessionId(this ClaimsPrincipal principal)
     {
         var sessionIdClaim = principal

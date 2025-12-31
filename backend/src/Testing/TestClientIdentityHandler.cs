@@ -18,7 +18,7 @@ internal sealed class TestClientIdentityHandler : ClientIdentityHandlerBase
 
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var claims = ITokenService.CreateCommonClaims(desiredUserIdProvider.GetUserId().Value.ToString(), "", IdentityUserType.CmsAdmin);
+        var claims = ITokenService.CreateCommonClaims(desiredUserIdProvider.GetUserId().Value.ToString(), "", "", IdentityUserType.CmsAdmin);
         var accessToken = tokenService.Create(claims);
         request.Headers.Authorization = new AuthenticationHeaderValue(AuthenticationScheme.Bearer, accessToken);
         return base.SendAsync(request, cancellationToken);

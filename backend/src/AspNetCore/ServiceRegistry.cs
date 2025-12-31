@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using IAuthenticationService = FitHub.Common.AspNetCore.Auth.IAuthenticationService;
 
@@ -68,7 +69,32 @@ public static class ServiceRegistry
                 {
                     OnMessageReceived = context =>
                     {
-                        context.Token = context.Request.Cookies[IAuthOptions.CookieName];
+                        // типичный способ авторизации через куку
+                        var cookie = context.Request.Cookies[IAuthOptions.CookieName];
+                        if (cookie is not null)
+                        {
+                            context.Token = cookie;
+                            return Task.CompletedTask;
+                        }
+
+                        // авторизация через Autorization токен в headers
+                        var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+                        if (authHeader is not null)
+                        {
+                            var token = authHeader.Substring("Bearer ".Length).Trim();
+                            context.Token = token;
+                            return Task.CompletedTask;
+                        }
+
+                        var path = context.Request.Path.ToString();
+
+                        // авторизация для ws хаба (если клиент не смог отправить куку)
+                        if (path.ToLowerInvariant().Contains("hub"))
+                        {
+                            context.Token = context.Request.Query["access_token"];
+                            return Task.CompletedTask;
+                        }
+
                         return Task.CompletedTask;
                     },
                     OnAuthenticationFailed = context => Task.CompletedTask,

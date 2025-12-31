@@ -1,14 +1,14 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using FitHub.Common.AspNetCore;
+using FitHub.Common.Utilities.System;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 
 namespace FitHub.Web.V1;
 
 
-public record SendMessageRequest(string User, string Message);
-public record SendToUserRequest(string ConnectionId, string User, string Message);
-public record SendToGroupRequest(string GroupName, string User, string Message);
-public record JoinGroupRequest(string ConnectionId, string GroupName);
+public record SendToUserRequest(string UserId, string Message);
+public record SendToGroupRequest(string GroupName, string Message);
 
 [ApiController]
 [Route("api/[controller]")]
@@ -22,22 +22,13 @@ public class AChatController : ControllerBase
         this.hubContext = hubContext;
     }
 
-    [HttpPost("send")]
-    public async Task<IActionResult> SendMessage([FromBody] SendMessageRequest request)
-    {
-        await hubContext.Clients.All.ReceiveMessage(
-            request.User,
-            request.Message,
-            DateTime.UtcNow);
-
-        return Ok(new { success = true, message = "Message sent" });
-    }
-
     [HttpPost("send-to-user")]
     public async Task<IActionResult> SendToUser([FromBody] SendToUserRequest request)
     {
-        await hubContext.Clients.Client(request.ConnectionId)
-            .ReceiveMessage(request.User, request.Message, DateTime.UtcNow);
+        var userName = HttpContext.User.GetUsername().Required();
+
+        await hubContext.Clients.User(request.UserId)
+            .CreateMessage(userName, request.Message, DateTime.UtcNow);
 
         return Ok(new { success = true, message = "Message sent to user" });
     }
@@ -45,17 +36,12 @@ public class AChatController : ControllerBase
     [HttpPost("send-to-group")]
     public async Task<IActionResult> SendToGroup([FromBody] SendToGroupRequest request)
     {
+        var userName = HttpContext.User.GetUsername().Required();
+
         await hubContext.Clients.Group(request.GroupName)
-            .ReceiveMessage(request.User, request.Message, DateTime.UtcNow);
+            .CreateMessage(userName, request.Message, DateTime.UtcNow);
 
         return Ok(new { success = true, message = "Message sent to group" });
-    }
-
-    [HttpPost("join-group")]
-    public async Task<IActionResult> JoinGroup([FromBody] JoinGroupRequest request)
-    {
-        await hubContext.Groups.AddToGroupAsync(request.ConnectionId, request.GroupName);
-        return Ok(new { success = true });
     }
 
     [HttpDelete("message/{messageId}")]
@@ -63,7 +49,7 @@ public class AChatController : ControllerBase
     {
         // Здесь логика удаления из БД
 
-        await hubContext.Clients.All.MessageDeleted(messageId);
+        await hubContext.Clients.All.MessageDeleted(messageId); // TODO: и тут мы должны сами достать id чата и отправить в нужную группу
         return Ok(new { success = true });
     }
 }

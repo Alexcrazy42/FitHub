@@ -416,9 +416,12 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
 
             await sessionService.Create(session, ct);
 
-            var claims = ITokenService.CreateCommonClaims(user.Id.ToString(), session.Id.ToString(), user.UserType);
+            var name = userEntity.Surname + " " + userEntity.Name;
+            var claims = ITokenService.CreateCommonClaims(user.Id.ToString(), name, session.Id.ToString(), user.UserType);
 
             var tokenString = tokenService.Create(claims);
+
+            loginResponse.JwtToken = tokenString;
 
             context.Response.Cookies.Append(IAuthOptions.CookieName, tokenString, new CookieOptions
             {

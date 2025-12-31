@@ -53,6 +53,14 @@ public class Message : IEntity<MessageId>, IUserAuditableEntity<IdentityUserId, 
         ReplyMessage = replyMessage;
     }
 
+    public void CheckAccess(IdentityUserId userId)
+    {
+        if (userId != CreatedById)
+        {
+            throw new ValidationException("Вы не имеете доступа к сообщению!");
+        }
+    }
+
     public static Message Create(Chat chat, string messageText, Message? replyMessage = null)
     {
         return new Message(MessageId.New(), chat.Id, messageText)
