@@ -54,6 +54,11 @@ public static class CommandExtensions
         return new CreateChatCommand(request.Type.Required(), participantUserIds);
     }
 
+    public static InitiatorAndTargetUserCommand FromRequest(this InitiatorAndTargetUserRequest request, IdentityUserId currentUserId)
+    {
+        return new InitiatorAndTargetUserCommand(ChatId.Parse(request.ChatId), currentUserId, IdentityUserId.Parse(request.TargetUserId));
+    }
+
     public static CreateTagUserAttachmentCommand FromRequest(this CreateTagUserAttachmentRequest request)
     {
         var name = ValidationException.ThrowIfNull(request.Name);

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using FitHub.Application.Messaging;
 using FitHub.Application.Messaging.Commands;
 using FitHub.Authentication;
@@ -21,7 +22,9 @@ public sealed class ChatServiceTests : ApplicationTestsBase
             ChatRepositoryMock.Object,
             UnitOfWorkMock.Object,
             CurrentIdentityUserIdAccessorMock.Object,
-            UserServiceMock.Object);
+            UserServiceMock.Object,
+            MessageRepositoryMock.Object,
+            MessageAttachmentRepositoryMock.Object);
     }
 
     [Fact, DisplayName("Получить чат, валидные параметры")]
@@ -165,6 +168,14 @@ public sealed class ChatServiceTests : ApplicationTestsBase
             r => r.PendingAddAsync(It.IsAny<Chat>(), It.IsAny<CancellationToken>()),
             Times.Once);
 
+        MessageRepositoryMock.Verify(
+            r => r.PendingAddAsync(It.IsAny<Message>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+
+        MessageAttachmentRepositoryMock.Verify(
+            r => r.PendingAddAsync(It.IsAny<MessageAttachment>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+
         UnitOfWorkMock.Verify(
             u => u.SaveChangesAsync(It.IsAny<CancellationToken>()),
             Times.Once);
@@ -195,6 +206,14 @@ public sealed class ChatServiceTests : ApplicationTestsBase
 
         ChatRepositoryMock.Verify(
             r => r.PendingAddAsync(It.IsAny<Chat>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+
+        MessageRepositoryMock.Verify(
+            r => r.PendingAddAsync(It.IsAny<Message>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+
+        MessageAttachmentRepositoryMock.Verify(
+            r => r.PendingAddAsync(It.IsAny<MessageAttachment>(), It.IsAny<CancellationToken>()),
             Times.Once);
 
         UnitOfWorkMock.Verify(

@@ -61,6 +61,22 @@ public class MessageAttachment : IEntity<MessageAttachmentId>, IUserAuditableEnt
         return new MessageAttachment(MessageAttachmentId.New(), message.Id, MessageAttachmentType.Link, CommonJsonSerializer.Serialize(linkAttachment));
     }
 
+    public static MessageAttachment CreateInviteOrExcludeUserAttachment(Message message,
+        MessageAttachmentType type,
+        InitiatorAndTargetUserActionAttachment attachment)
+    {
+        if (type != MessageAttachmentType.InviteUser && type != MessageAttachmentType.ExcludeUser)
+        {
+            throw new ValidationException("Операция должна быть на добавление или исключения пользователя!");
+        }
+        return new MessageAttachment(MessageAttachmentId.New(), message.Id, type, CommonJsonSerializer.Serialize(attachment));
+    }
+
+    public static MessageAttachment CreateGroupCreatedAttachment(Message message)
+    {
+        return new MessageAttachment(MessageAttachmentId.New(), message.Id, MessageAttachmentType.CreateGroup, CommonJsonSerializer.Serialize(new { }));
+    }
+
     #region CommonFields
 
     public DateTimeOffset CreatedAt { get; }

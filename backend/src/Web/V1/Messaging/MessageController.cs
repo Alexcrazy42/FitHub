@@ -1,9 +1,6 @@
-﻿using FitHub.Application.Common;
-using FitHub.Application.Messaging;
+﻿using FitHub.Application.Messaging;
 using FitHub.Application.Messaging.Commands;
-using FitHub.Common.AspNetCore;
 using FitHub.Common.Entities;
-using FitHub.Common.Utilities.System;
 using FitHub.Contracts;
 using FitHub.Contracts.V1;
 using FitHub.Contracts.V1.Messaging.Messages;
@@ -43,17 +40,17 @@ public class MessageController : ControllerBase
         ValidationException.ThrowIfNull(request);
         var command = request.ToCommand();
         var message = await messageService.CreateMessageAsync(command, ct);
+        var response = message.ToResponse();
 
         _ = Task.Run(async () =>
         {
-            var userName = HttpContext.User.GetUsername().Required();
             var groupName = message.ChatId.ToString().GetChatGroupName();
 
             await chatHubContext.Clients.Group(groupName)
-                .CreateMessage(userName, message.MessageText, DateTime.UtcNow);
+                .CreateMessage(response);
         }, ct);
 
-        return message.ToResponse();
+        return response;
     }
 
     [HttpPut(ApiRoutesV1.MessagesById)]
@@ -64,16 +61,17 @@ public class MessageController : ControllerBase
         var command = request.ToCommand();
         var message = await messageService.UpdateMessageAsync(messageId, command, ct);
 
+        var response = message.ToResponse();
+
         _ = Task.Run(async () =>
         {
-            var userName = HttpContext.User.GetUsername().Required();
             var groupName = message.ChatId.ToString().GetChatGroupName();
 
             await chatHubContext.Clients.Group(groupName)
-                .UpdateMessage(userName, message.MessageText, DateTime.UtcNow);
+                .UpdateMessage(response);
         }, ct);
 
-        return message.ToResponse();
+        return response;
     }
 
     [HttpDelete(ApiRoutesV1.MessagesById)]
@@ -84,7 +82,6 @@ public class MessageController : ControllerBase
 
         _ = Task.Run(async () =>
         {
-            //var userName = HttpContext.User.GetUsername().Required();
             var groupName = message.ChatId.ToString().GetChatGroupName();
 
             await chatHubContext.Clients.Group(groupName)

@@ -220,6 +220,10 @@ public class ApiRoutesV1
 
     public const string ChatById = Chats + "/{id}";
 
+    public const string ChatInvite = Chats + "/invite";
+
+    public const string ChatExclude = Chats + "/exclude";
+
     public const string Messages = Root + "/messages";
 
     public const string MessagesById = Messages + "/{id}";

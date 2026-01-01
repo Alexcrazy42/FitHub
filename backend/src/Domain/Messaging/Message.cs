@@ -10,6 +10,7 @@ public class Message : IEntity<MessageId>, IUserAuditableEntity<IdentityUserId, 
     private Chat? chat;
     private List<MessageAttachment> attachments = [];
     private List<Message> repliedMessages = [];
+    private List<MessageView> views = [];
 
     private Message(MessageId id, ChatId chatId, string messageText)
     {
@@ -41,6 +42,8 @@ public class Message : IEntity<MessageId>, IUserAuditableEntity<IdentityUserId, 
     public Message? ForwardedMessage { get; private set; }
 
     public IReadOnlyList<MessageAttachment> Attachments => attachments;
+
+    public IReadOnlyList<MessageView> Views => views;
 
     public void SetMessageText(string messageText)
     {

@@ -1,6 +1,6 @@
 ﻿using FitHub.Common.AspNetCore;
 using FitHub.Common.Utilities.System;
-using JetBrains.Annotations;
+using FitHub.Contracts.V1.Messaging.Messages;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
@@ -8,7 +8,7 @@ namespace FitHub.Web.V1;
 
 
 /// <summary>
-/// Методы, которые могут отправляться от сервера для клиента
+/// Методы, которые могут отправляться от сервера к клиенту
 /// </summary>
 /// <remarks>
 /// Примеры:
@@ -18,18 +18,20 @@ namespace FitHub.Web.V1;
 /// </remarks>
 public interface IChatHub
 {
-    Task CreateMessage(string user, string message, DateTime timestamp);
-    Task UpdateMessage(string user, string message, DateTime timestamp);
+    Task SimpleCreateMessage(string user, string message, DateTime timestamp);
+    Task SimpleUpdateMessage(string user, string message, DateTime timestamp);
+
+    Task CreateMessage(MessageResponse messageResponse);
+    Task UpdateMessage(MessageResponse messageResponse);
+
     Task UserConnected(UserConnectedDto dto);
     Task UserDisconnected(string userId);
     Task MessageDeleted(string messageId);
-    Task UserTyping(string user);
+    Task UserTyping(string user, string chatId);
 }
 
 public class UserConnectedDto
 {
-    public string? ConnectionId { get; set; }
-
     public string? UserId { get; set; }
 
     public string? UserName { get; set; }
@@ -47,14 +49,13 @@ public class ChatHub : Hub<IChatHub>
 
         var dto = new UserConnectedDto()
         {
-            ConnectionId = Context.ConnectionId,
             UserId = userId,
             UserName = userName,
         };
 
         // TODO: добавить человека в группы по всем его чатам
         // TODO: выставить пользователю флаг, что он онлайн
-        // TODO: отправить всем релевантным пользователям (друзья) сообщение, что он онлайн
+        // TODO: отправить всем релевантным пользователям (друзья/у кого он есть в чате общем) сообщение, что он онлайн
 
         await Clients.All.UserConnected(dto);
         await base.OnConnectedAsync();
@@ -63,35 +64,36 @@ public class ChatHub : Hub<IChatHub>
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         // TODO: выставить флаг, что он не онлайн
-        // TODO: отправить всем релевантным пользователям (друзья) сообщение, что он стал офлайн
+        // TODO: отправить всем релевантным пользователям (друзья/у кого он есть в чате общем) сообщение, что он офлайн
 
         var userId = Context.User?.GetUserId();
         await Clients.All.UserDisconnected(userId.Required());
         await base.OnDisconnectedAsync(exception);
     }
 
-    // Методы, которые клиент может вызывать через WebSocket
-    public async Task SendMessage(string user, string message)
+    public async Task NotifyTyping(string chatId)
     {
-        await Clients.All.CreateMessage(user, message, DateTime.UtcNow);
+        var userId = Context.User?.GetUserId();
+        await Clients.OthersInGroup(chatId.GetChatGroupName()).UserTyping(userId.Required(), chatId);
     }
 
-    public async Task NotifyTyping(string user)
-    {
-        // TODO: это мы отправляем только в чат куда идет печать
-        await Clients.Others.UserTyping(user);
-    }
-
-    //хотим добавиться к группе (надо ли?)
+    //хотим добавиться к группе (надо ли, мы и так делаем это при подключении + каждый раз когда нас куда то добавляют)
     public async Task JoinGroup(string groupName)
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
         var userName = Context.User?.GetUsername();
 
         await Clients.Group(groupName)
-            .CreateMessage(userName.Required(), "Пользователь добавился", DateTime.Now);
-        // Уведомить группу
-        // await Clients.Group(groupName)
-        //     .UserJoinedGroup(userName, groupName);
+            .SimpleCreateMessage(userName.Required(), "Пользователь добавился", DateTime.Now);
+    }
+
+    public async Task Heartbeat()
+    {
+        var userId = Context.User?.GetUserId();
+        // TODO: Добавить здесь логику по выставлению статуса в бд (онлайн + когда в последний раз отмечался онлайн)
+        // TODO: добавить фоновую джобу на отключение (> 1 минуты не делал Heartbeat - оффлайн)
+
+        await Clients.User(userId.Required())
+            .SimpleCreateMessage(userId, "Heartbeat", DateTime.Now);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using FitHub.Application.Messaging;
 using FitHub.Application.Messaging.Commands;
+using FitHub.Authentication;
 using FitHub.Common.AspNetCore.Auth;
 using FitHub.Common.Entities;
 using FitHub.Contracts.V1;
@@ -15,10 +16,12 @@ namespace FitHub.Web.V1.Messaging;
 public class ChatController : ControllerBase
 {
     private readonly IChatService chatService;
+    private readonly ICurrentIdentityUserIdAccessor userIdAccessor;
 
-    public ChatController(IChatService chatService)
+    public ChatController(IChatService chatService, ICurrentIdentityUserIdAccessor userIdAccessor)
     {
         this.chatService = chatService;
+        this.userIdAccessor = userIdAccessor;
     }
 
     [HttpGet(ApiRoutesV1.ChatById)]
@@ -36,5 +39,21 @@ public class ChatController : ControllerBase
         var command = UnexpectedException.ThrowIfNull(request, "request").FromRequest();
         var chat = await chatService.CreateChatAsync(command, ct);
         return chat.ToResponse();
+    }
+
+    [HttpPost(ApiRoutesV1.ChatInvite)]
+    [Authorize(Policy = AuthorizationPolicies.CmsAdminOnly)]
+    public async Task InviteToChatAsync([FromBody] InitiatorAndTargetUserRequest? request, CancellationToken ct)
+    {
+        var command = ValidationException.ThrowIfNull(request, "request").FromRequest(userIdAccessor.GetCurrentUserId());
+        await chatService.InviteUserAsync(command, ct);
+    }
+
+    [HttpPost(ApiRoutesV1.ChatExclude)]
+    [Authorize(Policy = AuthorizationPolicies.CmsAdminOnly)]
+    public async Task ExcludeFromChatAsync([FromBody] InitiatorAndTargetUserRequest? request, CancellationToken ct)
+    {
+        var command = ValidationException.ThrowIfNull(request, "request").FromRequest(userIdAccessor.GetCurrentUserId());
+        await chatService.ExcludeUserAsync(command, ct);
     }
 }

@@ -12,6 +12,10 @@ using FitHub.Domain.Messaging.Attachments;
 
 namespace FitHub.Application.Messaging;
 
+
+// TODO: добавить методы на получение read-models для получения всех чатов
+// метод для прочтения сообщений (внутри обновление read-model с добавлением в MessageView)
+
 internal sealed class MessageService : IMessageService
 {
     private readonly IMessageRepository messageRepository;
@@ -61,6 +65,8 @@ internal sealed class MessageService : IMessageService
         await AttachTagsAsync(message, command.Tags, ct);
         await AttachPhotosAsync(message, command.Photos, ct);
 
+        // TODO: добавить всем пользователям в ChatReadModel + 1 + изменение lastMessageId
+
         await messageRepository.PendingAddAsync(message, ct);
         await unitOfWork.SaveChangesAsync(ct);
 
@@ -82,7 +88,6 @@ internal sealed class MessageService : IMessageService
         await AttachPhotosAsync(message, command.Photos, ct);
 
         await unitOfWork.SaveChangesAsync(ct);
-
         return message;
     }
 

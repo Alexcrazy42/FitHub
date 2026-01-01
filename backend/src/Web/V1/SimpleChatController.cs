@@ -13,11 +13,11 @@ public record SendToGroupRequest(string GroupName, string Message);
 [ApiController]
 [Route("api/[controller]")]
 [AllowAnonymous]
-public class AChatController : ControllerBase
+public class SimpleChatController : ControllerBase
 {
     private readonly IHubContext<ChatHub, IChatHub> hubContext;
 
-    public AChatController(IHubContext<ChatHub, IChatHub> hubContext)
+    public SimpleChatController(IHubContext<ChatHub, IChatHub> hubContext)
     {
         this.hubContext = hubContext;
     }
@@ -28,7 +28,7 @@ public class AChatController : ControllerBase
         var userName = HttpContext.User.GetUsername().Required();
 
         await hubContext.Clients.User(request.UserId)
-            .CreateMessage(userName, request.Message, DateTime.UtcNow);
+            .SimpleCreateMessage(userName, request.Message, DateTime.UtcNow);
 
         return Ok(new { success = true, message = "Message sent to user" });
     }
@@ -39,7 +39,7 @@ public class AChatController : ControllerBase
         var userName = HttpContext.User.GetUsername().Required();
 
         await hubContext.Clients.Group(request.GroupName)
-            .CreateMessage(userName, request.Message, DateTime.UtcNow);
+            .SimpleCreateMessage(userName, request.Message, DateTime.UtcNow);
 
         return Ok(new { success = true, message = "Message sent to group" });
     }
@@ -47,9 +47,7 @@ public class AChatController : ControllerBase
     [HttpDelete("message/{messageId}")]
     public async Task<IActionResult> DeleteMessage(string messageId)
     {
-        // Здесь логика удаления из БД
-
-        await hubContext.Clients.All.MessageDeleted(messageId); // TODO: и тут мы должны сами достать id чата и отправить в нужную группу
+        await hubContext.Clients.All.MessageDeleted(messageId);
         return Ok(new { success = true });
     }
 }
