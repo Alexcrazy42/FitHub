@@ -2,7 +2,7 @@
 using FitHub.Domain.Messaging;
 using FitHub.Domain.Trainings;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace FitHub.Data;
 
@@ -12,6 +12,8 @@ public sealed class DataContext : DbContext
         DbContextOptions<DataContext> options)
         : base(options)
     {
+        ChangeTracker.CascadeDeleteTiming = CascadeTiming.OnSaveChanges;
+        ChangeTracker.DeleteOrphansTiming = CascadeTiming.OnSaveChanges;
     }
 
     public DbSet<BaseGroupTraining> BaseGroupTrainings => Set<BaseGroupTraining>();
@@ -21,7 +23,6 @@ public sealed class DataContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(DataContext).Assembly);
 
         modelBuilder.UseCommonConventions();

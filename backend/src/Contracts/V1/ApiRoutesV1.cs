@@ -230,7 +230,7 @@ public class ApiRoutesV1
 
     public const string MessagesById = Messages + "/{id}";
 
-    public const string ChatMessagesList = Root + "chat-messages/list";
+    public const string ChatMessagesList = Root + "/chat-messages/list";
 
     #endregion
 
