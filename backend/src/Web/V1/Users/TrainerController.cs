@@ -45,7 +45,7 @@ public class TrainerController : ControllerBase
         await accessService.EnsureHasAnyPolicyAsync(AuthorizationPolicies.CmsAdminOnly, AuthorizationPolicies.GymAdminOnly);
         var query = request.ToQuery();
         var result = await trainerService.GetAll(query, trainerQuery, ct);
-        return result.ToResponse(UserExtensions.ToResponse);
+        return result.ToListResponse(UserExtensions.ToResponse);
     }
 
     [HttpPost(ApiRoutesV1.Trainers)]

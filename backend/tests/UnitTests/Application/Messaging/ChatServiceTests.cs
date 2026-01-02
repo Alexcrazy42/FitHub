@@ -24,7 +24,9 @@ public sealed class ChatServiceTests : ApplicationTestsBase
             CurrentIdentityUserIdAccessorMock.Object,
             UserServiceMock.Object,
             MessageRepositoryMock.Object,
-            MessageAttachmentRepositoryMock.Object);
+            MessageAttachmentRepositoryMock.Object,
+            MessageViewRepositoryMock.Object,
+            ChatReadingModelRepositoryMock.Object);
     }
 
     [Fact, DisplayName("Получить чат, валидные параметры")]

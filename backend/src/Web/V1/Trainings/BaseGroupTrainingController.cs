@@ -37,7 +37,7 @@ public class BaseGroupTrainingController : ControllerBase
         await accessService.EnsureHasAnyPolicyAsync(AuthorizationPolicies.CmsAdminOnly, AuthorizationPolicies.GymAdminOnly);
         var pagedQuery = paged.ToQuery();
         var all = await service.GetAsync(pagedQuery, ct);
-        return all.ToResponse(TrainingResponseExtensions.ToResponse);
+        return all.ToListResponse(TrainingResponseExtensions.ToResponse);
     }
 
 

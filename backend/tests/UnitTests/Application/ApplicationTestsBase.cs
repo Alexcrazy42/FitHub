@@ -26,6 +26,8 @@ public abstract class ApplicationTestsBase
     protected readonly Mock<ICurrentIdentityUserIdAccessor> CurrentIdentityUserIdAccessorMock;
     protected readonly Mock<IMessageRepository> MessageRepositoryMock;
     protected readonly Mock<IMessageAttachmentRepository> MessageAttachmentRepositoryMock;
+    protected readonly Mock<IMessageViewRepository> MessageViewRepositoryMock;
+    protected readonly Mock<IChatReadingModelRepository> ChatReadingModelRepositoryMock;
 
     protected ApplicationTestsBase()
     {
@@ -37,6 +39,8 @@ public abstract class ApplicationTestsBase
         CurrentIdentityUserIdAccessorMock = new Mock<ICurrentIdentityUserIdAccessor>();
         MessageRepositoryMock = new Mock<IMessageRepository>();
         MessageAttachmentRepositoryMock = new Mock<IMessageAttachmentRepository>();
+        MessageViewRepositoryMock = new Mock<IMessageViewRepository>();
+        ChatReadingModelRepositoryMock = new Mock<IChatReadingModelRepository>();
     }
 
     private void CustomizeEntities()

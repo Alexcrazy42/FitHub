@@ -1,4 +1,5 @@
 ﻿using FitHub.Common.EntityFramework;
+using FitHub.Domain.Messaging;
 using FitHub.Domain.Trainings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -14,6 +15,8 @@ public sealed class DataContext : DbContext
     }
 
     public DbSet<BaseGroupTraining> BaseGroupTrainings => Set<BaseGroupTraining>();
+
+    public DbSet<MessageView> MessageView => Set<MessageView>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

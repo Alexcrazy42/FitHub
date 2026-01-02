@@ -31,7 +31,7 @@ public class EquipmentController : ControllerBase
         await accessService.EnsureHasAnyPolicyAsync(AuthorizationPolicies.CmsAdminOnly, AuthorizationPolicies.GymAdminOnly);
         var query = pagedRequest.ToQuery();
         var pagedResult = await service.GetAllAsync(query, ct);
-        return pagedResult.ToResponse(EquipmentResponseExtensions.ToResponse);
+        return pagedResult.ToListResponse(EquipmentResponseExtensions.ToResponse);
     }
 
     [HttpGet(ApiRoutesV1.EquipmentById)]

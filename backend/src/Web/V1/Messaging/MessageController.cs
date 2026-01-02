@@ -34,6 +34,25 @@ public class MessageController : ControllerBase
         return messages.ToListResponse(MessagesExtensions.ToResponse);
     }
 
+    [HttpGet(ApiRoutesV1.ChatMessagesList)]
+    public async Task<ListResponse<ChatMessageResponse>> GetChatMessageList([FromQuery] PagedRequest? paged, CancellationToken ct)
+    {
+        var pagedQuery = paged.ToQuery();
+
+        var chatReadingModelResult = await messageService.GetChatReadingsAsync(pagedQuery, ct);
+
+        return chatReadingModelResult.ToListResponse(MessagesExtensions.ToResponse);
+    }
+
+    [HttpPost(ApiRoutesV1.MessagesRead)]
+    public async Task MessageReadAsync([FromBody] MessageReadRequest? request, CancellationToken ct)
+    {
+        ValidationException.ThrowIfNull(request, nameof(request));
+        var maxMessageId = MessageId.Parse(request.MaxMessageId);
+
+        await messageService.ReadMessagesAsync(maxMessageId, ct);
+    }
+
     [HttpPost(ApiRoutesV1.Messages)]
     public async Task<MessageResponse> CreateMessageAsync([FromBody] CreateMessageRequest? request, CancellationToken ct)
     {

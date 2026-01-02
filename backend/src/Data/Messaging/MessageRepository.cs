@@ -1,5 +1,6 @@
 ﻿using FitHub.Application.Common;
 using FitHub.Application.Messaging;
+using FitHub.Authentication;
 using FitHub.Common.Entities;
 using FitHub.Common.EntityFramework;
 using FitHub.Domain.Messaging;
@@ -41,6 +42,22 @@ internal sealed class MessageRepository : DefaultPendingRepository<Message, Mess
             .OrderByDescending(x => x.CreatedAt)
             .Skip((paged.PageNumber - 1) * paged.PageSize)
             .Take(paged.PageSize)
+            .ToReadOnlyListAsync(ct);
+    }
+
+    public Task<IReadOnlyList<Message>> GetUnreadMessagesOlderThan(
+        Message message,
+        IdentityUserId userId,
+        CancellationToken ct = default)
+    {
+        return ReadRaw()
+            .Where(m => m.ChatId == message.ChatId)
+            .Where(m => m.CreatedAt <= message.CreatedAt)
+            .Where(m => m.CreatedById != userId)
+            .Where(m => Context.MessageView.Any(v =>
+                v.MessageId == m.Id &&
+                v.UserId == userId &&
+                v.ViewedAt == null))
             .ToReadOnlyListAsync(ct);
     }
 }

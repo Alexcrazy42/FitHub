@@ -35,7 +35,7 @@ public class CmsAdminController : ControllerBase
     {
         var query = paged.ToQuery();
         var usersResult = await cmsAdminService.GetCmsAdmins(query, ct);
-        return usersResult.ToResponse(UserExtensions.ToResponse);
+        return usersResult.ToListResponse(UserExtensions.ToResponse);
     }
 
     [HttpPost(ApiRoutesV1.CmsAdmins)]

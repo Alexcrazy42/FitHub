@@ -26,7 +26,7 @@ public class GymController : ControllerBase
     {
         var query = request.ToQuery();
         var gymPagedResult = await gymService.GetGymsAsync(query, ct);
-        return gymPagedResult.ToResponse(EquipmentResponseExtensions.ToResponse);
+        return gymPagedResult.ToListResponse(EquipmentResponseExtensions.ToResponse);
     }
 
     [HttpGet(ApiRoutesV1.GymById)]

@@ -109,6 +109,16 @@ public class Chat : IEntity<ChatId>, IUserAuditableEntity<IdentityUserId, User>
         participants = newParticipants;
     }
 
+    public void DisableChatParticipant(ChatParticipant participant)
+    {
+        if (participants.Count == 0)
+        {
+            throw new UnexpectedException("Нет участников!");
+        }
+
+        participant.Block();
+    }
+
     public void SetGroupName(IdentityUserId currentUserId)
     {
         var groupName = GetGroupChatName(currentUserId);

@@ -40,7 +40,7 @@ public class VisitorController : ControllerBase
         await accessService.EnsureHasAnyPolicyAsync(AuthorizationPolicies.CmsAdminOnly, AuthorizationPolicies.GymAdminOnly);
         var domain = pagedRequest.ToQuery();
         var result = await visitorService.GetAll(domain, visitorRequest, ct);
-        return result.ToResponse(UserExtensions.ToResponse);
+        return result.ToListResponse(UserExtensions.ToResponse);
     }
 
     [HttpPut(ApiRoutesV1.VisitorSetStatus)]

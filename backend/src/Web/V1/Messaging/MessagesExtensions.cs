@@ -63,4 +63,16 @@ public static class MessagesExtensions
             UpdatedBy = attachment.UpdatedBy?.ToResponse()
         };
     }
+
+    public static ChatMessageResponse ToResponse(this ChatReadingModel model)
+    {
+        return new ChatMessageResponse
+        {
+            Id = model.Id.ToString(),
+            Chat = model.Chat.ToResponse(),
+            LastMessage = model.LastMessage.ToResponse(),
+            LastMessageTime = model.LastMessageTime,
+            UnreadCount = model.UnreadCount
+        };
+    }
 }

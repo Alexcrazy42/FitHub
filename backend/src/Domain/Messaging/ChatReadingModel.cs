@@ -5,7 +5,6 @@ using FitHub.Common.Entities.Identity;
 namespace FitHub.Domain.Messaging;
 
 
-// TODO: отправили сообщение в чат - обновили у всех reading-model
 // TODO: прочитал сообщения: обновил MessageView и ReadingModel
 
 public class ChatReadingModel : IEntity<ChatReadingModelId>, IAuditableEntity
@@ -14,7 +13,7 @@ public class ChatReadingModel : IEntity<ChatReadingModelId>, IAuditableEntity
     private User? user;
     private Message? lastMessage;
 
-    public ChatReadingModel(ChatReadingModelId id, ChatId chatId, IdentityUserId userId, MessageId lastMessageId, string lastMessageText, DateTimeOffset lastMessageTime, int unreadCount)
+    private ChatReadingModel(ChatReadingModelId id, ChatId chatId, IdentityUserId userId, MessageId lastMessageId, string lastMessageText, DateTimeOffset lastMessageTime, int unreadCount)
     {
         Id = id;
         ChatId = chatId;
@@ -43,7 +42,6 @@ public class ChatReadingModel : IEntity<ChatReadingModelId>, IAuditableEntity
         private set => user = value;
     }
 
-
     public MessageId LastMessageId { get; private set; }
 
     public Message LastMessage
@@ -57,6 +55,29 @@ public class ChatReadingModel : IEntity<ChatReadingModelId>, IAuditableEntity
     public DateTimeOffset LastMessageTime { get; private set; }
 
     public int UnreadCount { get; private set; }
+
+    public void UpdateLastMessageAndIncrement(Message message)
+    {
+        UnreadCount++;
+        LastMessageId = message.Id;
+        LastMessage = message;
+        LastMessageText = message.MessageText;
+        LastMessageTime = DateTimeOffset.UtcNow;
+    }
+
+    public void UpdateLastMessageAndUnreadCount(Message message, int unreadCount)
+    {
+        UnreadCount = unreadCount;
+        LastMessageId = message.Id;
+        LastMessage = message;
+        LastMessageText = message.MessageText;
+        LastMessageTime = DateTimeOffset.UtcNow;
+    }
+
+    public static ChatReadingModel Create(Chat chat, User user, Message lastMessage, int unreadCount)
+    {
+        return new ChatReadingModel(ChatReadingModelId.New(), chat.Id, user.Id, lastMessage.Id, lastMessage.MessageText, lastMessage.CreatedAt, unreadCount);
+    }
 
     #region CommonFields
     public DateTimeOffset CreatedAt { get; }

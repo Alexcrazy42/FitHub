@@ -31,7 +31,7 @@ public class GymEquipmentController : ControllerBase
 
         var result = await gymEquipmentService.GetAsync(pagedQuery, request, ct);
 
-        return result.ToResponse(EquipmentResponseExtensions.ToResponse);
+        return result.ToListResponse(EquipmentResponseExtensions.ToResponse);
     }
 
     [HttpGet(ApiRoutesV1.GymEquipmentById)]

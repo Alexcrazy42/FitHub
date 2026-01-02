@@ -27,7 +27,7 @@ public class MuscleGroupController : ControllerBase
     {
         var query = pagedRequest.ToQuery();
         var pagedResult = await muscleGroupService.GetAll(query, ct);
-        return pagedResult.ToResponse(TrainingResponseExtensions.ToMuscleGroupResponse);
+        return pagedResult.ToListResponse(TrainingResponseExtensions.ToMuscleGroupResponse);
     }
 
     [HttpPost(ApiRoutesV1.MuscleGroups)]

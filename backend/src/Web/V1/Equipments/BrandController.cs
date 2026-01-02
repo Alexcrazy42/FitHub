@@ -24,7 +24,7 @@ public class BrandController : ControllerBase
         var query = request.ToQuery();
         var search = searchRequest.ToCommand();
         var pagedResult = await brandService.GetAllAsync(search, query, ct);
-        return pagedResult.ToResponse(EquipmentResponseExtensions.ToResponse);
+        return pagedResult.ToListResponse(EquipmentResponseExtensions.ToResponse);
     }
 
     [HttpGet(ApiRoutesV1.BrandsById)]

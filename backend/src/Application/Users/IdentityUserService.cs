@@ -416,8 +416,7 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
 
             await sessionService.Create(session, ct);
 
-            var name = userEntity.Surname + " " + userEntity.Name;
-            var claims = ITokenService.CreateCommonClaims(user.Id.ToString(), name, session.Id.ToString(), user.UserType);
+            var claims = ITokenService.CreateCommonClaims(user.Id.ToString(), userEntity.GetFullName(), session.Id.ToString(), user.UserType);
 
             var tokenString = tokenService.Create(claims);
 

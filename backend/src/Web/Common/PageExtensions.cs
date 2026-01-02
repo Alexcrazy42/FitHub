@@ -24,7 +24,7 @@ public static class PageExtensions
         return new PagedQuery(pageNumber: pageNumber, pageSize: pageSize);
     }
 
-    public static ListResponse<TTo> ToResponse<TFrom, TTo>(this PagedResult<TFrom> pagedResult, Func<TFrom, TTo> converter)
+    public static ListResponse<TTo> ToListResponse<TFrom, TTo>(this PagedResult<TFrom> pagedResult, Func<TFrom, TTo> converter)
         where TFrom : class
         where TTo : class
     {

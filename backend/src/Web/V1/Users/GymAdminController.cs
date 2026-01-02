@@ -45,7 +45,7 @@ public class GymAdminController : ControllerBase
     {
         var domain = paged.ToQuery();
         var gymAdminResult = await gymAdminService.GetAll(domain, ct);
-        return gymAdminResult.ToResponse(UserExtensions.ToResponse);
+        return gymAdminResult.ToListResponse(UserExtensions.ToResponse);
     }
 
     [HttpPost(ApiRoutesV1.GymAdmins)]

@@ -9,7 +9,7 @@ public interface IChatService
 
     Task<Chat> CreateChatAsync(CreateChatCommand command, CancellationToken ct);
 
-    Task InviteUserAsync(InitiatorAndTargetUserCommand command, CancellationToken ct);
+    Task<Message> InviteUserAsync(InitiatorAndTargetUserCommand command, CancellationToken ct);
 
-    Task ExcludeUserAsync(InitiatorAndTargetUserCommand command, CancellationToken ct);
+    Task<Message> ExcludeUserAsync(InitiatorAndTargetUserCommand command, CancellationToken ct);
 }

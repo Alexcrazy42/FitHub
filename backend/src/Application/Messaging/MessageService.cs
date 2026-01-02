@@ -6,15 +6,12 @@ using FitHub.Application.Users;
 using FitHub.Authentication;
 using FitHub.Common.Entities;
 using FitHub.Common.Entities.Storage;
+using FitHub.Common.Utilities.System;
 using FitHub.Domain.Files;
 using FitHub.Domain.Messaging;
 using FitHub.Domain.Messaging.Attachments;
 
 namespace FitHub.Application.Messaging;
-
-
-// TODO: добавить методы на получение read-models для получения всех чатов
-// метод для прочтения сообщений (внутри обновление read-model с добавлением в MessageView)
 
 internal sealed class MessageService : IMessageService
 {
@@ -25,8 +22,18 @@ internal sealed class MessageService : IMessageService
     private readonly ICurrentIdentityUserIdAccessor userIdAccessor;
     private readonly IUserService userService;
     private readonly IFileService fileService;
+    private readonly IChatReadingModelRepository chatReadingModelRepository;
+    private readonly IMessageViewRepository messageViewRepository;
 
-    public MessageService(IMessageRepository messageRepository, IChatService chatService, ICurrentIdentityUserIdAccessor userIdAccessor, IMessageAttachmentRepository messageAttachmentRepository, IUnitOfWork unitOfWork, IUserService userService, IFileService fileService)
+    public MessageService(IMessageRepository messageRepository,
+        IChatService chatService,
+        ICurrentIdentityUserIdAccessor userIdAccessor,
+        IMessageAttachmentRepository messageAttachmentRepository,
+        IUnitOfWork unitOfWork,
+        IUserService userService,
+        IFileService fileService,
+        IChatReadingModelRepository chatReadingModelRepository,
+        IMessageViewRepository messageViewRepository)
     {
         this.messageRepository = messageRepository;
         this.chatService = chatService;
@@ -35,6 +42,8 @@ internal sealed class MessageService : IMessageService
         this.unitOfWork = unitOfWork;
         this.userService = userService;
         this.fileService = fileService;
+        this.chatReadingModelRepository = chatReadingModelRepository;
+        this.messageViewRepository = messageViewRepository;
     }
 
     public async Task<Message> GetMessageAsync(MessageId messageId, CancellationToken ct)
@@ -65,11 +74,12 @@ internal sealed class MessageService : IMessageService
         await AttachTagsAsync(message, command.Tags, ct);
         await AttachPhotosAsync(message, command.Photos, ct);
 
-        // TODO: добавить всем пользователям в ChatReadModel + 1 + изменение lastMessageId
+
+        await CreateMessageViews(chat, message, ct);
+        await UpdateReadModelsAsync(chat, message, ct);
 
         await messageRepository.PendingAddAsync(message, ct);
         await unitOfWork.SaveChangesAsync(ct);
-
         return message;
     }
 
@@ -98,6 +108,35 @@ internal sealed class MessageService : IMessageService
         messageRepository.PendingRemove(message);
         await unitOfWork.SaveChangesAsync(ct);
         return message;
+    }
+
+    public Task<PagedResult<ChatReadingModel>> GetChatReadingsAsync(PagedQuery paged, CancellationToken ct)
+    {
+        return chatReadingModelRepository.GetChatReadingModelAsync(paged, userIdAccessor.GetCurrentUserId(), ct);
+    }
+
+    public async Task ReadMessagesAsync(MessageId messageId, CancellationToken ct)
+    {
+        var currentUserId = userIdAccessor.GetCurrentUserId();
+
+        var message = await GetMessageAsync(messageId, ct);
+
+        var unreadMessagesOlder = await messageRepository.GetUnreadMessagesOlderThan(message, currentUserId, ct);
+
+        var readModel = await chatReadingModelRepository.GetFirstOrDefaultAsync(x => x.ChatId == message.ChatId && x.UserId == currentUserId, ct);
+        UnexpectedException.ThrowIfNull(readModel, "Не смогли найти readModel");
+
+        readModel.UpdateLastMessageAndUnreadCount(message, readModel.UnreadCount - unreadMessagesOlder.Count);
+
+        var messageIds = unreadMessagesOlder.Select(x => x.Id).ToList();
+        var messageViews = await messageViewRepository.GetAllAsync(x => messageIds.Contains(x.MessageId) && x.UserId == currentUserId, ct);
+
+        foreach (var messageView in messageViews)
+        {
+            messageView.SetViewedAt(DateTimeOffset.UtcNow);
+        }
+
+        await unitOfWork.SaveChangesAsync(ct);
     }
 
     private async Task<Message?> GetReplyMessageIfNeededAsync(MessageId? replyMessageId, CancellationToken ct)
@@ -152,4 +191,34 @@ internal sealed class MessageService : IMessageService
         return await userService.GetUserAsync(taggedUserId, ct);
     }
 
+    private async Task CreateMessageViews(Chat chat, Message message, CancellationToken ct)
+    {
+        foreach (var participant in chat.Participants)
+        {
+            var messageView = MessageView.Create(message, participant.User);
+            await messageViewRepository.PendingAddAsync(messageView, ct);
+        }
+    }
+
+    private async Task UpdateReadModelsAsync(Chat chat, Message message, CancellationToken ct)
+    {
+        var userIds = chat.Participants.Select(p => p.UserId).ToList();
+        var chatReadModels = await chatReadingModelRepository.GetAllAsync(x => x.ChatId == chat.Id && userIds.Contains(x.UserId), ct);
+
+        foreach (var model in chatReadModels)
+        {
+            model.UpdateLastMessageAndIncrement(message);
+        }
+
+        if (chatReadModels.Count == userIds.Count)
+        {
+            return;
+        }
+
+        foreach (var user in chat.Participants.Select(x => x.User).ToList())
+        {
+            var chatReadModel = ChatReadingModel.Create(chat, user, message, 1);
+            await chatReadingModelRepository.PendingAddAsync(chatReadModel, ct);
+        }
+    }
 }

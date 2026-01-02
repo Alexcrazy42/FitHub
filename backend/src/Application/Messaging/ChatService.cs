@@ -4,11 +4,10 @@ using FitHub.Authentication;
 using FitHub.Common.Entities;
 using FitHub.Common.Entities.Storage;
 using FitHub.Domain.Messaging;
+using FitHub.Domain.Messaging.Attachments;
 using FitHub.Shared.Messaging;
 
 namespace FitHub.Application.Messaging;
-
-// TODO: добавить метод добавления пользователя в чат (добавляем MessageView + ReadModel + сообщение в чат)
 
 internal sealed class ChatService : IChatService
 {
@@ -18,13 +17,17 @@ internal sealed class ChatService : IChatService
     private readonly ICurrentIdentityUserIdAccessor userIdAccessor;
     private readonly IMessageRepository messageRepository;
     private readonly IMessageAttachmentRepository messageAttachmentRepository;
+    private readonly IMessageViewRepository messageViewRepository;
+    private readonly IChatReadingModelRepository chatReadingModelRepository;
 
     public ChatService(IChatRepository chatRepository,
         IUnitOfWork unitOfWork,
         ICurrentIdentityUserIdAccessor userIdAccessor,
         IUserService userService,
         IMessageRepository messageRepository,
-        IMessageAttachmentRepository messageAttachmentRepository)
+        IMessageAttachmentRepository messageAttachmentRepository,
+        IMessageViewRepository messageViewRepository,
+        IChatReadingModelRepository chatReadingModelRepository)
     {
         this.chatRepository = chatRepository;
         this.unitOfWork = unitOfWork;
@@ -32,6 +35,8 @@ internal sealed class ChatService : IChatService
         this.userService = userService;
         this.messageRepository = messageRepository;
         this.messageAttachmentRepository = messageAttachmentRepository;
+        this.messageViewRepository = messageViewRepository;
+        this.chatReadingModelRepository = chatReadingModelRepository;
     }
 
 
@@ -59,8 +64,12 @@ internal sealed class ChatService : IChatService
         var chat = Chat.Create(command.Type);
 
         var users = await userService.GetUsersAsync(command.ParticipantUserIds, ct);
+        var creator = users.First(x => x.Id == currentUserId);
 
         var participants = users.Select(user => ChatParticipant.Create(user, chat)).ToList();
+        var message = Message.Create(chat, "");
+
+        var messageView = MessageView.Create(message, creator);
 
         chat.SetParticipants(participants, currentUserId);
 
@@ -68,27 +77,99 @@ internal sealed class ChatService : IChatService
         {
             chat.SetGroupName(currentUserId);
 
-            var message = Message.Create(chat, "");
+            var chatReadModel = ChatReadingModel.Create(chat, creator, message, 1);
+
             var createGroupAttachment = MessageAttachment.CreateGroupCreatedAttachment(message);
-            await messageRepository.PendingAddAsync(message, ct);
             await messageAttachmentRepository.PendingAddAsync(createGroupAttachment, ct);
+            await chatReadingModelRepository.PendingAddAsync(chatReadModel, ct);
         }
 
+        await messageRepository.PendingAddAsync(message, ct);
         await chatRepository.PendingAddAsync(chat, ct);
+        await messageViewRepository.PendingAddAsync(messageView, ct);
         await unitOfWork.SaveChangesAsync(ct);
 
         return chat;
     }
 
-    public Task InviteUserAsync(InitiatorAndTargetUserCommand command, CancellationToken ct)
+    public async Task<Message> InviteUserAsync(InitiatorAndTargetUserCommand command, CancellationToken ct)
     {
-        // MessageView + ReadModel
-        throw new NotImplementedException();
+        var initiator = await userService.GetUserAsync(command.InitiatorUserId, ct);
+        var invitingUser = await userService.GetUserAsync(command.TargetUserId, ct);
+
+        var chat = await GetChatAsync(command.ChatId, ct);
+
+        if (chat.Participants.Any(x => x.UserId == command.TargetUserId))
+        {
+            throw new ValidationException("Этот пользователь уже является участником чата!");
+        }
+
+        var chatParticipant = ChatParticipant.Create(invitingUser, chat);
+        chat.AddParticipant(chatParticipant);
+
+
+        var message = Message.Create(chat, "");
+        var attachmentPayload =
+            new InitiatorAndTargetUserActionAttachment(command.InitiatorUserId, initiator.GetFullName(), command.InitiatorUserId, invitingUser.GetFullName());
+        var inviteAttachment = MessageAttachment.CreateInviteOrExcludeUserAttachment(message, MessageAttachmentType.InviteUser, attachmentPayload);
+
+        foreach (var participant in chat.Participants)
+        {
+            var newMessageView = MessageView.Create(message, participant.User);
+            await messageViewRepository.PendingAddAsync(newMessageView, ct);
+        }
+
+        var chatReadModel = ChatReadingModel.Create(chat, invitingUser, message, 1);
+
+        var participantUserIds = chat.Participants.Select(x => x.UserId).ToList();
+        var chatReadModels = await chatReadingModelRepository.GetAllAsync(x => x.ChatId == chat.Id && participantUserIds.Contains(x.UserId), ct);
+        foreach (var readModel in chatReadModels)
+        {
+            readModel.UpdateLastMessageAndIncrement(message);
+        }
+
+        await messageRepository.PendingAddAsync(message, ct);
+        await messageAttachmentRepository.PendingAddAsync(inviteAttachment, ct);
+        await chatReadingModelRepository.PendingAddAsync(chatReadModel, ct);
+        await unitOfWork.SaveChangesAsync(ct);
+        return message;
     }
 
-    public Task ExcludeUserAsync(InitiatorAndTargetUserCommand command, CancellationToken ct)
+    public async Task<Message> ExcludeUserAsync(InitiatorAndTargetUserCommand command, CancellationToken ct)
     {
-        // MessageView + ReadModel
-        throw new NotImplementedException();
+        var initiator = await userService.GetUserAsync(command.InitiatorUserId, ct);
+        var invitingUser = await userService.GetUserAsync(command.TargetUserId, ct);
+
+        var chat = await GetChatAsync(command.ChatId, ct);
+
+        if (!chat.Participants.Any(x => x.UserId == command.TargetUserId))
+        {
+            throw new ValidationException("Этот пользователь не является участником чата!");
+        }
+
+        var message = Message.Create(chat, "");
+        var attachmentPayload =
+            new InitiatorAndTargetUserActionAttachment(command.InitiatorUserId, initiator.GetFullName(), command.InitiatorUserId, invitingUser.GetFullName());
+        var inviteAttachment = MessageAttachment.CreateInviteOrExcludeUserAttachment(message, MessageAttachmentType.ExcludeUser, attachmentPayload);
+        foreach (var participant in chat.Participants)
+        {
+            var newMessageView = MessageView.Create(message, participant.User);
+            await messageViewRepository.PendingAddAsync(newMessageView, ct);
+        }
+
+        var chatReadModel = await chatReadingModelRepository.GetFirstOrDefaultAsync(x => x.ChatId == chat.Id && x.UserId == command.TargetUserId, ct);
+        if (chatReadModel == null)
+        {
+            throw new UnexpectedException($"Не смогли найти ChatReadingModel для пользователя {command.TargetUserId} и чата {chat.Id}");
+        }
+        chatReadModel.UpdateLastMessageAndIncrement(message);
+
+        var chatParticipant = chat.Participants.First(x => x.UserId == command.TargetUserId);
+        chat.DisableChatParticipant(chatParticipant);
+
+        await messageRepository.PendingAddAsync(message, ct);
+        await messageAttachmentRepository.PendingAddAsync(inviteAttachment, ct);
+        await unitOfWork.SaveChangesAsync(ct);
+        return message;
     }
 }

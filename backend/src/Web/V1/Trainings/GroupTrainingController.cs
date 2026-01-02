@@ -25,7 +25,7 @@ public class GroupTrainingController : ControllerBase
         var paged = pagedRequest.ToQuery();
         var result = await groupTrainingService.GetAsync(paged, searchRequest, ct);
 
-        return result.ToResponse(TrainingResponseExtensions.ToResponse);
+        return result.ToListResponse(TrainingResponseExtensions.ToResponse);
     }
 
     [HttpGet(ApiRoutesV1.GroupTrainingById)]

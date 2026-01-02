@@ -28,7 +28,7 @@ public class EquipmentInstructionController : ControllerBase
     {
         var query = request.ToQuery();
         var pagedResult = await service.GetAll(query, ct);
-        return pagedResult.ToResponse(EquipmentResponseExtensions.ToFullInstructionResponse);
+        return pagedResult.ToListResponse(EquipmentResponseExtensions.ToFullInstructionResponse);
     }
 
     [HttpPost(ApiRoutesV1.EquipmentsInstructions)]

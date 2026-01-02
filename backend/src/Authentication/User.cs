@@ -29,6 +29,11 @@ public class User : IdentityUser, IAuditableEntity
 
     public DateTimeOffset UpdatedAt { get; private set; }
 
+    public string GetFullName()
+    {
+        return $"{Name} {Surname}";
+    }
+
     public static User Create(IdentityUserId id,
         string surname,
         string name,
