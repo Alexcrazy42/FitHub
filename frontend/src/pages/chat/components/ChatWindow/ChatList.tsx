@@ -1,6 +1,4 @@
-﻿// src/features/chat/components/ChatList/ChatList.tsx
-
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { Input, Spin, Empty } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import InfiniteScroll from 'react-infinite-scroll-component';

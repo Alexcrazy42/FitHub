@@ -148,7 +148,7 @@ const messagesSlice = createSlice({
           (m) => m.id === messageId
         );
         if (message) {
-          (message as any).failed = true;
+          // (message as IMessageResponse).failed = true; // TODO
         }
       }
     },

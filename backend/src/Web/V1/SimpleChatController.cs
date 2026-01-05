@@ -47,7 +47,7 @@ public class SimpleChatController : ControllerBase
     [HttpDelete("message/{messageId}")]
     public async Task<IActionResult> DeleteMessage(string messageId)
     {
-        await hubContext.Clients.All.MessageDeleted(messageId);
+        await hubContext.Clients.All.MessageDeleted("", messageId);
         return Ok(new { success = true });
     }
 }

@@ -16,6 +16,7 @@ const userLocalStorage = 'user';
 const gymAdminLocalStorage = 'gymAdmin';
 const currentGymLocalStorage = 'currentGym';
 
+// TODO: перевести на redux
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const userJson = localStorage.getItem(userLocalStorage);
   const tempUser: User | null = userJson ? JSON.parse(userJson) : null;

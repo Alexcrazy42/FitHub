@@ -39,7 +39,6 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat }) => {
   const handleClick = () => {
     dispatch(setCurrentChatId(chat.id));
     
-    // Сбрасываем счетчик непрочитанных
     if (chat.unreadCount > 0) {
       dispatch(resetUnreadCount(chat.id));
       // TODO: отправить на сервер API запрос о прочтении

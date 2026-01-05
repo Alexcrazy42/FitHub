@@ -1,6 +1,4 @@
-﻿// src/features/chat/mocks/fakeData.ts
-
-import { 
+﻿import { 
   IChatMessageResponse, 
   IMessageResponse, 
   IChatResponse,

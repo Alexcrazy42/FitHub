@@ -29,6 +29,7 @@ public class MessageAttachment : IEntity<MessageAttachmentId>, IUserAuditableEnt
         private set => message = value;
     }
 
+    // помимо типа вложения можно еще хранить версию этого вложения, чтобы фронт мог производить версионирование
     public MessageAttachmentType Type { get; private set; }
 
     /// <summary>

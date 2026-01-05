@@ -10,14 +10,14 @@ import {
   REGISTER,
 } from 'redux-persist';
 import storage from 'redux-persist/lib/storage'; // localStorage
-// import storageSession from 'redux-persist/lib/storage/session'; // sessionStorage
 
-import chatReducer from './chatSlice';
+import chatsReducer from './chatSlice';
+
 import messagesReducer from './messagesSlice';
 import uiReducer from './uiSlice';
 import participantsReducer from './participantsSlice';
 
-// Конфигурация persist
+// LEARN: Конфигурация persist
 const persistConfig = {
   key: 'root',
   version: 1,
@@ -28,7 +28,7 @@ const persistConfig = {
 
 // Объединяем все reducers
 const rootReducer = combineReducers({
-  chat: chatReducer,
+  chat: chatsReducer,
   messages: messagesReducer,
   ui: uiReducer,
   participants: participantsReducer,
@@ -49,7 +49,6 @@ export const store = configureStore({
     }),
 });
 
-// Создаем persistor
 export const persistor = persistStore(store);
 
 export type RootState = ReturnType<typeof store.getState>;

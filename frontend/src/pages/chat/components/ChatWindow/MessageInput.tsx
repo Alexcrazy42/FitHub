@@ -14,12 +14,14 @@ import {
   selectReplyingToMessage,
   selectEditingMessage,
   selectAllChatMessages,
+  selectCurrentChat,
 } from '../../../../store/selectors';
 import { cancelReply, cancelEdit } from '../../../../store/uiSlice';
 import { addMessage, updateMessage } from '../../../../store/messagesSlice';
 import { updateLastMessage } from '../../../../store/chatSlice';
 import { generateFakeMessage, getFirstName } from '../../mocks/fakeData';
 import { debounce } from 'lodash';
+import { useSignalR } from '../../../../WebSocketProvider';
 
 const { TextArea } = Input;
 
@@ -33,6 +35,8 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
   const [isTyping, setIsTyping] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const textAreaRef = useRef<any>(null);
+  const signalR = useSignalR();
+  const currentChat = useAppSelector(selectCurrentChat);
 
   const replyingToMessageId = useAppSelector(selectReplyingToMessage(chatId));
   const editingMessageId = useAppSelector(selectEditingMessage(chatId));
@@ -51,8 +55,10 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
 
   // Typing indicator (debounced)
   const notifyTyping = debounce((typing: boolean) => {
-    // TODO: Send typing status via SignalR
     console.log('Typing:', typing);
+    if(currentChat?.chat.id) {
+      signalR.notifyTyping(currentChat?.chat.id);
+    }
   }, 300);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {

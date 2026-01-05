@@ -17,6 +17,15 @@ const initialState: ChatState = {
   error: null,
 };
 
+// LEARN:
+// благодаря RTK есть функция createSlice, которая упрощает
+// 1. не нужно вручную объявлять action type строки
+// 2. Не нужно отдельно писать action creators (просто описал reducer setChats и RTK автоматом сгенерил action creator)
+  // + он уже типизирован благодаря PayloadAction
+// 3. Не нужен один большой switch-case reducer (вместо одного монолитного switch набор маленьких функций в reducers)
+// 4. Можно "мутировать" state в теле reducer’а
+  // В классическом Redux так было нельзя, приходилось делать копии: return { ...state, chats: action.payload, loading: false };
+  // RTK под капотом использует Immer, и твои «мутации» превращаются в иммутабельные обновления.
 const chatSlice = createSlice({
   name: 'chat',
   initialState,

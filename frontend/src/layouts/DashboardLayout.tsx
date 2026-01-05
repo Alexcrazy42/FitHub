@@ -1,7 +1,7 @@
 ﻿import { Layout, Button } from 'antd';
 import { MenuUnfoldOutlined, MenuFoldOutlined, SunOutlined, MoonOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useState } from 'react';
-import Sidebar from '../components/Sidebar';
+import Sidebar from '../components/Sidebar/Sidebar';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/useTheme';
 import { useApiService } from '../api/useApiService';

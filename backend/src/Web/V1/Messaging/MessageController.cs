@@ -104,7 +104,7 @@ public class MessageController : ControllerBase
             var groupName = message.ChatId.ToString().GetChatGroupName();
 
             await chatHubContext.Clients.Group(groupName)
-                .MessageDeleted(messageId.ToString());
+                .MessageDeleted(message.ChatId.ToString(), messageId.ToString());
         }, ct);
     }
 }

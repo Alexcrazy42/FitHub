@@ -3,6 +3,7 @@ using FitHub.Common.Utilities.System;
 using FitHub.Contracts.V1.Messaging.Messages;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 
 namespace FitHub.Web.V1;
 
@@ -23,11 +24,12 @@ public interface IChatHub
 
     Task CreateMessage(MessageResponse messageResponse);
     Task UpdateMessage(MessageResponse messageResponse);
+    Task MessageDeleted(string chatId, string messageId);
+
+    Task UserTyping(string user, string chatId);
 
     Task UserConnected(UserConnectedDto dto);
     Task UserDisconnected(string userId);
-    Task MessageDeleted(string messageId);
-    Task UserTyping(string user, string chatId);
 }
 
 public class UserConnectedDto
@@ -40,6 +42,13 @@ public class UserConnectedDto
 [Authorize]
 public class ChatHub : Hub<IChatHub>
 {
+    private readonly ILogger<ChatHub> logger;
+
+    public ChatHub(ILogger<ChatHub> logger)
+    {
+        this.logger = logger;
+    }
+
     public override async Task OnConnectedAsync()
     {
         var user = Context.User;
@@ -74,6 +83,7 @@ public class ChatHub : Hub<IChatHub>
     public async Task NotifyTyping(string chatId)
     {
         var userId = Context.User?.GetUserId();
+        logger.LogInformation("User {userId} typing", userId);
         await Clients.OthersInGroup(chatId.GetChatGroupName()).UserTyping(userId.Required(), chatId);
     }
 
