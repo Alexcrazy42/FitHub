@@ -1,4 +1,6 @@
-﻿using FitHub.Authentication;
+﻿using FitHub.Application.Common;
+using FitHub.Application.Users.Commands;
+using FitHub.Authentication;
 using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.AspNetCore.Auth;
 using FitHub.Contracts.V1.Auth;
@@ -65,4 +67,6 @@ public interface IUserService
     /// Разлогиниться
     /// </summary>
     Task Logout(IdentityUserId userId, SessionId sessionId, CancellationToken ct = default);
+
+    Task<PagedResult<User>> GetUsersAsync(GetUserQuery query, PagedQuery pagedQuery, CancellationToken ct = default);
 }

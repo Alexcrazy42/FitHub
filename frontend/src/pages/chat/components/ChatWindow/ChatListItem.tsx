@@ -10,12 +10,15 @@ import { resetUnreadCount } from '../../../../store/chatSlice';
 import { selectCurrentChatId } from '../../../../store/selectors';
 import { getChatName, getChatAvatar, currentUser, getFirstName } from '../../mocks/fakeData';
 import { roleMapping } from '../../../../types/auth';
+import { useAuth } from '../../../../context/useAuth';
 
 interface ChatListItemProps {
   chat: IChatMessageResponse;
 }
 
 const ChatListItem: React.FC<ChatListItemProps> = ({ chat }) => {
+  const {user} = useAuth();
+  
   const dispatch = useAppDispatch();
   const currentChatId = useAppSelector(selectCurrentChatId);
   
@@ -40,8 +43,9 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat }) => {
     dispatch(setCurrentChatId(chat.id));
     
     if (chat.unreadCount > 0) {
+      // TODO: надо это вызывать когда дошел до конца в чате или батчами (потихоньку когда скроллишь вниз)
+      // TODO: сделать апи запрос
       dispatch(resetUnreadCount(chat.id));
-      // TODO: отправить на сервер API запрос о прочтении
     }
   };
 
@@ -49,11 +53,13 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat }) => {
   const formatLastMessage = () => {
     if (!chat.lastMessage) return 'Нет сообщений';
     
-    const isMyMessage = chat.lastMessage.createdBy.id === currentUser.id;
+    const isMyMessage = chat.lastMessage.createdBy.id === user?.id;
     const authorName = isMyMessage ? 'Вы' : getFirstName(chat.lastMessage.createdBy);
     
     // Ограничиваем длину сообщения
     const maxLength = 40;
+
+    // TODO: переделать на attachment если есть
     const text = chat.lastMessage.messageText;
     const truncatedText = text.length > maxLength 
       ? `${text.substring(0, maxLength)}...` 
@@ -69,7 +75,6 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat }) => {
     );
   };
 
-  // Получаем роль собеседника (для badge)
   const getOtherUserRole = () => {
     if (chat.chat.type === 'OneToOne') {
       const otherUser = chat.chat.participants.find((p) => p.user.id !== currentUser.id);
@@ -124,7 +129,7 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat }) => {
                 isActive ? 'text-blue-600' : 'text-gray-900'
               }`}
             >
-              {getChatName(chat)}
+              {chat.chat.name}
             </h3>
             {/* Role badge (только для OneToOne) */}
             {otherUserRole && (

@@ -41,6 +41,7 @@ export interface IChatParticipantResponse {
 export interface IChatResponse {
     id: string;
     type: ChatType;
+    name: string | null;
     participants: IChatParticipantResponse[]
 }
 

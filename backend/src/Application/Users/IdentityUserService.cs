@@ -1,5 +1,7 @@
-﻿using FitHub.Application.EmailNotifications;
+﻿using FitHub.Application.Common;
+using FitHub.Application.EmailNotifications;
 using FitHub.Application.Equipments.Gyms;
+using FitHub.Application.Users.Commands;
 using FitHub.Application.Users.GymAdmins;
 using FitHub.Application.Users.Trainers;
 using FitHub.Application.Users.Visitors;
@@ -376,6 +378,11 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
         session.SetActive(false);
         await unitOfWork.SaveChangesAsync(ct);
         context.Response.Cookies.Delete(IAuthOptions.CookieName);
+    }
+
+    public Task<PagedResult<User>> GetUsersAsync(GetUserQuery query, PagedQuery pagedQuery, CancellationToken ct = default)
+    {
+        return userRepository.GetPagedUsersAsync(query, pagedQuery, ct);
     }
 
     public async Task<LoginResponse> LoginAsync(string login, string password, CancellationToken cancellationToken)

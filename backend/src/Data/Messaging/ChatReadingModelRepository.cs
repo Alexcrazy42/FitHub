@@ -23,6 +23,9 @@ internal sealed class ChatReadingModelRepository : DefaultPendingRepository<Chat
 
         dbQuery = dbQuery
             .Include(x => x.LastMessage)
+                .ThenInclude(x => x.CreatedBy)
+            .Include(x => x.LastMessage)
+                .ThenInclude(x => x.Attachments)
             .Include(x => x.Chat)
             .Skip((paged.PageNumber - 1) * paged.PageSize)
             .Take(paged.PageSize)

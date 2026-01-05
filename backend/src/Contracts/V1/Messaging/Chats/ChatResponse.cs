@@ -8,5 +8,7 @@ public sealed class ChatResponse
 
     public ChatType? Type { get; set; }
 
+    public string? Name { get; set; }
+
     public List<ChatParticipantResponse> Participants { get; set; } = [];
 }

@@ -4,7 +4,6 @@ import { IChatMessageResponse } from '../types/messaging';
 interface ChatState {
   chats: IChatMessageResponse[];
   hasMore: boolean;
-  nextCursor?: string;
   loading: boolean;
   error: string | null;
 }
@@ -12,7 +11,6 @@ interface ChatState {
 const initialState: ChatState = {
   chats: [],
   hasMore: true,
-  nextCursor: undefined,
   loading: false,
   error: null,
 };
@@ -42,12 +40,19 @@ const chatSlice = createSlice({
       action: PayloadAction<{
         chats: IChatMessageResponse[];
         hasMore: boolean;
-        nextCursor?: string;
       }>
     ) => {
-      state.chats.push(...action.payload.chats);
+      // Получаем существующие ID чатов
+      const existingChatIds = new Set(state.chats.map(chat => chat.id));
+      
+      // Фильтруем новые чаты, оставляя только те, которых ещё нет
+      const newChats = action.payload.chats.filter(
+        chat => !existingChatIds.has(chat.id)
+      );
+      
+      // Добавляем только новые чаты
+      state.chats.push(...newChats);
       state.hasMore = action.payload.hasMore;
-      state.nextCursor = action.payload.nextCursor;
       state.loading = false;
     },
 

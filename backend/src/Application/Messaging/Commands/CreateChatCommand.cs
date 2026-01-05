@@ -18,8 +18,3 @@ public class CreateChatCommand
         ParticipantUserIds = participantUserIds;
     }
 }
-
-public static class CreateChatCommandExtensions
-{
-
-}

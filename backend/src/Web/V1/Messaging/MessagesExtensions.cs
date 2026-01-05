@@ -17,7 +17,8 @@ public static class MessagesExtensions
         {
             Id = chat.Id.ToString(),
             Type = chat.Type,
-            Participants = chat.Participants.ToResponses()
+            Participants = chat.Participants.ToResponses(),
+            Name = chat.Name
         };
     }
 
