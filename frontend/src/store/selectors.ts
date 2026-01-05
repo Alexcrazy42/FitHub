@@ -29,7 +29,7 @@ export const selectCurrentChat = createSelector(
   [selectChats, selectCurrentChatId],
   (chats, currentChatId) => {
     if (!currentChatId) return null;
-    return chats.find((c) => c.id === currentChatId) || null;
+    return chats.find((c) => c.chat.id === currentChatId) || null;
   }
 );
 

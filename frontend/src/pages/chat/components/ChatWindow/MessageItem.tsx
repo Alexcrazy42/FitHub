@@ -6,10 +6,10 @@ import { UserOutlined, MoreOutlined, EditOutlined, DeleteOutlined } from '@ant-d
 import type { MenuProps } from 'antd';
 import { format } from 'date-fns';
 import { IMessageResponse } from '../../../../types/messaging';
-import { currentUser, getFullName, getFirstName } from '../../mocks/fakeData';
 import { useAppDispatch } from '../../../../store/hooks';
 import { setReplyingToMessage, setEditingMessage } from '../../../../store/uiSlice';
 import { roleMapping } from '../../../../types/auth';
+import { useAuth } from '../../../../context/useAuth';
 
 interface MessageItemProps {
   message: IMessageResponse;
@@ -19,8 +19,10 @@ interface MessageItemProps {
 const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = true }) => {
   const dispatch = useAppDispatch();
   const [isHovered, setIsHovered] = useState(false);
+
+  const {user} = useAuth();
   
-  const isMyMessage = message.createdBy.id === currentUser.id;
+  const isMyMessage = message.createdBy.id === user?.id;
 
   const formatTime = (dateString: string) => {
     return format(new Date(dateString), 'HH:mm');

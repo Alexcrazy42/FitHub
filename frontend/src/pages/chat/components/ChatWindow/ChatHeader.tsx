@@ -10,7 +10,7 @@ import {
   LogoutOutlined
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import { IChatMessageResponse } from '../../../../types/messaging';
+import { ChatType, IChatMessageResponse } from '../../../../types/messaging';
 import { useAppDispatch } from '../../../../store/hooks';
 import { setCurrentChatId } from '../../../../store/uiSlice';
 import { getChatName, getChatAvatar, currentUser } from '../../mocks/fakeData';
@@ -136,7 +136,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ chat }) => {
           </div>
           {/* Subtitle */}
           <p className="text-xs text-gray-500">
-            {chat.chat.type === 'Group' 
+            {chat.chat.type === ChatType.Group
               ? `${chat.chat.participants.length} участников`
               : isOnline 
                 ? 'В сети' 

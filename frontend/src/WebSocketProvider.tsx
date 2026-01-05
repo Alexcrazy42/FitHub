@@ -2,7 +2,8 @@
 import { useAppDispatch } from "./store/hooks"
 import { 
   HubConnection, 
-  HubConnectionBuilder
+  HubConnectionBuilder,
+  HubConnectionState
 } from '@microsoft/signalr';
 import { API_URL_CLEAN } from "./api/useApiService";
 import { setConnectionState, setUserTyping } from "./store/uiSlice";
@@ -13,6 +14,7 @@ import { addMessage, deleteMessage, updateMessage } from "./store/messagesSlice"
 interface SignalRContextType {
   connection: HubConnection | null;
   notifyTyping: (chatId: string) => Promise<void>;
+  notifyStopTyping: (chatId: string) => Promise<void>;
 }
 
 const WebSocketContext = createContext<SignalRContextType | null>(null);
@@ -38,8 +40,28 @@ export const WebSocketProvider : FC<{ children: ReactNode }> = ({ children }) =>
           }));
         })
 
+        conn.on('UserTyping', (userId: string, userName: string, chatId: string) => {
+          console.log(`from signalR: UserTyping user: ${userName} chat: ${chatId}`)
+          dispatch(setUserTyping({
+            chatId: chatId,
+            userId: userId,
+            userName: userName,
+            isTyping: true
+          }));
+        })
+
+        conn.on('UserStopTyping', (userId: string, userName: string, chatId: string) => {
+          console.log(`from signalR: UserStopTyping user: ${userName} chat: ${chatId}`)
+          dispatch(setUserTyping({
+            chatId: chatId,
+            userId: userId,
+            userName: userName,
+            isTyping: false
+          }));
+        })
+
         conn.on('CreateMessage', (message: IMessageResponse) => {
-          console.log(`CreateMessage, id=${message.id}`);
+          console.log(`CreateMessage, ${message}`);
           dispatch(addMessage({
             chatId: message.chatId,
             message: message
@@ -77,13 +99,34 @@ export const WebSocketProvider : FC<{ children: ReactNode }> = ({ children }) =>
 
     
     const notifyTyping = async (chatId: string) => {
-      if (!connection) throw new Error('Not connected');
-      await connection.invoke('NotifyTyping', chatId);
+      if (!connection || connection.state !== HubConnectionState.Connected) {
+        console.warn('SignalR not connected, skipping notifyTyping');
+        return; // Просто выходим без ошибки
+      }
+      
+      try {
+        await connection.invoke('NotifyTyping', chatId);
+      } catch (error) {
+        console.error('Failed to notify typing:', error);
+      }
+    };
+
+    const notifyStopTyping = async (chatId: string) => {
+      if (!connection || connection.state !== HubConnectionState.Connected) {
+        console.warn('SignalR not connected, skipping notifyStopTyping');
+        return;
+      }
+      
+      try {
+        await connection.invoke('NotifyStopTyping', chatId);
+      } catch (error) {
+        console.error('Failed to notify stop typing:', error);
+      }
     };
 
 
     return (
-      <WebSocketContext.Provider value={{ connection, notifyTyping }}>
+      <WebSocketContext.Provider value={{ connection, notifyTyping, notifyStopTyping }}>
         {children}
       </WebSocketContext.Provider>
     );

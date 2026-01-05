@@ -26,7 +26,9 @@ public interface IChatHub
     Task UpdateMessage(MessageResponse messageResponse);
     Task MessageDeleted(string chatId, string messageId);
 
-    Task UserTyping(string user, string chatId);
+    Task UserTyping(string userId, string userName, string chatId);
+
+    Task UserStopTyping(string userId, string userName, string chatId);
 
     Task UserConnected(UserConnectedDto dto);
     Task UserDisconnected(string userId);
@@ -83,8 +85,17 @@ public class ChatHub : Hub<IChatHub>
     public async Task NotifyTyping(string chatId)
     {
         var userId = Context.User?.GetUserId();
+        var userName = Context.User?.GetUsername();
         logger.LogInformation("User {userId} typing", userId);
-        await Clients.OthersInGroup(chatId.GetChatGroupName()).UserTyping(userId.Required(), chatId);
+        await Clients.All.UserTyping(userId.Required(), userName.Required(), chatId);
+        await Clients.OthersInGroup(chatId.GetChatGroupName()).UserTyping(userId.Required(), userName.Required(), chatId);
+    }
+
+    public async Task NotifyStopTyping(string chatId)
+    {
+        var userId = Context.User?.GetUserId();
+        var userName = Context.User?.GetUsername();
+        await Clients.All.UserStopTyping(userId.Required(), userName.Required(), chatId);
     }
 
     //хотим добавиться к группе (надо ли, мы и так делаем это при подключении + каждый раз когда нас куда то добавляют)

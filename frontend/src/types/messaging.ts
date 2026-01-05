@@ -65,7 +65,7 @@ export interface ICreatePhotoAttachmentRequest {
 export interface ICreateMessageRequest {
     chatId: string;
     messageText: string;
-    replyMessageId: string;
+    replyMessageId: string | null;
     links: ICreateLinkAttachmentRequest[];
     tags: ICreateTagUserAttachmentRequest[];
     photos: ICreatePhotoAttachmentRequest[];

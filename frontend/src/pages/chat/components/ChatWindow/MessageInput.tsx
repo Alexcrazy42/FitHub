@@ -1,6 +1,4 @@
-﻿// src/features/chat/components/ChatWindow/MessageInput.tsx
-
-import React, { useState, useRef, useEffect } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 import { Input, Button, Tooltip, Popover } from 'antd';
 import {
   SendOutlined,
@@ -19,9 +17,14 @@ import {
 import { cancelReply, cancelEdit } from '../../../../store/uiSlice';
 import { addMessage, updateMessage } from '../../../../store/messagesSlice';
 import { updateLastMessage } from '../../../../store/chatSlice';
-import { generateFakeMessage, getFirstName } from '../../mocks/fakeData';
+import { getFirstName } from '../../mocks/fakeData';
 import { debounce } from 'lodash';
 import { useSignalR } from '../../../../WebSocketProvider';
+import { TextAreaRef } from 'antd/es/input/TextArea';
+import { ICreateMessageRequest } from '../../../../types/messaging';
+import { useApiService } from '../../../../api/useApiService';
+import { useMessageService } from '../../../../api/services/messageService';
+import { toast } from 'react-toastify';
 
 const { TextArea } = Input;
 
@@ -30,13 +33,19 @@ interface MessageInputProps {
 }
 
 const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
+  const apiService = useApiService();
+  const messageService = useMessageService(apiService);
+
   const dispatch = useAppDispatch();
   const [messageText, setMessageText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const textAreaRef = useRef<any>(null);
+  const textAreaRef = useRef<TextAreaRef | null>(null);
   const signalR = useSignalR();
   const currentChat = useAppSelector(selectCurrentChat);
+
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const TYPING_TIMEOUT = 1500;
 
   const replyingToMessageId = useAppSelector(selectReplyingToMessage(chatId));
   const editingMessageId = useAppSelector(selectEditingMessage(chatId));
@@ -45,7 +54,6 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
   const replyingToMessage = messages.find((m) => m.id === replyingToMessageId);
   const editingMessage = messages.find((m) => m.id === editingMessageId);
 
-  // Set editing message text
   useEffect(() => {
     if (editingMessage) {
       setMessageText(editingMessage.messageText);
@@ -53,24 +61,57 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
     }
   }, [editingMessage]);
 
-  // Typing indicator (debounced)
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const notifyTyping = debounce((typing: boolean) => {
-    console.log('Typing:', typing);
     if(currentChat?.chat.id) {
-      signalR.notifyTyping(currentChat?.chat.id);
+      if(typing) {
+        signalR.notifyTyping(currentChat?.chat.id);
+      } else {
+        signalR.notifyStopTyping(currentChat?.chat.id);
+      }
     }
   }, 300);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMessageText(e.target.value);
+    const value = e.target.value;
+    setMessageText(value);
 
-    if (!isTyping && e.target.value.length > 0) {
+    // Если начал печатать
+    if (!isTyping && value.length > 0) {
       setIsTyping(true);
       notifyTyping(true);
-    } else if (isTyping && e.target.value.length === 0) {
+    }
+
+    // Если полностью очистил поле
+    if (value.length === 0) {
       setIsTyping(false);
       notifyTyping(false);
+      
+      // Очищаем таймер
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+      return;
     }
+
+    // Сбрасываем предыдущий таймер
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Ставим новый таймер
+    typingTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false);
+      notifyTyping(false);
+    }, TYPING_TIMEOUT);
   };
 
   // Handle emoji click
@@ -102,10 +143,11 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
     // setShowEmojiPicker(false);
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!messageText.trim()) return;
 
     if (editingMessage) {
+      // TODO: извенить сообщение
       // Edit message
       dispatch(
         updateMessage({
@@ -119,27 +161,39 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
       );
       dispatch(cancelEdit(chatId));
     } else {
-      // Send new message
-      const newMessage = generateFakeMessage(chatId, messageText.trim(), true);
+      // TODO: отправить сообщение
 
-      // Add reply if exists
-      if (replyingToMessage) {
-        newMessage.replyMessage = replyingToMessage;
+      const createMessageRequest : ICreateMessageRequest = {
+        chatId: chatId,
+        messageText: messageText.trim(),
+        replyMessageId: replyingToMessage?.id ?? null,
+        links: [],
+        tags: [],
+        photos: []
+        // TODO: links, tags, photos
       }
 
-      dispatch(addMessage({ chatId, message: newMessage }));
+      const response = await messageService.createMessage(createMessageRequest);
 
-      // Update chat list
-      dispatch(
-        updateLastMessage({
-          chatId,
-          lastMessage: newMessage,
-          lastMessageTime: newMessage.createdAt,
-        })
-      );
+      if(response.success && response.data) {
+        const newMessage = response.data;
 
-      if (replyingToMessage) {
-        dispatch(cancelReply(chatId));
+        dispatch(addMessage({ chatId, message: newMessage }));
+
+        // Update chat list
+        dispatch(
+          updateLastMessage({
+            chatId,
+            lastMessage: newMessage,
+            lastMessageTime: newMessage.createdAt,
+          })
+        );
+
+        if (replyingToMessage) {
+          dispatch(cancelReply(chatId));
+        }
+      } else {
+        toast.error(response.error?.detail ?? "Ошибка при отправке сообщения!")
       }
     }
 

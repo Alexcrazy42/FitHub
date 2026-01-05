@@ -65,6 +65,8 @@ public class MessageController : ControllerBase
         {
             var groupName = message.ChatId.ToString().GetChatGroupName();
 
+            await chatHubContext.Clients.All
+                .CreateMessage(response);
             await chatHubContext.Clients.Group(groupName)
                 .CreateMessage(response);
         }, ct);

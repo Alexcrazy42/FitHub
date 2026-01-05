@@ -1,7 +1,7 @@
 ﻿// components/ChatList.tsx
 import React, { useEffect, useState } from 'react';
-import { Input, Spin, Empty, Button, Modal, Select, Form, message as antMessage } from 'antd';
-import { SearchOutlined, PlusOutlined, UserAddOutlined } from '@ant-design/icons';
+import { Input, Spin, Empty, Button, message as antMessage } from 'antd';
+import { SearchOutlined, PlusOutlined } from '@ant-design/icons';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import ChatListItem from './ChatListItem';
 import ChatListSkeleton from './ChatListSkeleton';
@@ -12,7 +12,7 @@ import { addChats, setLoading } from '../../../../store/chatSlice';
 import { useApiService } from "../../../../api/useApiService";
 import { useMessageService } from "../../../../api/services/messageService";
 import { useChatService } from "../../../../api/services/chatService";
-import { ICreateChatRequest, IChatMessageResponse } from "../../../../types/messaging";
+import { ICreateChatRequest } from "../../../../types/messaging";
 import { useAuth } from '../../../../context/useAuth';
 import { toast } from 'react-toastify';
 
@@ -35,34 +35,42 @@ const ChatList: React.FC = () => {
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
-    loadChats();
+    fetchChats();
+
+    const interval = setInterval(() => {
+      fetchChats();
+    }, 15000); // 15 секунд
+
+    return () => clearInterval(interval);
   }, []);
 
-  // TODO: раз в какое то время fallback на получение read-models на отображение чатов
-
-  const loadChats = async () => {
+  const fetchChats = async (requestPage = null) => {
     dispatch(setLoading(true));
 
-    try {
-      const response = await messageService.getChatMessagesList(page, 20);
+    const currentPage = requestPage ?? page;
 
-      if(response.success && response.data) {
-        dispatch(addChats({
-          chats: response.data.items,
-          hasMore: page < (response.data?.totalPages ?? 0)
-        }));
-      } else {
-        setError(response.error?.title || 'Failed to load chats');
+    const response = await messageService.getChatMessagesList(currentPage, 20);
+
+    if (response.success && response.data) {
+      const action = {
+        chats: response.data.items,
+        hasMore: currentPage < (response.data?.totalPages ?? 0)
+      };
+      dispatch(addChats(action));
+      
+      if (action.hasMore) {
+        setPage((page) => page + 1);
       }
-    } catch {
-      setError('Network error');
-    } finally {
-      dispatch(setLoading(false));
+    } else {
+      setError(response.error?.title || 'Failed to load chats');
     }
-  };
+    dispatch(setLoading(false));
+  }
 
   const loadMoreChats = async () => {
-    console.log('Load more chats');
+    if(hasMore) {
+      await fetchChats();
+    }
   };
 
   const handleCreateChat = async (values: ICreateChatRequest) => {
@@ -74,7 +82,7 @@ const ChatList: React.FC = () => {
       if (response.success && response.data) {
         toast.success('Чат успешно создан!');
         
-        await loadChats();
+        await fetchChats();
         setIsCreateModalOpen(false);
       } else {
         toast.error(response.error?.title || 'Не удалось создать чат');

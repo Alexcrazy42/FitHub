@@ -8,7 +8,7 @@ import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
 import { setCurrentChatId } from '../../../../store/uiSlice';
 import { resetUnreadCount } from '../../../../store/chatSlice';
 import { selectCurrentChatId } from '../../../../store/selectors';
-import { getChatName, getChatAvatar, currentUser, getFirstName } from '../../mocks/fakeData';
+import { getChatAvatar, currentUser, getFirstName } from '../../mocks/fakeData';
 import { roleMapping } from '../../../../types/auth';
 import { useAuth } from '../../../../context/useAuth';
 
@@ -40,7 +40,7 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat }) => {
   };
 
   const handleClick = () => {
-    dispatch(setCurrentChatId(chat.id));
+    dispatch(setCurrentChatId(chat.chat.id));
     
     if (chat.unreadCount > 0) {
       // TODO: надо это вызывать когда дошел до конца в чате или батчами (потихоньку когда скроллишь вниз)

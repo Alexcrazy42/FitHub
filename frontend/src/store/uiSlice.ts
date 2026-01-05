@@ -68,7 +68,6 @@ const uiSlice = createSlice({
       }
     },
 
-    // Clear typing for chat
     clearTyping: (state, action: PayloadAction<string>) => {
       const chatId = action.payload;
       delete state.typingUsers[chatId];
