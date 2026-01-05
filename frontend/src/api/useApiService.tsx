@@ -21,6 +21,7 @@ export const useApiService = () => {
     return apiService;
 };
 
+// нужно для кусков кода, которые не находятся в компонентах
 export const useApiServiceWithoutNavigate = () => {
     const apiService = new ApiService(
       API_URL,
