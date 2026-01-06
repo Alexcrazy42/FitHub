@@ -1,4 +1,5 @@
-﻿using FitHub.Application.Messaging;
+﻿using FitHub.Application.Common;
+using FitHub.Application.Messaging;
 using FitHub.Authentication;
 using FitHub.Common.Entities;
 using FitHub.Common.EntityFramework;
@@ -34,5 +35,12 @@ internal sealed class ChatRepository : DefaultPendingRepository<Chat, ChatId, Da
         return ReadRaw()
             .Where(x => x.Participants.All(part => participantUserIds.Contains(part.UserId)))
             .FirstOrDefaultAsync(ct);
+    }
+
+    public Task<IReadOnlyList<Chat>> GetUserChatsAsync(IdentityUserId userId, CancellationToken ct = default)
+    {
+        return ReadRaw()
+            .Where(x => x.Participants.Any(participant => participant.UserId == userId))
+            .ToReadOnlyListAsync(ct);
     }
 }

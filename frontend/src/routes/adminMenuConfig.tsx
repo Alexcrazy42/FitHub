@@ -47,11 +47,7 @@ export const adminMenuConfig: MenuItem[] = [
   {
     key: 'chat',
     label: 'Чат',
-    icon: (
-      <Badge count={5} offset={[10, 0]}>
-        <WechatOutlined />
-      </Badge>
-    ),
+    icon: <WechatOutlined />,
     path: '/admin/chat',
     element: <ChatLayout />
   },

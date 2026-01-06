@@ -13,6 +13,7 @@ import {
   selectEditingMessage,
   selectAllChatMessages,
   selectCurrentChat,
+  selectAllMessages,
 } from '../../../../store/selectors';
 import { cancelReply, cancelEdit } from '../../../../store/uiSlice';
 import { addMessage, updateMessage } from '../../../../store/messagesSlice';
@@ -21,7 +22,7 @@ import { getFirstName } from '../../mocks/fakeData';
 import { debounce } from 'lodash';
 import { useSignalR } from '../../../../WebSocketProvider';
 import { TextAreaRef } from 'antd/es/input/TextArea';
-import { ICreateMessageRequest } from '../../../../types/messaging';
+import { ICreateMessageRequest, IUpdateMessageRequest } from '../../../../types/messaging';
 import { useApiService } from '../../../../api/useApiService';
 import { useMessageService } from '../../../../api/services/messageService';
 import { toast } from 'react-toastify';
@@ -144,24 +145,43 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
   };
 
   const handleSend = async () => {
+
+
     if (!messageText.trim()) return;
 
     if (editingMessage) {
       // TODO: извенить сообщение
-      // Edit message
-      dispatch(
-        updateMessage({
-          chatId,
-          messageId: editingMessage.id,
-          updates: {
-            messageText: messageText.trim(),
-            updatedAt: new Date().toISOString(),
-          },
-        })
-      );
-      dispatch(cancelEdit(chatId));
+
+      const updateMessageRequest : IUpdateMessageRequest = {
+        messageText: messageText.trim(),
+        replyMessageId: replyingToMessage?.id ?? null,
+        links: [],
+        tags: [],
+        photos: []
+        // TODO: links, tags, photos
+      }
+
+      const response = await messageService.updateMessage(editingMessage.id, updateMessageRequest);
+
+      if (response.success && response.data) {
+        // dispatch(
+        //   updateMessage({
+        //     chatId,
+        //     messageId: editingMessage.id,
+        //     updates: {
+        //       messageText: messageText.trim(),
+        //       updatedAt: new Date().toISOString(),
+        //     },
+        //   })
+        // );
+        dispatch(cancelEdit(chatId));
+      } else {
+        toast.error(response.error?.detail ?? "Ошибка при редактировании сообщения!")
+      }
+
+
+      
     } else {
-      // TODO: отправить сообщение
 
       const createMessageRequest : ICreateMessageRequest = {
         chatId: chatId,
@@ -180,7 +200,6 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
 
         dispatch(addMessage({ chatId, message: newMessage }));
 
-        // Update chat list
         dispatch(
           updateLastMessage({
             chatId,

@@ -13,7 +13,7 @@ public class ChatReadingModel : IEntity<ChatReadingModelId>, IAuditableEntity
     private User? user;
     private Message? lastMessage;
 
-    private ChatReadingModel(ChatReadingModelId id, ChatId chatId, IdentityUserId userId, MessageId lastMessageId, string lastMessageText, DateTimeOffset lastMessageTime, int unreadCount)
+    private ChatReadingModel(ChatReadingModelId id, ChatId chatId, IdentityUserId userId, MessageId lastMessageId, string lastMessageText, DateTimeOffset lastMessageTime, DateTimeOffset firstMessageTime, int unreadCount)
     {
         Id = id;
         ChatId = chatId;
@@ -22,6 +22,7 @@ public class ChatReadingModel : IEntity<ChatReadingModelId>, IAuditableEntity
         LastMessageTime = lastMessageTime;
         LastMessageId = lastMessageId;
         LastMessageText = lastMessageText;
+        FirstMessageTime = firstMessageTime;
     }
 
     public ChatReadingModelId Id { get; }
@@ -54,6 +55,8 @@ public class ChatReadingModel : IEntity<ChatReadingModelId>, IAuditableEntity
 
     public DateTimeOffset LastMessageTime { get; private set; }
 
+    public DateTimeOffset FirstMessageTime { get; private set; }
+
     public int UnreadCount { get; private set; }
 
     public void UpdateLastMessageAndIncrement(Message message)
@@ -65,18 +68,24 @@ public class ChatReadingModel : IEntity<ChatReadingModelId>, IAuditableEntity
         LastMessageTime = DateTimeOffset.UtcNow;
     }
 
-    public void UpdateLastMessageAndUnreadCount(Message message, int unreadCount)
+    public void UpdateLastMessageAndUnreadCount(Message lastMsg, Message firstMsg, int unreadCount)
     {
-        UnreadCount = unreadCount;
-        LastMessageId = message.Id;
-        LastMessage = message;
-        LastMessageText = message.MessageText;
-        LastMessageTime = DateTimeOffset.UtcNow;
+        UnreadCount = unreadCount <= 0 ? 0 : unreadCount;
+        LastMessageId = lastMsg.Id;
+        LastMessage = lastMsg;
+        LastMessageText = lastMsg.MessageText;
+        LastMessageTime = lastMsg.CreatedAt;
+        FirstMessageTime = firstMsg.CreatedAt;
     }
 
-    public static ChatReadingModel Create(Chat chat, User user, Message lastMessage, int unreadCount)
+    public void UpdateUnreadCount(int unreadCount)
     {
-        return new ChatReadingModel(ChatReadingModelId.New(), chat.Id, user.Id, lastMessage.Id, lastMessage.MessageText, lastMessage.CreatedAt, unreadCount);
+        UnreadCount = unreadCount <= 0 ? 0 : unreadCount;
+    }
+
+    public static ChatReadingModel Create(Chat chat, User user, Message lastMessage, Message firstMessage, int unreadCount)
+    {
+        return new ChatReadingModel(ChatReadingModelId.New(), chat.Id, user.Id, lastMessage.Id, lastMessage.MessageText, lastMessage.CreatedAt, firstMessage.CreatedAt, unreadCount);
     }
 
     #region CommonFields

@@ -31,6 +31,7 @@ internal sealed class ChatReadingModelRepository : DefaultPendingRepository<Chat
                     .ThenInclude(x => x.User)
             .Skip((paged.PageNumber - 1) * paged.PageSize)
             .Take(paged.PageSize)
+            .OrderByDescending(x => x.LastMessageTime)
             .AsQueryable();
 
 

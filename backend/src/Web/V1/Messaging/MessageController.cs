@@ -23,14 +23,14 @@ public class MessageController : ControllerBase
     }
 
     [HttpGet(ApiRoutesV1.Messages)]
-    public async Task<ListResponse<MessageResponse>> GetMessagesAsync([FromQuery] string? chatId,
+    public async Task<ListResponse<MessageResponse>> GetMessagesAsync([FromQuery] GetMessagesRequest? request,
         [FromQuery] PagedRequest? paged,
         CancellationToken ct)
     {
-        var parsedChatId = ChatId.Parse(ValidationException.ThrowIfNull(chatId));
+        var messageQuery = request.ToQuery();
         var pagedQuery = paged.ToQuery();
 
-        var messages = await messageService.GetMessagesAsync(parsedChatId, pagedQuery, ct);
+        var messages = await messageService.GetMessagesAsync(messageQuery, pagedQuery, ct);
         return messages.ToListResponse(MessagesExtensions.ToResponse);
     }
 
@@ -65,8 +65,6 @@ public class MessageController : ControllerBase
         {
             var groupName = message.ChatId.ToString().GetChatGroupName();
 
-            await chatHubContext.Clients.All
-                .CreateMessage(response);
             await chatHubContext.Clients.Group(groupName)
                 .CreateMessage(response);
         }, ct);

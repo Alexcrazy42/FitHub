@@ -76,12 +76,18 @@ internal sealed class ChatService : IChatService
         if (chat.Type == ChatType.Group)
         {
             chat.SetGroupName(currentUserId);
-
-            var chatReadModel = ChatReadingModel.Create(chat, creator, message, 1);
-
             var createGroupAttachment = MessageAttachment.CreateGroupCreatedAttachment(message);
             await messageAttachmentRepository.PendingAddAsync(createGroupAttachment, ct);
-            await chatReadingModelRepository.PendingAddAsync(chatReadModel, ct);
+
+
+            foreach (var user in chat.Participants.Select(x => x.User).Where(x => x.Id != currentUserId).ToList())
+            {
+                var chatReadModel = ChatReadingModel.Create(chat, user, message, message, 1);
+                await chatReadingModelRepository.PendingAddAsync(chatReadModel, ct);
+            }
+
+            var currentUserReadModel = ChatReadingModel.Create(chat, creator, message, message, 0);
+            await chatReadingModelRepository.PendingAddAsync(currentUserReadModel, ct);
         }
 
         await messageRepository.PendingAddAsync(message, ct);
@@ -119,7 +125,7 @@ internal sealed class ChatService : IChatService
             await messageViewRepository.PendingAddAsync(newMessageView, ct);
         }
 
-        var chatReadModel = ChatReadingModel.Create(chat, invitingUser, message, 1);
+        var chatReadModel = ChatReadingModel.Create(chat, invitingUser, message, message, 1);
 
         var participantUserIds = chat.Participants.Select(x => x.UserId).ToList();
         var chatReadModels = await chatReadingModelRepository.GetAllAsync(x => x.ChatId == chat.Id && participantUserIds.Contains(x.UserId), ct);
@@ -171,5 +177,10 @@ internal sealed class ChatService : IChatService
         await messageAttachmentRepository.PendingAddAsync(inviteAttachment, ct);
         await unitOfWork.SaveChangesAsync(ct);
         return message;
+    }
+
+    public Task<IReadOnlyList<Chat>> GetUserChatsAsync(IdentityUserId userId, CancellationToken ct)
+    {
+        return chatRepository.GetUserChatsAsync(userId, ct);
     }
 }

@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FitHub.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20260101223503_Add_ChatReadModel_And_MessageView")]
+    [Migration("20260106125031_Add_ChatReadModel_And_MessageView")]
     partial class Add_ChatReadModel_And_MessageView
     {
         /// <inheritdoc />
@@ -518,6 +518,10 @@ namespace FitHub.Data.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset>("FirstMessageTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("first_message_time");
 
                     b.Property<Guid>("LastMessageId")
                         .HasMaxLength(255)

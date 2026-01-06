@@ -385,6 +385,26 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
         return userRepository.GetPagedUsersAsync(query, pagedQuery, ct);
     }
 
+    public async Task StartOnlineAt(IdentityUserId userId, CancellationToken ct)
+    {
+        var user = await GetUserAsync(userId, ct);
+
+        user.SetOnline();
+
+        await unitOfWork.SaveChangesAsync(ct);
+    }
+
+    public async Task<DateTimeOffset> EndOnlineAt(IdentityUserId userId, CancellationToken ct)
+    {
+        var user = await GetUserAsync(userId, ct);
+
+        var lastSeen = user.SetOffline();
+
+        await unitOfWork.SaveChangesAsync(ct);
+
+        return lastSeen;
+    }
+
     public async Task<LoginResponse> LoginAsync(string login, string password, CancellationToken cancellationToken)
     {
         var user = await GetByEmailAsync(login, cancellationToken);

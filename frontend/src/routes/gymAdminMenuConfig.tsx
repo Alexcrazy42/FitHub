@@ -1,10 +1,11 @@
-﻿import { CalendarOutlined, HomeOutlined, ToolOutlined, UserOutlined } from "@ant-design/icons";
+﻿import { CalendarOutlined, HomeOutlined, ToolOutlined, UserOutlined, WechatOutlined } from "@ant-design/icons";
 import { MenuItem } from "./MenuItem";
 import GymAdminDashboard from "../pages/gym-admin/GymAdminDashboard";
 import { Users } from "../pages/gym-admin/users/Users";
 import { Equipments } from "../pages/gym-admin/equipments/Equipments";
 import { Schedule } from "../pages/gym-admin/schedules/Schedule";
 import { ScheduleOld } from "../pages/gym-admin/schedules/ScheduleOld";
+import { ChatLayout } from "../pages/chat/components/ChatLayout";
 
 export const gymAdminMenuConfig: MenuItem[] = [
   {
@@ -35,4 +36,11 @@ export const gymAdminMenuConfig: MenuItem[] = [
     path: '/gym-admin/schedule',
     element: <Schedule />
   },
+  {
+      key: 'chat',
+      label: 'Чат',
+      icon: <WechatOutlined />,
+      path: '/gym-admin/chat',
+      element: <ChatLayout />
+    },
 ];

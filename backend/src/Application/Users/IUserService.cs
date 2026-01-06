@@ -69,4 +69,8 @@ public interface IUserService
     Task Logout(IdentityUserId userId, SessionId sessionId, CancellationToken ct = default);
 
     Task<PagedResult<User>> GetUsersAsync(GetUserQuery query, PagedQuery pagedQuery, CancellationToken ct = default);
+
+    Task StartOnlineAt(IdentityUserId userId, CancellationToken ct);
+
+    Task<DateTimeOffset> EndOnlineAt(IdentityUserId userId, CancellationToken ct);
 }

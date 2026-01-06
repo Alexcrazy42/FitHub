@@ -101,7 +101,7 @@ export interface IMessageReadRequest {
 
 export interface IUpdateMessageRequest {
     messageText: string;
-    replyMessageId: string;
+    replyMessageId: string | null;
     links: ICreateLinkAttachmentRequest[];
     tags: ICreateTagUserAttachmentRequest[];
     photos: ICreatePhotoAttachmentRequest[];

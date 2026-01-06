@@ -25,6 +25,8 @@ public class User : IdentityUser, IAuditableEntity
 
     public bool IsOnline { get; private set; }
 
+    public DateTimeOffset? LastHeartbeat { get; private set; }
+
     public DateTimeOffset CreatedAt { get; private set; }
 
     public DateTimeOffset UpdatedAt { get; private set; }
@@ -32,6 +34,19 @@ public class User : IdentityUser, IAuditableEntity
     public string GetFullName()
     {
         return $"{Name} {Surname}";
+    }
+
+    public void SetOnline()
+    {
+        IsOnline = true;
+        LastHeartbeat = DateTimeOffset.UtcNow;
+    }
+
+    public DateTimeOffset SetOffline()
+    {
+        IsOnline = false;
+        LastSeenAt = DateTimeOffset.UtcNow;
+        return LastSeenAt;
     }
 
     public static User Create(IdentityUserId id,

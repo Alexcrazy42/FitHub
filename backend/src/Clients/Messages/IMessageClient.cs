@@ -11,7 +11,7 @@ public interface IMessageClient
     /// <summary>
     /// Получить сообщения
     /// </summary>
-    Task<ListResponse<MessageResponse>> GetMessagesAsync(string chatId, PagedRequest paged, CancellationToken ct);
+    Task<ListResponse<MessageResponse>> GetMessagesAsync(GetMessagesRequest request, PagedRequest paged, CancellationToken ct);
 
     /// <summary>
     /// Создать сообщение

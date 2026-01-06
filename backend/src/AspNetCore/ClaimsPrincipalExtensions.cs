@@ -1,12 +1,12 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using FitHub.Authentication;
+using FitHub.Common.Entities;
 
 namespace FitHub.Common.AspNetCore;
 
 public static class ClaimsPrincipalExtensions
 {
-    //private static readonly string[] UserIdClaimNames = { ClaimTypes.NameIdentifier, JwtRegisteredClaimNames.Sub };
-
     public static string? GetUserId(this ClaimsPrincipal principal)
     {
         var userIdClaim = principal
@@ -35,5 +35,16 @@ public static class ClaimsPrincipalExtensions
             .FirstOrDefault(claim => claim.Type == JwtRegisteredClaimNames.Sid);
 
         return sessionIdClaim?.Value;
+    }
+
+    public static IdentityUserId GetParsedUserId(this ClaimsPrincipal principal)
+    {
+        var userId = principal.GetUserId();
+        if (userId == null)
+        {
+            throw new UnexpectedException("UserId is null");
+        }
+
+        return IdentityUserId.Parse(userId);
     }
 }

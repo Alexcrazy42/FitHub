@@ -1,5 +1,6 @@
 ﻿using FitHub.Application.Common;
 using FitHub.Application.Messaging;
+using FitHub.Application.Messaging.Queries;
 using FitHub.Authentication;
 using FitHub.Common.Entities;
 using FitHub.Common.EntityFramework;
@@ -34,15 +35,23 @@ internal sealed class MessageRepository : DefaultPendingRepository<Message, Mess
         return message;
     }
 
-    public Task<IReadOnlyList<Message>> GetMessagesAsync(ChatId chatId, PagedQuery paged, CancellationToken ct = default)
+    public Task<IReadOnlyList<Message>> GetMessagesAsync(GetMessagesQuery messagesQuery, PagedQuery paged, CancellationToken ct = default)
     {
-        return ReadRaw()
+        var dbQuery = ReadRaw()
             .Include(x => x.Attachments)
-            .Where(x => x.ChatId == chatId)
-            .OrderByDescending(x => x.CreatedAt)
-            .Skip((paged.PageNumber - 1) * paged.PageSize)
-            .Take(paged.PageSize)
-            .ToReadOnlyListAsync(ct);
+            .Include(x => x.Views)
+                .ThenInclude(view => view.User)
+            .Where(x => x.ChatId == messagesQuery.ChatId)
+            .Take(paged.PageSize);
+
+        dbQuery = messagesQuery.IsDescending ?
+            dbQuery.OrderByDescending(x => x.CreatedAt)
+                .Where(x => x.CreatedAt <= messagesQuery.From)
+            :
+            dbQuery.OrderBy(x => x.CreatedAt)
+                .Where(x => x.CreatedAt >= messagesQuery.From);
+
+        return dbQuery.ToReadOnlyListAsync(ct);
     }
 
     public Task<IReadOnlyList<Message>> GetUnreadMessagesOlderThan(
@@ -50,7 +59,9 @@ internal sealed class MessageRepository : DefaultPendingRepository<Message, Mess
         IdentityUserId userId,
         CancellationToken ct = default)
     {
-        return ReadRaw()
+        // специально берем все сообщения (даже те, что удалили), чтобы их тоже можно было прочитать
+        return DbSet
+            .Include(x => x.Chat)
             .Where(m => m.ChatId == message.ChatId)
             .Where(m => m.CreatedAt <= message.CreatedAt)
             .Where(m => m.CreatedById != userId)

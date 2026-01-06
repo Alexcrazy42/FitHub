@@ -77,25 +77,27 @@ const chatSlice = createSlice({
     },
 
     // Update last message (from SignalR)
-    updateLastMessage: (
-      state,
-      action: PayloadAction<{
-        chatId: string;
-        lastMessage: IChatMessageResponse['lastMessage'];
-        lastMessageTime: string;
-      }>
-    ) => {
+    updateLastMessage: (state, action) => {
       const { chatId, lastMessage, lastMessageTime } = action.payload;
-      const chat = state.chats.find((c) => c.id === chatId);
+      const index = state.chats.findIndex((c) => c.chat.id === chatId);
 
-      if (chat) {
-        chat.lastMessage = lastMessage;
-        chat.lastMessageTime = lastMessageTime;
+      if (index !== -1) {
+        const chat = state.chats[index];
 
-        // Переместить в начало
-        const index = state.chats.indexOf(chat);
-        state.chats.splice(index, 1);
-        state.chats.unshift(chat);
+        // ✅ Создаём обновлённый чат
+        const updatedChat = {
+          ...chat,
+          lastMessage,
+          lastMessageTime,
+          unreadCount: chat.unreadCount + 1,
+        };
+
+        // ✅ Создаём новый массив
+        state.chats = [
+          updatedChat,
+          ...state.chats.slice(0, index),
+          ...state.chats.slice(index + 1),
+        ];
       }
     },
 

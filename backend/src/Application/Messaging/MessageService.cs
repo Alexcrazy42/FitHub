@@ -2,6 +2,7 @@
 using FitHub.Application.Files;
 using FitHub.Application.Messaging.Commands;
 using FitHub.Application.Messaging.Commands.Attachments;
+using FitHub.Application.Messaging.Queries;
 using FitHub.Application.Users;
 using FitHub.Authentication;
 using FitHub.Common.Entities;
@@ -54,12 +55,26 @@ internal sealed class MessageService : IMessageService
         return message;
     }
 
-    public async Task<IReadOnlyList<Message>> GetMessagesAsync(ChatId chatId, PagedQuery paged, CancellationToken ct)
+    public async Task<IReadOnlyList<Message>> GetMessagesAsync(GetMessagesQuery messageQuery, PagedQuery paged, CancellationToken ct)
     {
-        var chat = await chatService.GetChatAsync(chatId, ct);
+        var chat = await chatService.GetChatAsync(messageQuery.ChatId, ct);
         chat.CheckAccess(userIdAccessor.GetCurrentUserId());
 
-        return await messageRepository.GetMessagesAsync(chat.Id, paged, ct);
+        if (!messageQuery.FromUnread)
+        {
+            return await messageRepository.GetMessagesAsync(messageQuery, paged, ct);
+        }
+
+        var firstUnreadMessage = await messageViewRepository.GetFirstUnreadMessageAsync(messageQuery.ChatId, userIdAccessor.GetCurrentUserId(), ct);
+
+        if (firstUnreadMessage == null)
+        {
+            return await messageRepository.GetMessagesAsync(messageQuery, paged, ct);
+        }
+
+        var newGetMessageQuery = new GetMessagesQuery(messageQuery.ChatId, false, false, firstUnreadMessage.CreatedAt);
+        return await messageRepository.GetMessagesAsync(newGetMessageQuery, paged, ct);
+
     }
 
     public async Task<Message> CreateMessageAsync(CreateMessageCommand command, CancellationToken ct)
@@ -76,7 +91,7 @@ internal sealed class MessageService : IMessageService
 
 
         await CreateMessageViews(chat, message, ct);
-        await UpdateReadModelsAsync(chat, message, ct);
+        await UpdateReadModelsAfterCreationMessageAsync(chat, message, ct);
 
         await messageRepository.PendingAddAsync(message, ct);
         await unitOfWork.SaveChangesAsync(ct);
@@ -106,6 +121,8 @@ internal sealed class MessageService : IMessageService
         var message = await GetMessageAsync(messageId, ct);
         message.CheckAccess(userIdAccessor.GetCurrentUserId());
         messageRepository.PendingRemove(message);
+
+        await UpdateReadModelsAfterDeletingMessageAsync(message.Chat, message, ct);
         await unitOfWork.SaveChangesAsync(ct);
         return message;
     }
@@ -126,7 +143,9 @@ internal sealed class MessageService : IMessageService
         var readModel = await chatReadingModelRepository.GetFirstOrDefaultAsync(x => x.ChatId == message.ChatId && x.UserId == currentUserId, ct);
         UnexpectedException.ThrowIfNull(readModel, "Не смогли найти readModel");
 
-        readModel.UpdateLastMessageAndUnreadCount(message, readModel.UnreadCount - unreadMessagesOlder.Count);
+        var firstUnreadMessage = unreadMessagesOlder.OrderBy(x => x.CreatedAt).First();
+
+        readModel.UpdateLastMessageAndUnreadCount(message, firstUnreadMessage, readModel.UnreadCount - unreadMessagesOlder.Count);
 
         var messageIds = unreadMessagesOlder.Select(x => x.Id).ToList();
         var messageViews = await messageViewRepository.GetAllAsync(x => messageIds.Contains(x.MessageId) && x.UserId == currentUserId, ct);
@@ -200,9 +219,14 @@ internal sealed class MessageService : IMessageService
         }
     }
 
-    private async Task UpdateReadModelsAsync(Chat chat, Message message, CancellationToken ct)
+    private async Task UpdateReadModelsAfterCreationMessageAsync(Chat chat, Message message, CancellationToken ct)
     {
-        var userIds = chat.Participants.Select(p => p.UserId).ToList();
+        var currentUserId = userIdAccessor.GetCurrentUserId();
+
+        var userIds = chat.Participants
+            .Select(p => p.UserId)
+            .Where(x => x != currentUserId)
+            .ToList();
         var chatReadModels = await chatReadingModelRepository.GetAllAsync(x => x.ChatId == chat.Id && userIds.Contains(x.UserId), ct);
 
         foreach (var model in chatReadModels)
@@ -215,10 +239,37 @@ internal sealed class MessageService : IMessageService
             return;
         }
 
-        foreach (var user in chat.Participants.Select(x => x.User).ToList())
+        foreach (var user in chat.Participants.Select(x => x.User).Where(x => x.Id != currentUserId).ToList())
         {
-            var chatReadModel = ChatReadingModel.Create(chat, user, message, 1);
+            var chatReadModel = ChatReadingModel.Create(chat, user, message, message, 1);
             await chatReadingModelRepository.PendingAddAsync(chatReadModel, ct);
+        }
+
+        var currentUserChatReadModel = await chatReadingModelRepository.GetFirstOrDefaultAsync(x => x.ChatId == chat.Id && x.UserId == currentUserId, ct);
+        if (currentUserChatReadModel == null)
+        {
+            var creator = chat.Participants.Select(x => x.User).Single(x => x.Id == currentUserId);
+            var chatReadModel = ChatReadingModel.Create(chat, creator, message, message, 0);
+            await chatReadingModelRepository.PendingAddAsync(chatReadModel, ct);
+        }
+        else
+        {
+            currentUserChatReadModel.UpdateLastMessageAndUnreadCount(message, message, 0);
+        }
+    }
+
+    private async Task UpdateReadModelsAfterDeletingMessageAsync(Chat chat, Message message, CancellationToken ct)
+    {
+        var userIds = chat.Participants.Select(p => p.UserId).ToList();
+        var readModels = await chatReadingModelRepository.GetAllAsync(x => x.ChatId == chat.Id && userIds.Contains(x.UserId), ct);
+
+        foreach (var readModel in readModels)
+        {
+            if (readModel.FirstMessageTime >= message.CreatedAt
+                && readModel.LastMessageTime <= message.CreatedAt)
+            {
+                readModel.UpdateUnreadCount(readModel.UnreadCount - 1);
+            }
         }
     }
 }

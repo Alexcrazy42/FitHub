@@ -10,6 +10,7 @@ import { useAppDispatch } from '../../../../store/hooks';
 import { setReplyingToMessage, setEditingMessage } from '../../../../store/uiSlice';
 import { roleMapping } from '../../../../types/auth';
 import { useAuth } from '../../../../context/useAuth';
+import { getFullName } from '../../mocks/fakeData';
 
 interface MessageItemProps {
   message: IMessageResponse;

@@ -9,6 +9,7 @@ import { API_URL_CLEAN } from "./api/useApiService";
 import { setConnectionState, setUserTyping } from "./store/uiSlice";
 import { ConnectionState, IMessageResponse } from "./types/messaging";
 import { addMessage, deleteMessage, updateMessage } from "./store/messagesSlice";
+import { updateLastMessage } from "./store/chatSlice";
 
 
 interface SignalRContextType {
@@ -66,6 +67,13 @@ export const WebSocketProvider : FC<{ children: ReactNode }> = ({ children }) =>
             chatId: message.chatId,
             message: message
           }));
+          dispatch(
+          updateLastMessage({
+            chatId: message.chatId,
+            lastMessage: message,
+            lastMessageTime: message.createdAt,
+          })
+        );
         })
 
         conn.on('UpdateMessage', (message: IMessageResponse) => {

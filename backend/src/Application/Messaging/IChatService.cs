@@ -1,4 +1,5 @@
 ﻿using FitHub.Application.Messaging.Commands;
+using FitHub.Authentication;
 using FitHub.Domain.Messaging;
 
 namespace FitHub.Application.Messaging;
@@ -12,4 +13,6 @@ public interface IChatService
     Task<Message> InviteUserAsync(InitiatorAndTargetUserCommand command, CancellationToken ct);
 
     Task<Message> ExcludeUserAsync(InitiatorAndTargetUserCommand command, CancellationToken ct);
+
+    Task<IReadOnlyList<Chat>> GetUserChatsAsync(IdentityUserId userId, CancellationToken ct);
 }

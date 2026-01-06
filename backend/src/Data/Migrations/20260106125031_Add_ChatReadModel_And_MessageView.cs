@@ -21,6 +21,7 @@ namespace FitHub.Data.Migrations
                     last_message_id = table.Column<Guid>(type: "uuid", maxLength: 255, nullable: false),
                     last_message_text = table.Column<string>(type: "text", nullable: false),
                     last_message_time = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    first_message_time = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     unread_count = table.Column<int>(type: "integer", nullable: false),
                     created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     updated_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)

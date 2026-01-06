@@ -1,4 +1,6 @@
-﻿using FitHub.Contracts.V1.Messaging;
+﻿using FitHub.Application.Messaging.Queries;
+using FitHub.Common.Entities;
+using FitHub.Contracts.V1.Messaging;
 using FitHub.Contracts.V1.Messaging.Chats;
 using FitHub.Contracts.V1.Messaging.Messages;
 using FitHub.Domain.Messaging;
@@ -75,5 +77,16 @@ public static class MessagesExtensions
             LastMessageTime = model.LastMessageTime,
             UnreadCount = model.UnreadCount
         };
+    }
+
+    public static GetMessagesQuery ToQuery(this GetMessagesRequest? request)
+    {
+        ValidationException.ThrowIfNull(request, "request != null");
+        return new GetMessagesQuery(
+            chatId: ChatId.Parse(ValidationException.ThrowIfNull(request.ChatId)),
+            isDescending: ValidationException.ThrowIfNull(request.IsDescending),
+            fromUnread: ValidationException.ThrowIfNull(request.FromUnread),
+            from: ValidationException.ThrowIfNull(request.From)
+        );
     }
 }
