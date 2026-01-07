@@ -18,7 +18,6 @@ internal sealed class MessageRepository : DefaultPendingRepository<Message, Mess
     protected override IQueryable<Message> ReadRaw()
     {
         return DbSet
-            .Include(x => x.Chat)
             .Where(x => x.DeletedAt == null)
             .Include(x => x.CreatedBy)
             .AsSplitQuery();

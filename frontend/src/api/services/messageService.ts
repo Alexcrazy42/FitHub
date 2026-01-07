@@ -15,7 +15,7 @@ export class MessageService {
         paged: IPagedRequest
     ): Promise<ApiResponse<ListResponse<IMessageResponse>>> {
         const params = {
-            chatId: query.chatId,
+            ChatId: query.chatId,
             IsDescending: query.isDescending?.toString(),
             From: query.from?.toISOString(),
             FromUnread: query.fromUnread?.toString(),

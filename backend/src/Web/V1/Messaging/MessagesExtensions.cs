@@ -87,7 +87,7 @@ public static class MessagesExtensions
             chatId: ChatId.Parse(ValidationException.ThrowIfNull(request.ChatId)),
             isDescending: ValidationException.ThrowIfNull(request.IsDescending),
             fromUnread: ValidationException.ThrowIfNull(request.FromUnread),
-            from: ValidationException.ThrowIfNull(request.From)
+            from: request.From
         );
     }
 }

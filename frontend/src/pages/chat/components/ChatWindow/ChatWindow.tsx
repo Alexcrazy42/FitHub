@@ -19,29 +19,11 @@ interface ChatWindowProps {
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({ chatId }) => {
-  const dispatch = useAppDispatch();
   const currentChat = useAppSelector(selectCurrentChat);
   const messages = useAppSelector(selectAllChatMessages(chatId));
   const loading = useAppSelector(selectMessagesLoading(chatId));
   const typingUsers = useAppSelector(selectTypingUsers(chatId));
 
-  useEffect(() => {
-    loadMessages();
-  }, [chatId]);
-
-  const loadMessages = async () => {
-    // TODO: сделать апи запрос
-
-    dispatch(setMessagesLoading({ chatId, loading: true }));
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const chatMessages = fakeMessages[chatId] || [];
-    dispatch(setMessages({
-      chatId,
-      messages: chatMessages,
-      hasMore: false,
-      nextCursor: undefined,
-    }));
-  };
 
   if (!currentChat) {
     return (
@@ -63,7 +45,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ chatId }) => {
             <Spin size="large" />
           </div>
         ) : (
-          <MessageList chatId={chatId} messages={messages} />
+          <MessageList chatId={chatId} />
         )}
       </div>
 
