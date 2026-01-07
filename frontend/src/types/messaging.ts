@@ -116,6 +116,13 @@ export interface IChatMessageResponse {
     lastMessageTime: string;
 }
 
+export interface IGetMessagesRequest {
+    chatId: string;
+    isDescending: boolean;
+    fromUnread: boolean;
+    from?: Date
+}
+
 
 export enum ConnectionState {
   DISCONNECTED = 'disconnected',

@@ -1,11 +1,11 @@
-﻿// src/features/chat/components/ChatWindow/MessageList.tsx
-
-import React, { useEffect, useRef } from 'react';
+﻿import React, { useEffect, useRef } from 'react';
 import { Spin } from 'antd';
 import MessageItem from './MessageItem';
 import { IMessageResponse } from '../../../../types/messaging';
 import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
 import { selectHasMoreMessages, selectMessagesLoading } from '../../../../store/selectors';
+import { useApiService } from '../../../../api/useApiService';
+import { useMessageService } from '../../../../api/services/messageService';
 
 interface MessageListProps {
   chatId: string;
@@ -13,6 +13,9 @@ interface MessageListProps {
 }
 
 export const MessageList: React.FC<MessageListProps> = ({ chatId, messages }) => {
+  const apiService = useApiService();
+  const messageService = useMessageService(apiService);
+
   const dispatch = useAppDispatch();
   const hasMore = useAppSelector(selectHasMoreMessages(chatId));
   const loading = useAppSelector(selectMessagesLoading(chatId));

@@ -74,7 +74,7 @@ public class ChatReadingModel : IEntity<ChatReadingModelId>, IAuditableEntity
         LastMessageId = lastMsg.Id;
         LastMessage = lastMsg;
         LastMessageText = lastMsg.MessageText;
-        LastMessageTime = lastMsg.CreatedAt;
+        LastMessageTime = DateTimeOffset.UtcNow;
         FirstMessageTime = firstMsg.CreatedAt;
     }
 
@@ -85,7 +85,9 @@ public class ChatReadingModel : IEntity<ChatReadingModelId>, IAuditableEntity
 
     public static ChatReadingModel Create(Chat chat, User user, Message lastMessage, Message firstMessage, int unreadCount)
     {
-        return new ChatReadingModel(ChatReadingModelId.New(), chat.Id, user.Id, lastMessage.Id, lastMessage.MessageText, lastMessage.CreatedAt, firstMessage.CreatedAt, unreadCount);
+        var lastMessageCreatedAt = lastMessage.CreatedAt != default ? lastMessage.CreatedAt : DateTimeOffset.UtcNow;
+        var firstMessageCreatedAt = firstMessage.CreatedAt != default ? firstMessage.CreatedAt : DateTimeOffset.UtcNow;
+        return new ChatReadingModel(ChatReadingModelId.New(), chat.Id, user.Id, lastMessage.Id, lastMessage.MessageText, lastMessageCreatedAt, firstMessageCreatedAt, unreadCount);
     }
 
     #region CommonFields
@@ -93,3 +95,4 @@ public class ChatReadingModel : IEntity<ChatReadingModelId>, IAuditableEntity
     public DateTimeOffset UpdatedAt { get; }
     #endregion
 }
+

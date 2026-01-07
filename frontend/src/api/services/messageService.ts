@@ -1,7 +1,7 @@
 ﻿import { useMemo } from "react";
 import { ApiResponse, ApiService } from "../ApiService";
-import { IChatMessageResponse, ICreateMessageRequest, IMessageReadRequest, IMessageResponse, IUpdateMessageRequest } from "../../types/messaging";
-import { ListResponse } from "../../types/common";
+import { IChatMessageResponse, ICreateMessageRequest, IGetMessagesRequest, IMessageReadRequest, IMessageResponse, IUpdateMessageRequest } from "../../types/messaging";
+import { IPagedRequest, ListResponse } from "../../types/common";
 
 export class MessageService {
     private apiService : ApiService;
@@ -10,15 +10,29 @@ export class MessageService {
         this.apiService = apiService;
     }
 
-    public async getMessages(chatId: string, page: number, pageSize: number) : Promise<ApiResponse<ListResponse<IMessageResponse>>> {
-        const searchParams = new URLSearchParams();
+    public async getMessages(
+        query: IGetMessagesRequest, 
+        paged: IPagedRequest
+    ): Promise<ApiResponse<ListResponse<IMessageResponse>>> {
+        const params = {
+            chatId: query.chatId,
+            IsDescending: query.isDescending?.toString(),
+            From: query.from?.toISOString(),
+            FromUnread: query.fromUnread?.toString(),
+            PageNumber: paged.PageNumber.toString(),
+            PageSize: paged.PageSize.toString(),
+        };
 
-        searchParams.append('chatId', chatId);
-        searchParams.append('PageNumber', page.toString());
-        searchParams.append('PageSize', pageSize.toString());
+        const filteredParams = Object.fromEntries(
+            Object.entries(params).filter(([_, value]) => value !== undefined && value !== null)
+        );
 
-
-        const response = await this.apiService.get<ListResponse<IMessageResponse>>(`/v1/messages?${searchParams.toString()}`);
+        const searchParams = new URLSearchParams(filteredParams);
+        
+        const response = await this.apiService.get<ListResponse<IMessageResponse>>(
+            `/v1/messages?${searchParams.toString()}`
+        );
+        
         return response;
     }
 

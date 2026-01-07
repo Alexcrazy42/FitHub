@@ -67,7 +67,7 @@ internal sealed class ChatService : IChatService
         var creator = users.First(x => x.Id == currentUserId);
 
         var participants = users.Select(user => ChatParticipant.Create(user, chat)).ToList();
-        var message = Message.Create(chat, "");
+        var message = Message.Create(chat, "Чат создан!");
 
         var messageView = MessageView.Create(message, creator);
 
@@ -114,7 +114,7 @@ internal sealed class ChatService : IChatService
         chat.AddParticipant(chatParticipant);
 
 
-        var message = Message.Create(chat, "");
+        var message = Message.Create(chat, $"{initiator.GetFullName()} пригласил {invitingUser.GetFullName()}");
         var attachmentPayload =
             new InitiatorAndTargetUserActionAttachment(command.InitiatorUserId, initiator.GetFullName(), command.InitiatorUserId, invitingUser.GetFullName());
         var inviteAttachment = MessageAttachment.CreateInviteOrExcludeUserAttachment(message, MessageAttachmentType.InviteUser, attachmentPayload);
@@ -153,7 +153,7 @@ internal sealed class ChatService : IChatService
             throw new ValidationException("Этот пользователь не является участником чата!");
         }
 
-        var message = Message.Create(chat, "");
+        var message = Message.Create(chat, $"{initiator.GetFullName()} исключил {invitingUser.GetFullName()}");
         var attachmentPayload =
             new InitiatorAndTargetUserActionAttachment(command.InitiatorUserId, initiator.GetFullName(), command.InitiatorUserId, invitingUser.GetFullName());
         var inviteAttachment = MessageAttachment.CreateInviteOrExcludeUserAttachment(message, MessageAttachmentType.ExcludeUser, attachmentPayload);

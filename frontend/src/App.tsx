@@ -20,11 +20,11 @@ const ThemedApp = () => {
       }}
     >
       <Provider store={store}>
-        <WebSocketProvider>
-          <AuthProvider>
-            <RouterProvider router={router} />
-          </AuthProvider>
-        </WebSocketProvider>
+        <AuthProvider>
+          <WebSocketProvider>
+              <RouterProvider router={router} />
+          </WebSocketProvider>
+        </AuthProvider>
       </Provider>
     </ConfigProvider>
   );

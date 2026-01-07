@@ -82,6 +82,7 @@ public static class MessagesExtensions
     public static GetMessagesQuery ToQuery(this GetMessagesRequest? request)
     {
         ValidationException.ThrowIfNull(request, "request != null");
+
         return new GetMessagesQuery(
             chatId: ChatId.Parse(ValidationException.ThrowIfNull(request.ChatId)),
             isDescending: ValidationException.ThrowIfNull(request.IsDescending),

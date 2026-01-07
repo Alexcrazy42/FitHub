@@ -45,19 +45,6 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ chat }) => {
       icon: <InfoCircleOutlined />,
     },
     {
-      key: 'search',
-      label: 'Поиск сообщений',
-      icon: <SearchOutlined />,
-    },
-    {
-      type: 'divider',
-    },
-    {
-      key: 'mute',
-      label: 'Отключить уведомления',
-      icon: <BellOutlined />,
-    },
-    {
       type: 'divider',
     },
     {
@@ -73,14 +60,6 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ chat }) => {
       case 'info':
         console.log('Show chat info');
         // TODO: открыть модалку с информацией
-        break;
-      case 'search':
-        console.log('Search in chat');
-        // TODO: открыть поиск по сообщениям
-        break;
-      case 'mute':
-        console.log('Mute notifications');
-        // TODO: отключить уведомления
         break;
       case 'leave':
         console.log('Leave chat');

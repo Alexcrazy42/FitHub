@@ -205,6 +205,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
             chatId,
             lastMessage: newMessage,
             lastMessageTime: newMessage.createdAt,
+            needIncrement: false
           })
         );
 

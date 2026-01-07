@@ -1,5 +1,5 @@
 ﻿import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { IChatMessageResponse } from '../types/messaging';
+import { IChatMessageResponse, IMessageResponse } from '../types/messaging';
 
 interface ChatState {
   chats: IChatMessageResponse[];
@@ -77,8 +77,15 @@ const chatSlice = createSlice({
     },
 
     // Update last message (from SignalR)
-    updateLastMessage: (state, action) => {
-      const { chatId, lastMessage, lastMessageTime } = action.payload;
+    updateLastMessage: (state, action:
+      PayloadAction<{
+        chatId: string;
+        lastMessage: IMessageResponse;
+        lastMessageTime: string,
+        needIncrement: boolean
+      }>
+    ) => {
+      const { chatId, lastMessage, lastMessageTime, needIncrement } = action.payload;
       const index = state.chats.findIndex((c) => c.chat.id === chatId);
 
       if (index !== -1) {
@@ -89,8 +96,11 @@ const chatSlice = createSlice({
           ...chat,
           lastMessage,
           lastMessageTime,
-          unreadCount: chat.unreadCount + 1,
         };
+
+        if(needIncrement) {
+          updatedChat.unreadCount = chat.unreadCount + 1
+        }
 
         // ✅ Создаём новый массив
         state.chats = [

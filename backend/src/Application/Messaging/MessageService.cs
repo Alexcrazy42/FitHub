@@ -234,16 +234,15 @@ internal sealed class MessageService : IMessageService
             model.UpdateLastMessageAndIncrement(message);
         }
 
-        if (chatReadModels.Count == userIds.Count)
+        if (chatReadModels.Count != userIds.Count)
         {
-            return;
+            foreach (var user in chat.Participants.Select(x => x.User).Where(x => x.Id != currentUserId).ToList())
+            {
+                var chatReadModel = ChatReadingModel.Create(chat, user, message, message, 1);
+                await chatReadingModelRepository.PendingAddAsync(chatReadModel, ct);
+            }
         }
 
-        foreach (var user in chat.Participants.Select(x => x.User).Where(x => x.Id != currentUserId).ToList())
-        {
-            var chatReadModel = ChatReadingModel.Create(chat, user, message, message, 1);
-            await chatReadingModelRepository.PendingAddAsync(chatReadModel, ct);
-        }
 
         var currentUserChatReadModel = await chatReadingModelRepository.GetFirstOrDefaultAsync(x => x.ChatId == chat.Id && x.UserId == currentUserId, ct);
         if (currentUserChatReadModel == null)

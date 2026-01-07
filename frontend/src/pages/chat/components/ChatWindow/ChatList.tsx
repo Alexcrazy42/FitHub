@@ -12,7 +12,7 @@ import { addChats, setLoading } from '../../../../store/chatSlice';
 import { useApiService } from "../../../../api/useApiService";
 import { useMessageService } from "../../../../api/services/messageService";
 import { useChatService } from "../../../../api/services/chatService";
-import { ICreateChatRequest } from "../../../../types/messaging";
+import { ChatType, ICreateChatRequest } from "../../../../types/messaging";
 import { useAuth } from '../../../../context/useAuth';
 import { toast } from 'react-toastify';
 
@@ -97,20 +97,20 @@ const ChatList: React.FC = () => {
 
   // Фильтрация чатов по поиску
   const filteredChats = chats.filter((chat) => {
-    const chatName = chat.chat.type === 'Group'
+    const chatName = chat.chat.type === ChatType.Group
       ? chat.chat.name ?? ""
       : chat.chat.participants.find((p) => p.user.id !== user?.id)?.user.name || '';
     
     return chatName.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
-  if (loading && chats.length === 0) {
+  if ((loading && chats.length === 0) || error) {
     return <ChatListSkeleton />;
   }
 
-  if (error && chats.length === 0) {
-    return <div>{error}</div>;
-  }
+  // if (error && chats.length === 0) {
+  //   return <div>{error}</div>;
+  // }
 
   return (
     <div className="flex flex-col h-full bg-white">

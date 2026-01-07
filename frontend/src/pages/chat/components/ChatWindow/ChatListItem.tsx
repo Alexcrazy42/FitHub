@@ -1,13 +1,13 @@
-﻿import React from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Avatar, Badge, Tag } from 'antd';
 import { UserOutlined, TeamOutlined, CheckOutlined } from '@ant-design/icons';
 import { format, isToday, isYesterday } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { IChatMessageResponse } from '../../../../types/messaging';
+import { ChatType, IChatMessageResponse } from '../../../../types/messaging';
 import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
 import { setCurrentChatId } from '../../../../store/uiSlice';
 import { resetUnreadCount } from '../../../../store/chatSlice';
-import { selectCurrentChatId } from '../../../../store/selectors';
+import { selectCurrentChatId, selectTypingUsers } from '../../../../store/selectors';
 import { getChatAvatar, currentUser, getFirstName } from '../../mocks/fakeData';
 import { roleMapping } from '../../../../types/auth';
 import { useAuth } from '../../../../context/useAuth';
@@ -16,15 +16,29 @@ interface ChatListItemProps {
   chat: IChatMessageResponse;
 }
 
+const TypingDots: React.FC = () => {
+  const [dots, setDots] = useState(1);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDots((prev) => (prev === 3 ? 1 : prev + 1));
+    }, 300); // Меняем каждые 500ms
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return <span>{'.'.repeat(dots)}</span>;
+};
+
 const ChatListItem: React.FC<ChatListItemProps> = ({ chat }) => {
-  const {user} = useAuth();
+  const { user } = useAuth();
   
   const dispatch = useAppDispatch();
   const currentChatId = useAppSelector(selectCurrentChatId);
+  const typingUsers = useAppSelector(selectTypingUsers(chat.chat.id));
   
   const isActive = currentChatId === chat.id;
 
-  // Форматирование времени
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
     
@@ -44,8 +58,29 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat }) => {
     
     if (chat.unreadCount > 0) {
       // TODO: надо это вызывать когда дошел до конца в чате или батчами (потихоньку когда скроллишь вниз)
-      // TODO: сделать апи запрос
       dispatch(resetUnreadCount(chat.id));
+    }
+  };
+
+  const formatTypingText = () => {
+    if (!typingUsers || typingUsers.length === 0) {
+      return null;
+    }
+
+    const names = typingUsers.map(u => u.userName);
+
+    if(chat.chat.type === ChatType.OneToOne) {
+      return 'печатает';
+    }
+
+    if (names.length === 1) {
+      return `${names[0]} печатает`;
+    } else if (names.length === 2) {
+      return `${names[0]} и ${names[1]} печатают`;
+    } else if (names.length === 3) {
+      return `${names[0]}, ${names[1]} и ${names[2]} печатают`;
+    } else {
+      return `${names[0]}, ${names[1]} и ещё ${names.length - 2} печатают`;
     }
   };
 
@@ -86,6 +121,8 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat }) => {
   };
 
   const otherUserRole = getOtherUserRole();
+  const typingText = formatTypingText();
+  const isTyping = typingUsers && typingUsers.length > 0;
 
   return (
     <div
@@ -115,8 +152,10 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat }) => {
           />
         )}
         
-        {/* Online indicator (можно добавить позже) */}
-        {/* <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span> */}
+        {/* ✅ Typing indicator на аватаре */}
+        {isTyping && (
+          <span className="absolute bottom-0 right-0 w-3 h-3 bg-blue-500 border-2 border-white rounded-full animate-pulse"></span>
+        )}
       </div>
 
       {/* Chat info */}
@@ -142,27 +181,35 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat }) => {
             )}
           </div>
           {/* Time */}
-          {chat.lastMessageTime && (
+          {chat.lastMessageTime && !isTyping && (
             <span className="text-xs text-gray-500 ml-2 flex-shrink-0">
               {formatTime(chat.lastMessageTime)}
             </span>
           )}
         </div>
 
-        {/* Last message and unread badge */}
+        {/* Last message or typing indicator */}
         <div className="flex items-center justify-between gap-2">
-          <p
-            className={`text-sm truncate flex-1 ${
-              chat.unreadCount > 0 
-                ? 'font-semibold text-gray-900' 
-                : 'text-gray-600'
-            }`}
-          >
-            {formatLastMessage()}
-          </p>
+          {/* ✅ Показываем "печатает..." или последнее сообщение */}
+          {isTyping ? (
+            <p className="text-sm text-blue-500 font-medium flex items-center truncate flex-1">
+              {typingText}
+              <TypingDots />
+            </p>
+          ) : (
+            <p
+              className={`text-sm truncate flex-1 ${
+                chat.unreadCount > 0 
+                  ? 'font-semibold text-gray-900' 
+                  : 'text-gray-600'
+              }`}
+            >
+              {formatLastMessage()}
+            </p>
+          )}
 
           {/* Unread badge */}
-          {chat.unreadCount > 0 && (
+          {chat.unreadCount > 0 && !isTyping && (
             <Badge
               count={chat.unreadCount}
               className="flex-shrink-0"
@@ -172,7 +219,7 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat }) => {
           )}
           
           {/* Read indicator (двойная галочка для прочитанных) */}
-          {chat.unreadCount === 0 && chat.lastMessage?.createdBy.id === currentUser.id && (
+          {!isTyping && chat.unreadCount === 0 && chat.lastMessage?.createdBy.id === currentUser.id && (
             <CheckOutlined className="text-blue-500 text-xs flex-shrink-0" />
           )}
         </div>

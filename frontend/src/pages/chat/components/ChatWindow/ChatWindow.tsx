@@ -30,6 +30,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ chatId }) => {
   }, [chatId]);
 
   const loadMessages = async () => {
+    // TODO: сделать апи запрос
+
     dispatch(setMessagesLoading({ chatId, loading: true }));
     await new Promise(resolve => setTimeout(resolve, 500));
     const chatMessages = fakeMessages[chatId] || [];
