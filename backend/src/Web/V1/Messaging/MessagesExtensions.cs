@@ -86,6 +86,7 @@ public static class MessagesExtensions
         return new GetMessagesQuery(
             chatId: ChatId.Parse(ValidationException.ThrowIfNull(request.ChatId)),
             isDescending: ValidationException.ThrowIfNull(request.IsDescending),
+            loadLastMessages: ValidationException.ThrowIfNull(request.LoadLastMessages),
             fromUnread: ValidationException.ThrowIfNull(request.FromUnread),
             from: request.From
         );

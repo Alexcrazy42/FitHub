@@ -1,12 +1,13 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
-import { Spin } from 'antd';
+import { message, Spin } from 'antd';
 import MessageItem from './MessageItem';
 import { IMessageResponse } from '../../../../types/messaging';
 import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
 import { 
   selectMessagesLoading,
   selectCurrentChat,
-  selectAllChatMessages, // использовать вместо prop messages
+  selectAllChatMessages,
+  selectChats,
 } from '../../../../store/selectors';
 import { 
   setMessages, 
@@ -15,21 +16,22 @@ import {
 } from '../../../../store/messagesSlice';
 import { useApiService } from '../../../../api/useApiService';
 import { useMessageService } from '../../../../api/services/messageService';
+import { isSystemMessage } from '../../../../types/utilities/messageUtilities';
 
 interface MessageListProps {
   chatId: string;
 }
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 50;
 
 export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
   const apiService = useApiService();
   const messageService = useMessageService(apiService);
   
   const dispatch = useAppDispatch();
-  const currentChat = useAppSelector(selectCurrentChat);
-  const messages = useAppSelector((state) => selectAllChatMessages(chatId)(state)); // из store
-  const loading = useAppSelector(selectMessagesLoading(chatId));
+  const messages = useAppSelector((state) => selectAllChatMessages(state, chatId));
+  const loading = useAppSelector((state) => selectMessagesLoading(state, chatId));
+  const chats = useAppSelector(selectChats);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const topObserverRef = useRef<HTMLDivElement>(null);
@@ -37,68 +39,77 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const unreadMessageRef = useRef<HTMLDivElement>(null);
   
-  const [initialLoadDone, setInitialLoadDone] = useState(false);
   const [oldestMessageDate, setOldestMessageDate] = useState<Date | null>(null);
   const [newestMessageDate, setNewestMessageDate] = useState<Date | null>(null);
   const [hasMoreOlder, setHasMoreOlder] = useState(true);
   const [hasMoreNewer, setHasMoreNewer] = useState(false);
+  
+  const loadingChatIdRef = useRef<string | null>(null);
+  const renderCount = useRef(0);
+  renderCount.current++;
 
-  const isLoadingRef = useRef(false);
+  console.log(`🔄 Render #${renderCount.current}`, {
+    chatId,
+    loadingChatId: loadingChatIdRef.current,
+    messagesCount: messages.length,
+    loading
+  });
 
-  // Initial load
-  useEffect(() => {
-    if (!chatId || initialLoadDone) return;
+  const loadInitMessages = async () => {
+    console.log('📥 Loading messages for:', chatId);
+    dispatch(setMessagesLoading({ chatId, loading: true }));
 
-    const loadInitialMessages = async () => {
-      if (isLoadingRef.current) return;
-      isLoadingRef.current = true;
-      
-      dispatch(setMessagesLoading({ chatId, loading: true }));
-      
-      try {
-        const unreadCount = currentChat?.unreadCount || 0;
+    try {
+      const currentChat = chats.find(chat => chat.chat.id === chatId);
+      const unreadCount = currentChat?.unreadCount || 0;
 
-        const response = await messageService.getMessages(
-          {
-            chatId,
-            isDescending: false,
-            fromUnread: unreadCount > 0,
-            from: unreadCount > 0 ? null : new Date(Date.now() - 155 * 60 * 1000)
-          },
-          {
-            PageNumber: 1,
-            PageSize: PAGE_SIZE + unreadCount,
-          }
-        );
+      console.log('📊 Unread:', unreadCount);
 
-        if (response.success && response.data) {
-          const fetchedMessages = response.data.items;
-          
-          dispatch(setMessages({
-            chatId,
-            messages: fetchedMessages,
-            hasMore: fetchedMessages.length >= PAGE_SIZE,
-            nextCursor: undefined, // TODO: nextCursor может мне нехило помочь, надо его юзать
-          }));
-
-          if (fetchedMessages.length > 0) {
-            setOldestMessageDate(new Date(fetchedMessages[0].createdAt));
-            setNewestMessageDate(new Date(fetchedMessages[fetchedMessages.length - 1].createdAt));
-            setHasMoreOlder(fetchedMessages.length >= PAGE_SIZE);
-          }
-          
-          setInitialLoadDone(true);
+      const response = await messageService.getMessages(
+        {
+          chatId,
+          isDescending: false,
+          fromUnread: unreadCount > 0,
+          loadLastMessages: unreadCount === 0,
+          from: null
+        }, 
+        {
+          PageNumber: 1,
+          PageSize: PAGE_SIZE
         }
-      }finally {
-        dispatch(setMessagesLoading({ chatId, loading: false }));
-        isLoadingRef.current = false;
-      }
-    };
+      );
 
-    loadInitialMessages();
+      if (response.success && response.data) {
+        const messages = response.data.items;
+        dispatch(setMessages({
+          chatId,
+          messages,
+          hasMore: messages.length >= PAGE_SIZE
+        }));
+
+      
+        if(messages.length > 0) {
+          setOldestMessageDate(new Date(messages[0].createdAt));
+          setNewestMessageDate(new Date(messages[messages.length - 1].createdAt));
+          setHasMoreOlder(messages.length >= PAGE_SIZE);
+        }
+
+        console.log('✅ Messages saved to store');
+      }
+
+      
+    } catch (err) {
+      console.error('❌ Load failed:', err);
+    } finally {
+      dispatch(setMessagesLoading({chatId, loading: false}));
+    }
+  }
+
+  useEffect(() => {
+    loadInitMessages();
   }, [chatId]);
 
-  // Scroll to unread after initial load
+  // // Scroll to first unread message after initial load
   // useEffect(() => {
   //   if (!initialLoadDone || !messages.length) return;
     
@@ -126,6 +137,7 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
   //     isLoadingRef.current = true;
   //     dispatch(setMessagesLoading({ chatId, loading: true }));
       
+  //     // Save scroll position
   //     const container = scrollContainerRef.current;
   //     const previousScrollHeight = container?.scrollHeight || 0;
 
@@ -133,7 +145,7 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
   //       const response = await messageService.getMessages(
   //         {
   //           chatId,
-  //           isDescending: true,
+  //           isDescending: true, // от новых к старым
   //           from: oldestMessageDate,
   //           fromUnread: false
   //         },
@@ -144,7 +156,7 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
   //       );
 
   //       if (response.success && response.data) {
-  //         const fetchedMessages = response.data.items.reverse();
+  //         const fetchedMessages = response.data.items.reverse(); // обратно в хронологический порядок
           
   //         if (fetchedMessages.length > 0) {
   //           dispatch(addMessagesToTop({
@@ -156,6 +168,7 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
   //           setOldestMessageDate(new Date(fetchedMessages[0].createdAt));
   //           setHasMoreOlder(fetchedMessages.length >= PAGE_SIZE);
 
+  //           // Restore scroll position
   //           setTimeout(() => {
   //             if (container) {
   //               container.scrollTop = container.scrollHeight - previousScrollHeight;
@@ -250,11 +263,12 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
   //   return () => observer.disconnect();
   // }, [initialLoadDone, hasMoreNewer, newestMessageDate, chatId]);
 
-  // // Auto-scroll on new message
+  // // Auto-scroll on new message (from SignalR)
   // useEffect(() => {
   //   const container = scrollContainerRef.current;
   //   if (!container || !initialLoadDone) return;
 
+  //   // Check if user is at bottom
   //   const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
 
   //   if (isAtBottom) {
@@ -266,17 +280,7 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // // Reset state on chatId change
-  // useEffect(() => {
-  //   setInitialLoadDone(false);
-  //   setOldestMessageDate(null);
-  //   setNewestMessageDate(null);
-  //   setHasMoreOlder(true);
-  //   setHasMoreNewer(false);
-  //   isLoadingRef.current = false;
-  // }, [chatId]);
-
-  if (!initialLoadDone && loading) {
+  if (messages.length === 0 && loading) {
     return (
       <div className="flex items-center justify-center h-full">
         <Spin size="large" />
@@ -296,6 +300,8 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
     );
   }
 
+  // Находим currentChat локально для определения непрочитанных
+  const currentChat = chats.find(c => c.chat.id === chatId);
   const unreadCount = currentChat?.unreadCount || 0;
   const firstUnreadIndex = unreadCount > 0 
     ? messages.length - unreadCount 
@@ -306,6 +312,7 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
       ref={scrollContainerRef}
       className="h-full overflow-y-auto bg-gray-50"
     >
+      {/* Top loader */}
       {hasMoreOlder && (
         <div ref={topObserverRef} className="text-center py-4">
           {loading && <Spin />}
@@ -316,7 +323,7 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
         {messages.map((message, index) => {
           const prevMessage = index > 0 ? messages[index - 1] : null;
           const showAvatar =
-            !prevMessage || prevMessage.createdBy.id !== message.createdBy.id;
+            !prevMessage || prevMessage.createdBy.id !== message.createdBy.id || isSystemMessage(prevMessage);
 
           const isFirstUnread = index === firstUnreadIndex;
 
@@ -345,6 +352,7 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Bottom loader */}
       {hasMoreNewer && (
         <div ref={bottomObserverRef} className="text-center py-4">
           {loading && <Spin />}

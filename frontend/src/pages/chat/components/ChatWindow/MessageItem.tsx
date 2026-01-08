@@ -5,12 +5,15 @@ import { Avatar, Dropdown, Button } from 'antd';
 import { UserOutlined, MoreOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { format } from 'date-fns';
-import { IMessageResponse } from '../../../../types/messaging';
+import { IMessageResponse, MessageAttachmentType } from '../../../../types/messaging';
 import { useAppDispatch } from '../../../../store/hooks';
 import { setReplyingToMessage, setEditingMessage } from '../../../../store/uiSlice';
 import { roleMapping } from '../../../../types/auth';
 import { useAuth } from '../../../../context/useAuth';
-import { getFullName } from '../../mocks/fakeData';
+import { getFirstName, getFullName } from '../../mocks/fakeData';
+import { at, divide } from 'lodash';
+import { CustomMessageAttachment } from './CustomMessageAttachment';
+import { isSystemMessage } from '../../../../types/utilities/messageUtilities';
 
 interface MessageItemProps {
   message: IMessageResponse;
@@ -24,6 +27,9 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = true })
   const {user} = useAuth();
   
   const isMyMessage = message.createdBy.id === user?.id;
+
+
+  const isCustomMessageAttachment = isSystemMessage(message);
 
   const formatTime = (dateString: string) => {
     return format(new Date(dateString), 'HH:mm');
@@ -68,12 +74,18 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = true })
       : []),
   ];
 
+  if(isCustomMessageAttachment) {
+    return <CustomMessageAttachment message={message}/>
+  }
+
   return (
     <div
+    // border-2 border-red-500 
       className={`flex gap-3 ${isMyMessage ? 'flex-row-reverse' : 'flex-row'}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+
       {/* Avatar */}
       <div className="flex-shrink-0">
         {showAvatar ? (
@@ -104,7 +116,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = true })
         )}
 
         <div className="relative group">
-          {/* Reply preview */}
+          {/* Reply preview TODO: добавить переход к сообщению*/}
           {message.replyMessage && (
             <div
               className={`mb-1 px-3 py-2 border-l-2 text-sm ${

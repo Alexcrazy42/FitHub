@@ -120,6 +120,7 @@ export interface IGetMessagesRequest {
     chatId: string;
     isDescending: boolean;
     fromUnread: boolean;
+    loadLastMessages: boolean;
     from: Date | null
 }
 

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Avatar, Badge, Tag } from 'antd';
 import { UserOutlined, TeamOutlined, CheckOutlined } from '@ant-design/icons';
 import { format, isToday, isYesterday } from 'date-fns';
@@ -35,7 +35,7 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat }) => {
   
   const dispatch = useAppDispatch();
   const currentChatId = useAppSelector(selectCurrentChatId);
-  const typingUsers = useAppSelector(selectTypingUsers(chat.chat.id));
+  const typingUsers = useAppSelector((state) => selectTypingUsers(state, chat.chat.id));
   
   const isActive = currentChatId === chat.id;
 
@@ -137,7 +137,7 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat }) => {
     >
       {/* Avatar */}
       <div className="relative flex-shrink-0">
-        {chat.chat.type === 'Group' ? (
+        {chat.chat.type === ChatType.Group ? (
           <Avatar
             size={48}
             icon={<TeamOutlined />}
@@ -153,7 +153,7 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat }) => {
         )}
         
         {/* ✅ Typing indicator на аватаре */}
-        {isTyping && (
+        {isTyping && chat.chat.type === ChatType.OneToOne && (
           <span className="absolute bottom-0 right-0 w-3 h-3 bg-blue-500 border-2 border-white rounded-full animate-pulse"></span>
         )}
       </div>

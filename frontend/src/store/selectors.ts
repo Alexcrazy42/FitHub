@@ -1,12 +1,14 @@
 ﻿import { RootState } from './store';
 import { createSelector } from '@reduxjs/toolkit';
 
+
 // LEARN
 // зачем нужны селекторы:
     // 1. Инкапсуляция структуры стора: компонент не знает, что данные в state.chat.chats или state.messages.messages[chatId], он просто вызывает селектор.
     // 2. Переиспользование: один и тот же селектор можно использовать в разных компонентах.
     // 3. Упрощение рефакторинга: изменил структуру стора → меняешь селектор, а не каждый компонент.
     // 4. Производные данные: можно считать суммы, фильтровать, находить текущий чат и т.п., не дублируя эту логику в компонентах.
+
 
 
 // LEARN: простые селекторы, где достается просто что либо (мемоизация не нужна)
@@ -16,13 +18,16 @@ export const selectChatsLoading = (state: RootState) => state.chat.loading;
 export const selectChatsError = (state: RootState) => state.chat.error;
 export const selectHasMoreChats = (state: RootState) => state.chat.hasMore;
 
+
 // Current chat selector
 export const selectCurrentChatId = (state: RootState) => state.ui.currentChatId;
+
 
 
 // LEARN
 // Мемоизированные селекторы (createSelector)
 // createSelector из RTK (обертка над Reselect) делает мемоизацию: если входные аргументы не поменялись, результат берется из кеша, а не пересчитывается заново. Это важно для производных данных и производительности.
+
 
 
 export const selectCurrentChat = createSelector(
@@ -33,40 +38,112 @@ export const selectCurrentChat = createSelector(
   }
 );
 
+
+// ========================================
 // Messages selectors
+// ========================================
+
+// Базовые селекторы (возвращают части state)
 export const selectAllMessages = (state: RootState) => state.messages.messages;
+export const selectAllSendingMessages = (state: RootState) => state.messages.sendingMessages;
+export const selectMessagesLoadingState = (state: RootState) => state.messages.loading;
+export const selectHasMoreMessagesState = (state: RootState) => state.messages.hasMore;
 
-export const selectChatMessages = (chatId: string) =>
-  createSelector([selectAllMessages], (messages) => messages[chatId] || []);
+// ✅ Мемоизированные селекторы с параметром chatId
+export const selectChatMessages = createSelector(
+  [
+    selectAllMessages,
+    (_state: RootState, chatId: string) => chatId
+  ],
+  (allMessages, chatId) => allMessages[chatId] || []
+);
 
-export const selectSendingMessages = (chatId: string) => (state: RootState) => state.messages.sendingMessages[chatId] || [];
+export const selectSendingMessages = createSelector(
+  [
+    selectAllSendingMessages,
+    (_state: RootState, chatId: string) => chatId
+  ],
+  (allSendingMessages, chatId) => allSendingMessages[chatId] || []
+);
 
-export const selectAllChatMessages = (chatId: string) =>
-  createSelector(
-    [selectChatMessages(chatId), selectSendingMessages(chatId)],
-    (messages, sendingMessages) => [...messages, ...sendingMessages]
-  );
+export const selectAllChatMessages = createSelector(
+  [
+    (state: RootState, chatId: string) => selectChatMessages(state, chatId),
+    (state: RootState, chatId: string) => selectSendingMessages(state, chatId)
+  ],
+  (messages, sendingMessages) => {
+    // ✅ Оптимизация: не создаем новый массив если sendingMessages пустой
+    if (sendingMessages.length === 0) {
+      return messages;
+    }
+    return [...messages, ...sendingMessages];
+  }
+);
 
-export const selectMessagesLoading = (chatId: string) =>
-  (state: RootState) => state.messages.loading[chatId] || false;
+export const selectMessagesLoading = createSelector(
+  [
+    selectMessagesLoadingState,
+    (_state: RootState, chatId: string) => chatId
+  ],
+  (loadingState, chatId) => loadingState[chatId] || false
+);
 
-export const selectHasMoreMessages = (chatId: string) =>
-  (state: RootState) => state.messages.hasMore[chatId] || false;
+export const selectHasMoreMessages = createSelector(
+  [
+    selectHasMoreMessagesState,
+    (_state: RootState, chatId: string) => chatId
+  ],
+  (hasMoreState, chatId) => hasMoreState[chatId] || false
+);
+
+
+// ========================================
+// UI selectors
+// ========================================
 
 // Typing selectors
-export const selectTypingUsers = (chatId: string) =>
-  (state: RootState) => state.ui.typingUsers[chatId] || [];
+export const selectTypingUsers = createSelector(
+  [
+    (state: RootState) => state.ui.typingUsers,
+    (_state: RootState, chatId: string) => chatId
+  ],
+  (typingUsers, chatId) => typingUsers[chatId] || []
+);
 
 // Reply/Edit selectors
-export const selectReplyingToMessage = (chatId: string) =>
-  (state: RootState) => state.ui.replyingToMessage[chatId] || null;
+export const selectReplyingToMessage = createSelector(
+  [
+    (state: RootState) => state.ui.replyingToMessage,
+    (_state: RootState, chatId: string) => chatId
+  ],
+  (replyingToMessage, chatId) => replyingToMessage[chatId] || null
+);
 
-export const selectEditingMessage = (chatId: string) =>
-  (state: RootState) => state.ui.editingMessage[chatId] || null;
+export const selectEditingMessage = createSelector(
+  [
+    (state: RootState) => state.ui.editingMessage,
+    (_state: RootState, chatId: string) => chatId
+  ],
+  (editingMessage, chatId) => editingMessage[chatId] || null
+);
 
+
+// ========================================
 // Participants selectors
-export const selectChatParticipants = (chatId: string) =>
-  (state: RootState) => state.participants.participants[chatId] || [];
+// ========================================
+
+export const selectChatParticipants = createSelector(
+  [
+    (state: RootState) => state.participants.participants,
+    (_state: RootState, chatId: string) => chatId
+  ],
+  (participants, chatId) => participants[chatId] || []
+);
+
+
+// ========================================
+// Connection & UI state
+// ========================================
 
 // Connection state
 export const selectConnectionState = (state: RootState) =>
@@ -77,7 +154,9 @@ export const selectSidebarCollapsed = (state: RootState) =>
   state.ui.sidebarCollapsed;
 
 
-
+// ========================================
+// Computed selectors
+// ========================================
 
 // LEARN
 //   Как это работает пошагово

@@ -1,5 +1,4 @@
-﻿import React from 'react';
-import { Avatar, Button, Dropdown, Tag } from 'antd';
+﻿import { Avatar, Button, Dropdown, Tag } from 'antd';
 import { 
   UserOutlined, 
   MoreOutlined, 
@@ -34,7 +33,6 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ chat }) => {
     return null;
   };
 
-  // Получаем статус "онлайн" (можно добавить позже)
   const isOnline = false; // TODO: implement real online status
 
   // Меню действий
@@ -116,6 +114,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ chat }) => {
           {/* Subtitle */}
           <p className="text-xs text-gray-500">
             {chat.chat.type === ChatType.Group
+            // TODO: добавить возможность добавления участников для CMS Admin
               ? `${chat.chat.participants.length} участников`
               : isOnline 
                 ? 'В сети' 

@@ -8,5 +8,7 @@ public class GetMessagesRequest
 
     public bool? IsDescending { get; set; }
 
+    public bool? LoadLastMessages { get; set; }
+
     public bool? FromUnread { get; set; }
 }

@@ -34,24 +34,33 @@ internal sealed class MessageRepository : DefaultPendingRepository<Message, Mess
         return message;
     }
 
-    public Task<IReadOnlyList<Message>> GetMessagesAsync(GetMessagesQuery messagesQuery, PagedQuery paged, CancellationToken ct = default)
+    public Task<IReadOnlyList<Message>> GetMessagesAsync(
+        GetMessagesQuery messagesQuery,
+        PagedQuery paged,
+        CancellationToken ct = default)
     {
         var dbQuery = ReadRaw()
             .Include(x => x.Attachments)
             .Include(x => x.Views)
                 .ThenInclude(view => view.User)
-            .Where(x => x.ChatId == messagesQuery.ChatId)
-            .Take(paged.PageSize);
+            .Where(x => x.ChatId == messagesQuery.ChatId);
 
-        dbQuery = messagesQuery.IsDescending ?
-            dbQuery.OrderByDescending(x => x.CreatedAt)
-                .Where(x => x.CreatedAt <= messagesQuery.From)
-            :
-            dbQuery.OrderBy(x => x.CreatedAt)
-                .Where(x => x.CreatedAt >= messagesQuery.From);
+        if (messagesQuery.From.HasValue)
+        {
+            dbQuery = messagesQuery.IsDescending
+                ? dbQuery.Where(x => x.CreatedAt <= messagesQuery.From.Value)
+                : dbQuery.Where(x => x.CreatedAt >= messagesQuery.From.Value);
+        }
+
+        dbQuery = messagesQuery.IsDescending
+            ? dbQuery.OrderByDescending(x => x.CreatedAt)
+            : dbQuery.OrderBy(x => x.CreatedAt);
+
+        dbQuery = dbQuery.Take(paged.PageSize);
 
         return dbQuery.ToReadOnlyListAsync(ct);
     }
+
 
     public Task<IReadOnlyList<Message>> GetUnreadMessagesOlderThan(
         Message message,

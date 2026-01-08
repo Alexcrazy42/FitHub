@@ -20,9 +20,9 @@ interface ChatWindowProps {
 
 const ChatWindow: React.FC<ChatWindowProps> = ({ chatId }) => {
   const currentChat = useAppSelector(selectCurrentChat);
-  const messages = useAppSelector(selectAllChatMessages(chatId));
-  const loading = useAppSelector(selectMessagesLoading(chatId));
-  const typingUsers = useAppSelector(selectTypingUsers(chatId));
+  const messages = useAppSelector((state) => selectAllChatMessages(state, chatId));
+  const loading = useAppSelector((state) => selectMessagesLoading(state, chatId));
+  const typingUsers = useAppSelector((state) => selectTypingUsers(state, chatId));
 
 
   if (!currentChat) {

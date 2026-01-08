@@ -10,6 +10,7 @@ export class MessageService {
         this.apiService = apiService;
     }
 
+    // TODO: нужен параметр по поиску в рамках какого-то сообщения (для перехода к прикрепленному или отправленному)
     public async getMessages(
         query: IGetMessagesRequest, 
         paged: IPagedRequest
@@ -18,6 +19,7 @@ export class MessageService {
             ChatId: query.chatId,
             IsDescending: query.isDescending?.toString(),
             From: query.from?.toISOString(),
+            LoadLastMessages: query.loadLastMessages.toString(),
             FromUnread: query.fromUnread?.toString(),
             PageNumber: paged.PageNumber.toString(),
             PageSize: paged.PageSize.toString(),

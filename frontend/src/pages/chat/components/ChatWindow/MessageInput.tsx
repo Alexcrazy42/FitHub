@@ -48,9 +48,9 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const TYPING_TIMEOUT = 1500;
 
-  const replyingToMessageId = useAppSelector(selectReplyingToMessage(chatId));
-  const editingMessageId = useAppSelector(selectEditingMessage(chatId));
-  const messages = useAppSelector(selectAllChatMessages(chatId));
+  const replyingToMessageId = useAppSelector((state) => selectReplyingToMessage(state, chatId));
+  const editingMessageId = useAppSelector((state) => selectEditingMessage(state, chatId));
+  const messages = useAppSelector((state) => selectAllChatMessages(state, chatId));
 
   const replyingToMessage = messages.find((m) => m.id === replyingToMessageId);
   const editingMessage = messages.find((m) => m.id === editingMessageId);

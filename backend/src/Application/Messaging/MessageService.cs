@@ -72,7 +72,11 @@ internal sealed class MessageService : IMessageService
             return await messageRepository.GetMessagesAsync(messageQuery, paged, ct);
         }
 
-        var newGetMessageQuery = new GetMessagesQuery(messageQuery.ChatId, false, false, firstUnreadMessage.CreatedAt);
+        var newGetMessageQuery = new GetMessagesQuery(messageQuery.ChatId,
+            isDescending: false,
+            loadLastMessages: false,
+            fromUnread: false,
+            firstUnreadMessage.CreatedAt);
         return await messageRepository.GetMessagesAsync(newGetMessageQuery, paged, ct);
 
     }

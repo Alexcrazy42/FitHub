@@ -11,11 +11,22 @@ public class GetMessagesQuery
 
     public bool IsDescending { get; init; }
 
+    public bool LoadLastMessages { get; init; }
+
     public bool FromUnread { get; init; }
 
-    public GetMessagesQuery(ChatId chatId, bool isDescending, bool fromUnread, DateTimeOffset? from = null)
+    public GetMessagesQuery(ChatId chatId,
+        bool isDescending,
+        bool loadLastMessages,
+        bool fromUnread,
+        DateTimeOffset? from = null)
     {
-        if (fromUnread == false && from == null)
+        if (fromUnread && loadLastMessages)
+        {
+            throw new ValidationException("Невозможно одновременно получить и с непрочитанного сообщения и последение!");
+        }
+
+        if (!fromUnread && !loadLastMessages && from == null)
         {
             throw new ValidationException("При поиске не от непрочитанного сообщения надо указать параметр от какого времени ищем!");
         }
@@ -23,6 +34,7 @@ public class GetMessagesQuery
         ChatId = chatId;
         From = from;
         FromUnread = fromUnread;
+        LoadLastMessages = loadLastMessages;
         IsDescending = isDescending;
     }
 }
