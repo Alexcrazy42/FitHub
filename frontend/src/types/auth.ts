@@ -16,6 +16,29 @@ export const roleRoutes: Record<UserRole, string> = {
   'CmsAdmin': '/admin'
 };
 
+export const rolePriority: Record<UserRole, number> = {
+  'CmsAdmin': 1,
+  'GymAdmin': 2,
+  'Trainer': 3,
+  'GymVisitor': 4
+};
+
+export const getMostImportantRole = (roles: UserRole[]): UserRole | null => {
+  if (!roles || roles.length === 0) return null;
+  
+  return roles.reduce((mostImportant, currentRole) => {
+    const currentPriority = rolePriority[currentRole] ?? 999;
+    const mostImportantPriority = rolePriority[mostImportant] ?? 999;
+    
+    return currentPriority < mostImportantPriority ? currentRole : mostImportant;
+  }, roles[0]);
+};
+
+export const getMostImportantRoleName = (roles: UserRole[]): string => {
+  const role = getMostImportantRole(roles);
+  return role ? roleMapping[role] : '';
+};
+
 export interface User {
   id: string;
   email?: string;

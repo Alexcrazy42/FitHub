@@ -41,7 +41,7 @@ internal sealed class MessageRepository : DefaultPendingRepository<Message, Mess
     {
         var dbQuery = ReadRaw()
             .Include(x => x.Attachments)
-            .Include(x => x.Views)
+            .Include(x => x.Views) // TODO: выпилить
                 .ThenInclude(view => view.User)
             .Where(x => x.ChatId == messagesQuery.ChatId);
 
@@ -52,9 +52,17 @@ internal sealed class MessageRepository : DefaultPendingRepository<Message, Mess
                 : dbQuery.Where(x => x.CreatedAt >= messagesQuery.From.Value);
         }
 
-        dbQuery = messagesQuery.IsDescending
-            ? dbQuery.OrderByDescending(x => x.CreatedAt)
-            : dbQuery.OrderBy(x => x.CreatedAt);
+        if (messagesQuery.LoadLastMessages)
+        {
+            dbQuery = dbQuery.OrderByDescending(x => x.CreatedAt);
+        }
+        else
+        {
+            dbQuery = messagesQuery.IsDescending
+                ? dbQuery.OrderByDescending(x => x.CreatedAt)
+                : dbQuery.OrderBy(x => x.CreatedAt);
+        }
+
 
         dbQuery = dbQuery.Take(paged.PageSize);
 

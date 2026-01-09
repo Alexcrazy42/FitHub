@@ -25,13 +25,14 @@ const DashboardLayout: React.FC = () => {
   }
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout style={{ height: '100vh', overflow: 'hidden' }}>
       <Sider
         collapsible
         collapsed={collapsed}
         onCollapse={(value) => setCollapsed(value)}
         width={250}
         theme={theme === 'dark' ? 'dark' : 'light'}
+        style={{ overflow: 'auto' }}
       >
         <div
           className={`flex items-center justify-center h-16 font-bold transition-all duration-200 ${
@@ -43,7 +44,7 @@ const DashboardLayout: React.FC = () => {
         <Sidebar collapsed={collapsed} />
       </Sider>
 
-      <Layout>
+      <Layout style={{ overflow: 'hidden' }}>  {/* ✅ overflow hidden */}
         <Header
           style={{
             height: 64,
@@ -54,6 +55,7 @@ const DashboardLayout: React.FC = () => {
             justifyContent: "space-between",
             padding: "0 1rem",
             boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+            flexShrink: 0  // ✅ предотвращает сжатие header
           }}
         >
           {/* Левая кнопка */}
@@ -87,7 +89,7 @@ const DashboardLayout: React.FC = () => {
                 alignItems: "center",
                 gap: "0.4rem",
                 padding: "0 0.75rem",
-                color: theme === "dark" ? "#ef4444" : "#b91c1c", // красный оттенок
+                color: theme === "dark" ? "#ef4444" : "#b91c1c",
                 fontWeight: 500,
               }}
               className={theme === "dark" ? "hover:!bg-gray-800" : "hover:!bg-gray-100"}
@@ -99,8 +101,16 @@ const DashboardLayout: React.FC = () => {
           </div>
         </Header>
 
-        <Content className={`p-6 ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
-          <div className="max-w-7xl mx-auto">
+        {/* ✅ УБИРАЕМ padding отсюда, Content теперь занимает всю оставшуюся высоту */}
+        <Content 
+          className={theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}
+          style={{ 
+            overflow: 'auto',  // ✅ скролл здесь
+            height: 'calc(100vh - 64px)'  // ✅ 100vh минус высота header
+          }}
+        >
+          {/* ✅ padding переносим в обертку внутри, если он нужен */}
+          <div className="h-full">  {/* ✅ h-full для чата */}
             <Outlet />
           </div>
         </Content>

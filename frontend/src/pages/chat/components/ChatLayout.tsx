@@ -12,8 +12,7 @@ export const ChatLayout: React.FC = () => {
   const sidebarCollapsed = useAppSelector(selectSidebarCollapsed);
 
   return (
-    <Layout style={{ height: '100%', overflow: 'hidden' }}>
-      {/* Левая панель - список чатов */}
+    <Layout style={{ height: '90vh' }}>
       <Sider
         width={360}
         theme="light"

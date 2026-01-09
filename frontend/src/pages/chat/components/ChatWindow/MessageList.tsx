@@ -22,7 +22,11 @@ interface MessageListProps {
   chatId: string;
 }
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 10;
+
+interface MessageListProps {
+  chatId: string;
+}
 
 export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
   const apiService = useApiService();
@@ -43,27 +47,23 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
   const [newestMessageDate, setNewestMessageDate] = useState<Date | null>(null);
   const [hasMoreOlder, setHasMoreOlder] = useState(true);
   const [hasMoreNewer, setHasMoreNewer] = useState(false);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
   
-  const loadingChatIdRef = useRef<string | null>(null);
+  const isLoadingRef = useRef(false);
   const renderCount = useRef(0);
   renderCount.current++;
 
-  console.log(`🔄 Render #${renderCount.current}`, {
-    chatId,
-    loadingChatId: loadingChatIdRef.current,
-    messagesCount: messages.length,
-    loading
-  });
-
   const loadInitMessages = async () => {
-    console.log('📥 Loading messages for:', chatId);
+    if (isLoadingRef.current) return;
+    
+    isLoadingRef.current = true;
+    setInitialLoadDone(false);
     dispatch(setMessagesLoading({ chatId, loading: true }));
 
     try {
       const currentChat = chats.find(chat => chat.chat.id === chatId);
       const unreadCount = currentChat?.unreadCount || 0;
-
-      console.log('📊 Unread:', unreadCount);
+      
 
       const response = await messageService.getMessages(
         {
@@ -80,201 +80,205 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
       );
 
       if (response.success && response.data) {
-        const messages = response.data.items;
+        const fetchedMessages = response.data.items;
         dispatch(setMessages({
           chatId,
-          messages,
-          hasMore: messages.length >= PAGE_SIZE
+          messages: fetchedMessages,
+          hasMore: fetchedMessages.length >= PAGE_SIZE
         }));
 
-      
-        if(messages.length > 0) {
-          setOldestMessageDate(new Date(messages[0].createdAt));
-          setNewestMessageDate(new Date(messages[messages.length - 1].createdAt));
-          setHasMoreOlder(messages.length >= PAGE_SIZE);
+        if (fetchedMessages.length > 0) {
+          setOldestMessageDate(new Date(fetchedMessages[0].createdAt));
+          setNewestMessageDate(new Date(fetchedMessages[fetchedMessages.length - 1].createdAt));
+          setHasMoreOlder(fetchedMessages.length >= PAGE_SIZE);
         }
 
-        console.log('✅ Messages saved to store');
+        setInitialLoadDone(true);
       }
-
-      
     } catch (err) {
       console.error('❌ Load failed:', err);
     } finally {
-      dispatch(setMessagesLoading({chatId, loading: false}));
+      dispatch(setMessagesLoading({ chatId, loading: false }));
+      isLoadingRef.current = false;
     }
-  }
+  };
 
+  // Загрузка при смене чата
   useEffect(() => {
     loadInitMessages();
   }, [chatId]);
 
-  // // Scroll to first unread message after initial load
-  // useEffect(() => {
-  //   if (!initialLoadDone || !messages.length) return;
+  // Скролл к первому непрочитанному или в конец после загрузки
+  useEffect(() => {
+    if (!initialLoadDone || !messages.length) return;
     
-  //   const unreadCount = currentChat?.unreadCount || 0;
+    const currentChat = chats.find(c => c.chat.id === chatId);
+    const unreadCount = currentChat?.unreadCount || 0;
     
-  //   if (unreadCount > 0 && unreadMessageRef.current) {
-  //     setTimeout(() => {
-  //       unreadMessageRef.current?.scrollIntoView({ 
-  //         behavior: 'auto', 
-  //         block: 'center' 
-  //       });
-  //     }, 100);
-  //   } else {
-  //     scrollToBottom();
-  //   }
-  // }, [initialLoadDone]);
+    if (unreadCount > 0 && unreadMessageRef.current) {
+      setTimeout(() => {
+        unreadMessageRef.current?.scrollIntoView({ 
+          behavior: 'auto', 
+          block: 'center' 
+        });
+      }, 100);
+    } else {
+      scrollToBottom();
+    }
+  }, [initialLoadDone]);
 
-  // // ✅ IntersectionObserver для загрузки старых сообщений
-  // useEffect(() => {
-  //   if (!topObserverRef.current || !initialLoadDone || !hasMoreOlder) return;
+  useEffect(() => {
+    if (!topObserverRef.current || !initialLoadDone || !hasMoreOlder) return;
 
-  //   const loadOlderMessages = async () => {
-  //     if (isLoadingRef.current || loading || !oldestMessageDate) return;
+    const loadOlderMessages = async () => {
+      if (isLoadingRef.current || loading || !oldestMessageDate) return;
       
-  //     isLoadingRef.current = true;
-  //     dispatch(setMessagesLoading({ chatId, loading: true }));
+      isLoadingRef.current = true;
+      dispatch(setMessagesLoading({ chatId, loading: true }));
       
-  //     // Save scroll position
-  //     const container = scrollContainerRef.current;
-  //     const previousScrollHeight = container?.scrollHeight || 0;
+      // Save scroll position
+      const container = scrollContainerRef.current;
+      const previousScrollHeight = container?.scrollHeight || 0;
 
-  //     try {
-  //       const response = await messageService.getMessages(
-  //         {
-  //           chatId,
-  //           isDescending: true, // от новых к старым
-  //           from: oldestMessageDate,
-  //           fromUnread: false
-  //         },
-  //         {
-  //           PageNumber: 1,
-  //           PageSize: PAGE_SIZE,
-  //         }
-  //       );
+      try {
+        const response = await messageService.getMessages(
+          {
+            chatId,
+            isDescending: true,
+            from: oldestMessageDate,
+            fromUnread: false,
+            loadLastMessages: false
+          },
+          {
+            PageNumber: 1,
+            PageSize: PAGE_SIZE,
+          }
+        );
 
-  //       if (response.success && response.data) {
-  //         const fetchedMessages = response.data.items.reverse(); // обратно в хронологический порядок
+        if (response.success && response.data) {
+          const fetchedMessages = response.data.items.reverse();
           
-  //         if (fetchedMessages.length > 0) {
-  //           dispatch(addMessagesToTop({
-  //             chatId,
-  //             messages: fetchedMessages,
-  //             hasMore: fetchedMessages.length >= PAGE_SIZE,
-  //           }));
+          if (fetchedMessages.length > 0) {
+            dispatch(addMessagesToTop({
+              chatId,
+              messages: fetchedMessages,
+              hasMore: fetchedMessages.length >= PAGE_SIZE,
+            }));
 
-  //           setOldestMessageDate(new Date(fetchedMessages[0].createdAt));
-  //           setHasMoreOlder(fetchedMessages.length >= PAGE_SIZE);
+            setOldestMessageDate(new Date(fetchedMessages[0].createdAt));
+            setHasMoreOlder(fetchedMessages.length >= PAGE_SIZE);
 
-  //           // Restore scroll position
-  //           setTimeout(() => {
-  //             if (container) {
-  //               container.scrollTop = container.scrollHeight - previousScrollHeight;
-  //             }
-  //           }, 0);
-  //         } else {
-  //           setHasMoreOlder(false);
-  //         }
-  //       }
-  //     } catch (error) {
-  //       console.error('Failed to load older messages:', error);
-  //     } finally {
-  //       dispatch(setMessagesLoading({ chatId, loading: false }));
-  //       isLoadingRef.current = false;
-  //     }
-  //   };
+            // Restore scroll position
+            setTimeout(() => {
+              if (container) {
+                container.scrollTop = container.scrollHeight - previousScrollHeight;
+              }
+            }, 0);
+          } else {
+            setHasMoreOlder(false);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load older messages:', error);
+      } finally {
+        dispatch(setMessagesLoading({ chatId, loading: false }));
+        isLoadingRef.current = false;
+      }
+    };
 
-  //   const observer = new IntersectionObserver(
-  //     (entries) => {
-  //       if (entries[0].isIntersecting) {
-  //         loadOlderMessages();
-  //       }
-  //     },
-  //     { threshold: 0.1, rootMargin: '100px' }
-  //   );
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadOlderMessages();
+        }
+      },
+      { threshold: 0.1, rootMargin: '100px' }
+    );
 
-  //   observer.observe(topObserverRef.current);
+    observer.observe(topObserverRef.current);
 
-  //   return () => observer.disconnect();
-  // }, [initialLoadDone, hasMoreOlder, oldestMessageDate, chatId]);
+    return () => observer.disconnect();
+  }, [initialLoadDone, hasMoreOlder, oldestMessageDate, chatId]);
 
-  // // ✅ IntersectionObserver для загрузки новых сообщений
-  // useEffect(() => {
-  //   if (!bottomObserverRef.current || !initialLoadDone || !hasMoreNewer) return;
+  // ✅ IntersectionObserver для загрузки новых сообщений
+  useEffect(() => {
+    if (!bottomObserverRef.current || !initialLoadDone || !hasMoreNewer) return;
 
-  //   const loadNewerMessages = async () => {
-  //     if (isLoadingRef.current || loading || !newestMessageDate) return;
+    const loadNewerMessages = async () => {
+      if (isLoadingRef.current || loading || !newestMessageDate) return;
       
-  //     isLoadingRef.current = true;
-  //     dispatch(setMessagesLoading({ chatId, loading: true }));
+      isLoadingRef.current = true;
+      dispatch(setMessagesLoading({ chatId, loading: true }));
 
-  //     try {
-  //       const response = await messageService.getMessages(
-  //         {
-  //           chatId,
-  //           isDescending: false,
-  //           from: newestMessageDate,
-  //           fromUnread: false
-  //         },
-  //         {
-  //           PageNumber: 1,
-  //           PageSize: PAGE_SIZE,
-  //         }
-  //       );
+      try {
+        const response = await messageService.getMessages(
+          {
+            chatId,
+            isDescending: false,
+            from: newestMessageDate,
+            fromUnread: false,
+            loadLastMessages: false
+          },
+          {
+            PageNumber: 1,
+            PageSize: PAGE_SIZE,
+          }
+        );
 
-  //       if (response.success && response.data) {
-  //         const fetchedMessages = response.data.items;
+        if (response.success && response.data) {
+          const fetchedMessages = response.data.items;
           
-  //         if (fetchedMessages.length > 0) {
-  //           // ✅ Добавляем к существующим через action
-  //           dispatch(addMessagesToTop({ // или создайте addMessagesToBottom
-  //             chatId,
-  //             messages: fetchedMessages,
-  //             hasMore: fetchedMessages.length >= PAGE_SIZE,
-  //           }));
+          if (fetchedMessages.length > 0) {
+            dispatch(addMessagesToTop({
+              chatId,
+              messages: fetchedMessages,
+              hasMore: fetchedMessages.length >= PAGE_SIZE,
+            }));
 
-  //           setNewestMessageDate(new Date(fetchedMessages[fetchedMessages.length - 1].createdAt));
-  //           setHasMoreNewer(fetchedMessages.length >= PAGE_SIZE);
-  //         } else {
-  //           setHasMoreNewer(false);
-  //         }
-  //       }
-  //     } catch (error) {
-  //       console.error('Failed to load newer messages:', error);
-  //     } finally {
-  //       dispatch(setMessagesLoading({ chatId, loading: false }));
-  //       isLoadingRef.current = false;
-  //     }
-  //   };
+            setNewestMessageDate(new Date(fetchedMessages[fetchedMessages.length - 1].createdAt));
+            setHasMoreNewer(fetchedMessages.length >= PAGE_SIZE);
+          } else {
+            setHasMoreNewer(false);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load newer messages:', error);
+      } finally {
+        dispatch(setMessagesLoading({ chatId, loading: false }));
+        isLoadingRef.current = false;
+      }
+    };
 
-  //   const observer = new IntersectionObserver(
-  //     (entries) => {
-  //       if (entries[0].isIntersecting) {
-  //         loadNewerMessages();
-  //       }
-  //     },
-  //     { threshold: 0.1, rootMargin: '100px' }
-  //   );
+    // TODO: что это такое?
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadNewerMessages();
+        }
+      },
+      { threshold: 0.1, rootMargin: '100px' }
+    );
 
-  //   observer.observe(bottomObserverRef.current);
+    observer.observe(bottomObserverRef.current);
 
-  //   return () => observer.disconnect();
-  // }, [initialLoadDone, hasMoreNewer, newestMessageDate, chatId]);
+    return () => observer.disconnect();
+  }, [initialLoadDone, hasMoreNewer, newestMessageDate, chatId]);
 
-  // // Auto-scroll on new message (from SignalR)
-  // useEffect(() => {
-  //   const container = scrollContainerRef.current;
-  //   if (!container || !initialLoadDone) return;
+  // TODO: возможно не надо (и все что надо это показывать возможность откатиться к непрочитанным)
+  // Auto-scroll on new message (from SignalR)
+  useEffect(() => {
+    if (!initialLoadDone) return;
+    
+    const container = scrollContainerRef.current;
+    if (!container) return;
 
-  //   // Check if user is at bottom
-  //   const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+    // Check if user is at bottom
+    const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
 
-  //   if (isAtBottom) {
-  //     scrollToBottom();
-  //   }
-  // }, [messages.length, initialLoadDone]);
+    if (isAtBottom) {
+      scrollToBottom();
+    }
+  }, [messages.length, initialLoadDone]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -323,7 +327,9 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
         {messages.map((message, index) => {
           const prevMessage = index > 0 ? messages[index - 1] : null;
           const showAvatar =
-            !prevMessage || prevMessage.createdBy.id !== message.createdBy.id || isSystemMessage(prevMessage);
+            !prevMessage || 
+            prevMessage.createdBy.id !== message.createdBy.id || 
+            isSystemMessage(prevMessage);
 
           const isFirstUnread = index === firstUnreadIndex;
 
@@ -361,3 +367,5 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
     </div>
   );
 };
+
+export default MessageList;
