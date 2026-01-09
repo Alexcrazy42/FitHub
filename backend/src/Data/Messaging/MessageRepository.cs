@@ -41,7 +41,7 @@ internal sealed class MessageRepository : DefaultPendingRepository<Message, Mess
     {
         var dbQuery = ReadRaw()
             .Include(x => x.Attachments)
-            .Include(x => x.Views) // TODO: выпилить
+            .Include(x => x.Views) // TODO: выпилить для производительности (показывать исключительно при ПКМ на сообщение)
                 .ThenInclude(view => view.User)
             .Where(x => x.ChatId == messagesQuery.ChatId);
 

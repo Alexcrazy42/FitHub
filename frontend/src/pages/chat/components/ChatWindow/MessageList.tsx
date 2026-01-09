@@ -1,11 +1,9 @@
-﻿import React, { useEffect, useRef, useState } from 'react';
-import { message, Spin } from 'antd';
+﻿import { useEffect, useRef, useState } from 'react';
+import { Spin } from 'antd';
 import MessageItem from './MessageItem';
-import { IMessageResponse } from '../../../../types/messaging';
 import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
 import { 
   selectMessagesLoading,
-  selectCurrentChat,
   selectAllChatMessages,
   selectChats,
 } from '../../../../store/selectors';
@@ -80,7 +78,9 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
       );
 
       if (response.success && response.data) {
-        const fetchedMessages = response.data.items;
+        const fetchedMessages = response.data.items.sort((a, b) => 
+          a.createdAt.localeCompare(b.createdAt)
+        );
         dispatch(setMessages({
           chatId,
           messages: fetchedMessages,
@@ -156,7 +156,9 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
         );
 
         if (response.success && response.data) {
-          const fetchedMessages = response.data.items.reverse();
+          const fetchedMessages = response.data.items.sort((a, b) => 
+            a.createdAt.localeCompare(b.createdAt)
+          );
           
           if (fetchedMessages.length > 0) {
             dispatch(addMessagesToTop({
@@ -226,7 +228,9 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
         );
 
         if (response.success && response.data) {
-          const fetchedMessages = response.data.items;
+          const fetchedMessages = response.data.items.sort((a, b) => 
+            a.createdAt.localeCompare(b.createdAt)
+          );
           
           if (fetchedMessages.length > 0) {
             dispatch(addMessagesToTop({

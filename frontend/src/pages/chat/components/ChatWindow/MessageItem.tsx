@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+﻿import { useState } from 'react';
 import { Avatar, Dropdown, Button } from 'antd';
 import { UserOutlined, MoreOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
@@ -6,7 +6,7 @@ import { format } from 'date-fns';
 import { IMessageResponse } from '../../../../types/messaging';
 import { useAppDispatch } from '../../../../store/hooks';
 import { setReplyingToMessage, setEditingMessage } from '../../../../store/uiSlice';
-import { getMostImportantRoleName, roleMapping } from '../../../../types/auth';
+import { getMostImportantRoleName } from '../../../../types/auth';
 import { useAuth } from '../../../../context/useAuth';
 import { getFirstName, getFullName } from '../../mocks/fakeData';
 import { CustomMessageAttachment } from './CustomMessageAttachment';
@@ -198,7 +198,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = true })
                       size="small"
                       icon={<MoreOutlined />}
                       className="bg-white shadow-md hover:bg-gray-100"
-                      onClick={(e) => e.stopPropagation()} // ✅ предотвращаем двойной клик
+                      onClick={(e) => e.stopPropagation()}
                     />
                   </Dropdown>
                 </div>

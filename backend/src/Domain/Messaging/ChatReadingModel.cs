@@ -4,9 +4,6 @@ using FitHub.Common.Entities.Identity;
 
 namespace FitHub.Domain.Messaging;
 
-
-// TODO: прочитал сообщения: обновил MessageView и ReadingModel
-
 public class ChatReadingModel : IEntity<ChatReadingModelId>, IAuditableEntity
 {
     private Chat? chat;

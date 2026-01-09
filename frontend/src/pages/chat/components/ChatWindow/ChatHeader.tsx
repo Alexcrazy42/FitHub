@@ -127,14 +127,14 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ chat }) => {
       {/* Right side - Actions */}
       <div className="flex items-center gap-2">
         {/* Search button */}
-        <Button
+        {/* <Button
           type="text"
           icon={<SearchOutlined className="text-lg" />}
           onClick={() => console.log('Search')}
           className="hidden sm:inline-flex"
-        />
+        /> */}
 
-        {/* More menu */}
+        {/* More menu
         <Dropdown 
           menu={{ items: menuItems, onClick: handleMenuClick }} 
           trigger={['click']}
@@ -144,7 +144,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ chat }) => {
             type="text" 
             icon={<MoreOutlined className="text-lg" />}
           />
-        </Dropdown>
+        </Dropdown> */}
       </div>
     </div>
   );
