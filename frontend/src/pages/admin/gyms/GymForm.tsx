@@ -133,7 +133,7 @@ export const GymForm: React.FC<GymFormProps> = ({
   };
 
   const fetchMaxFileCount = async () => {
-    const response = await apiService.get<IEntity>(`/v1/entities?entityTypeDto=${EntityType.Gym}`);
+    const response = await apiService.get<IEntity>(`/v1/entities?entityType=${EntityType.Gym}`);
     if(response.success) {
       const maxCount = response.data?.maxFileCount;
       if(maxCount) {

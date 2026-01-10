@@ -37,10 +37,9 @@ public class KafkaProducerService : IDisposable
                 Value = System.Text.Json.JsonSerializer.Serialize(weatherEvent)
             };
 
-            // 👇 Добавляем заголовок с контекстом трейсинга
             if (Activity.Current?.Context != default)
             {
-                var traceparent = Activity.Current.Id; // W3C traceparent format
+                var traceparent = Activity.Current?.Id;
                 message.Headers = new Headers();
                 message.Headers.Add("traceparent", Encoding.UTF8.GetBytes(traceparent));
             }

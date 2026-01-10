@@ -1,5 +1,6 @@
 ﻿using FitHub.Application.Common;
 using FitHub.Application.Trainings.GroupTrainings;
+using FitHub.Authentication;
 using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.Entities.Storage;
 using FitHub.Contracts.V1.Users.Trainers;

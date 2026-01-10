@@ -107,7 +107,7 @@ export const BaseGroupTrainingTab: React.FC<BaseGroupTrainingTabProps> = ({
   }
 
   const fetchMaxFileCount = async () => {
-      const response = await apiService.get<IEntity>(`/v1/entities?entityTypeDto=${EntityType.BaseGroupTraining}`);
+      const response = await apiService.get<IEntity>(`/v1/entities?entityType=${EntityType.BaseGroupTraining}`);
       if(response.success) {
         const maxCount = response.data?.maxFileCount;
         if(maxCount) {

@@ -60,6 +60,104 @@ namespace FitHub.Data.Migrations
                     b.ToTable("equipment_instruction_muscle_group", (string)null);
                 });
 
+            modelBuilder.Entity("FitHub.Authentication.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("email");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<bool>("IsEmailConfirmed")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_email_confirmed");
+
+                    b.Property<bool>("IsOnline")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_online");
+
+                    b.Property<bool>("IsTemporaryPassword")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_temporary_password");
+
+                    b.Property<DateTimeOffset?>("LastHeartbeat")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_heartbeat");
+
+                    b.Property<DateTimeOffset>("LastSeenAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_seen_at");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("password_hash");
+
+                    b.Property<DateTimeOffset?>("StartActiveAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("start_active_at");
+
+                    b.Property<DateTimeOffset>("StartRegistrationAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("start_registration_at");
+
+                    b.Property<string>("Surname")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("surname");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UserType")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("user_type");
+
+                    b.HasKey("Id")
+                        .HasName("pk_user");
+
+                    b.ToTable("user", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("a88a98f0-35e8-46c4-a38e-bf88bd5c9ebc"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 11, 2, 21, 20, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Email = "alexcrazy42@mail.ru",
+                            IsActive = true,
+                            IsEmailConfirmed = true,
+                            IsOnline = false,
+                            IsTemporaryPassword = false,
+                            LastSeenAt = new DateTimeOffset(new DateTime(2025, 11, 2, 21, 20, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "Александр",
+                            PasswordHash = "$2a$11$H9cNs1CfV.iJiv/N9hIHOe4UC/23MCB8xObp4m.wKbh7YOzmsQrjO",
+                            StartRegistrationAt = new DateTimeOffset(new DateTime(2025, 11, 2, 21, 20, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Surname = "Мамедов",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2025, 11, 2, 21, 20, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UserType = "CmsAdmin"
+                        });
+                });
+
             modelBuilder.Entity("FitHub.Domain.Equipments.Brand", b =>
                 {
                     b.Property<Guid>("Id")
@@ -326,6 +424,317 @@ namespace FitHub.Data.Migrations
                         .HasName("pk_file_entity");
 
                     b.ToTable("file_entity", (string)null);
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Messaging.Chat", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("CreatedById")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by_id");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("type");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("UpdatedById")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_chat");
+
+                    b.ToTable("chat", (string)null);
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Messaging.ChatParticipant", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("Blocked")
+                        .HasColumnType("boolean")
+                        .HasColumnName("blocked");
+
+                    b.Property<Guid>("ChatId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("chat_id");
+
+                    b.Property<DateTimeOffset>("JoinedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("joined_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_chat_participant");
+
+                    b.HasIndex("ChatId")
+                        .HasDatabaseName("ix_chat_participant_chat_id");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_chat_participant_user_id");
+
+                    b.ToTable("chat_participant", (string)null);
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Messaging.ChatReadingModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ChatId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("chat_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset>("FirstMessageTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("first_message_time");
+
+                    b.Property<Guid>("LastMessageId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("last_message_id");
+
+                    b.Property<string>("LastMessageText")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("last_message_text");
+
+                    b.Property<DateTimeOffset>("LastMessageTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_message_time");
+
+                    b.Property<int>("UnreadCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("unread_count");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_chat_reading_model");
+
+                    b.HasIndex("LastMessageId")
+                        .HasDatabaseName("ix_chat_reading_model_last_message_id");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_chat_reading_model_user_id");
+
+                    b.HasIndex("ChatId", "UserId")
+                        .HasDatabaseName("ix_chat_reading_model_chat_id_user_id");
+
+                    b.ToTable("chat_reading_model", (string)null);
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Messaging.Message", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ChatId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("chat_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("CreatedById")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by_id");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<Guid?>("DeletedById")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("deleted_by_id");
+
+                    b.Property<Guid?>("ForwardedMessageId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("forwarded_message_id");
+
+                    b.Property<string>("MessageText")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("message_text");
+
+                    b.Property<Guid?>("ReplyMessageId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("reply_message_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("UpdatedById")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_message");
+
+                    b.HasIndex("ChatId")
+                        .HasDatabaseName("ix_message_chat_id");
+
+                    b.HasIndex("CreatedById")
+                        .HasDatabaseName("ix_message_created_by_id");
+
+                    b.HasIndex("DeletedById")
+                        .HasDatabaseName("ix_message_deleted_by_id");
+
+                    b.HasIndex("ForwardedMessageId")
+                        .HasDatabaseName("ix_message_forwarded_message_id");
+
+                    b.HasIndex("ReplyMessageId")
+                        .HasDatabaseName("ix_message_reply_message_id");
+
+                    b.HasIndex("UpdatedById")
+                        .HasDatabaseName("ix_message_updated_by_id");
+
+                    b.ToTable("message", (string)null);
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Messaging.MessageAttachment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("CreatedById")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by_id");
+
+                    b.Property<string>("Data")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("data");
+
+                    b.Property<string>("EntityId")
+                        .HasColumnType("text")
+                        .HasColumnName("entity_id");
+
+                    b.Property<Guid>("MessageId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("message_id");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("type");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("UpdatedById")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_message_attachment");
+
+                    b.HasIndex("CreatedById")
+                        .HasDatabaseName("ix_message_attachment_created_by_id");
+
+                    b.HasIndex("MessageId")
+                        .HasDatabaseName("ix_message_attachment_message_id");
+
+                    b.HasIndex("UpdatedById")
+                        .HasDatabaseName("ix_message_attachment_updated_by_id");
+
+                    b.ToTable("message_attachment", (string)null);
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Messaging.MessageView", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("MessageId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("message_id");
+
+                    b.Property<Guid>("UserId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<DateTimeOffset?>("ViewedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("viewed_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_message_view");
+
+                    b.HasIndex("MessageId")
+                        .HasDatabaseName("ix_message_view_message_id");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_message_view_user_id");
+
+                    b.ToTable("message_view", (string)null);
                 });
 
             modelBuilder.Entity("FitHub.Domain.Notifications.EmailNotification", b =>
@@ -705,100 +1114,6 @@ namespace FitHub.Data.Migrations
                     b.ToTable("trainer", (string)null);
                 });
 
-            modelBuilder.Entity("FitHub.Domain.Users.User", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasMaxLength(255)
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("email");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_active");
-
-                    b.Property<bool>("IsEmailConfirmed")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_email_confirmed");
-
-                    b.Property<bool>("IsOnline")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_online");
-
-                    b.Property<bool>("IsTemporaryPassword")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_temporary_password");
-
-                    b.Property<DateTimeOffset>("LastSeenAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_seen_at");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("name");
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("password_hash");
-
-                    b.Property<DateTimeOffset?>("StartActiveAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("start_active_at");
-
-                    b.Property<DateTimeOffset>("StartRegistrationAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("start_registration_at");
-
-                    b.Property<string>("Surname")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("surname");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.Property<string>("UserType")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("user_type");
-
-                    b.HasKey("Id")
-                        .HasName("pk_user");
-
-                    b.ToTable("user", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("a88a98f0-35e8-46c4-a38e-bf88bd5c9ebc"),
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 11, 2, 21, 20, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            Email = "alexcrazy42@mail.ru",
-                            IsActive = true,
-                            IsEmailConfirmed = true,
-                            IsOnline = false,
-                            IsTemporaryPassword = false,
-                            LastSeenAt = new DateTimeOffset(new DateTime(2025, 11, 2, 21, 20, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            Name = "Александр",
-                            PasswordHash = "$2a$11$H9cNs1CfV.iJiv/N9hIHOe4UC/23MCB8xObp4m.wKbh7YOzmsQrjO",
-                            StartRegistrationAt = new DateTimeOffset(new DateTime(2025, 11, 2, 21, 20, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            Surname = "Мамедов",
-                            UpdatedAt = new DateTimeOffset(new DateTime(2025, 11, 2, 21, 20, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            UserType = "CmsAdmin"
-                        });
-                });
-
             modelBuilder.Entity("FitHub.Domain.Users.Visitor", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1004,6 +1319,162 @@ namespace FitHub.Data.Migrations
                     b.Navigation("Visitor");
                 });
 
+            modelBuilder.Entity("FitHub.Domain.Messaging.ChatParticipant", b =>
+                {
+                    b.HasOne("FitHub.Domain.Messaging.Chat", "Chat")
+                        .WithMany("Participants")
+                        .HasForeignKey("ChatId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_chat_participant_chat_chat_id");
+
+                    b.HasOne("FitHub.Authentication.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_chat_participant_user_user_id");
+
+                    b.Navigation("Chat");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Messaging.ChatReadingModel", b =>
+                {
+                    b.HasOne("FitHub.Domain.Messaging.Chat", "Chat")
+                        .WithMany()
+                        .HasForeignKey("ChatId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_chat_reading_model_chat_chat_id");
+
+                    b.HasOne("FitHub.Domain.Messaging.Message", "LastMessage")
+                        .WithMany()
+                        .HasForeignKey("LastMessageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_chat_reading_model_message_last_message_id");
+
+                    b.HasOne("FitHub.Authentication.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_chat_reading_model_user_user_id");
+
+                    b.Navigation("Chat");
+
+                    b.Navigation("LastMessage");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Messaging.Message", b =>
+                {
+                    b.HasOne("FitHub.Domain.Messaging.Chat", "Chat")
+                        .WithMany()
+                        .HasForeignKey("ChatId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_message_chat_chat_id");
+
+                    b.HasOne("FitHub.Authentication.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_message_user_created_by_id");
+
+                    b.HasOne("FitHub.Authentication.User", "DeletedBy")
+                        .WithMany()
+                        .HasForeignKey("DeletedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_message_user_deleted_by_id");
+
+                    b.HasOne("FitHub.Domain.Messaging.Message", "ForwardedMessage")
+                        .WithMany()
+                        .HasForeignKey("ForwardedMessageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_message_message_forwarded_message_id");
+
+                    b.HasOne("FitHub.Domain.Messaging.Message", "ReplyMessage")
+                        .WithMany("RepliedMessages")
+                        .HasForeignKey("ReplyMessageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_message_message_reply_message_id");
+
+                    b.HasOne("FitHub.Authentication.User", "UpdatedBy")
+                        .WithMany()
+                        .HasForeignKey("UpdatedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_message_user_updated_by_id");
+
+                    b.Navigation("Chat");
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("DeletedBy");
+
+                    b.Navigation("ForwardedMessage");
+
+                    b.Navigation("ReplyMessage");
+
+                    b.Navigation("UpdatedBy");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Messaging.MessageAttachment", b =>
+                {
+                    b.HasOne("FitHub.Authentication.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_message_attachment_user_created_by_id");
+
+                    b.HasOne("FitHub.Domain.Messaging.Message", "Message")
+                        .WithMany("Attachments")
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_message_attachment_message_message_id");
+
+                    b.HasOne("FitHub.Authentication.User", "UpdatedBy")
+                        .WithMany()
+                        .HasForeignKey("UpdatedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_message_attachment_user_updated_by_id");
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("Message");
+
+                    b.Navigation("UpdatedBy");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Messaging.MessageView", b =>
+                {
+                    b.HasOne("FitHub.Domain.Messaging.Message", "Message")
+                        .WithMany("Views")
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_message_view_message_message_id");
+
+                    b.HasOne("FitHub.Authentication.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_message_view_user_user_id");
+
+                    b.Navigation("Message");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("FitHub.Domain.Trainings.BaseGroupTrainingPhoto", b =>
                 {
                     b.HasOne("FitHub.Domain.Files.FileEntity", "File")
@@ -1088,7 +1559,7 @@ namespace FitHub.Data.Migrations
 
             modelBuilder.Entity("FitHub.Domain.Users.GymAdmin", b =>
                 {
-                    b.HasOne("FitHub.Domain.Users.User", "User")
+                    b.HasOne("FitHub.Authentication.User", "User")
                         .WithOne()
                         .HasForeignKey("FitHub.Domain.Users.GymAdmin", "UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1100,7 +1571,7 @@ namespace FitHub.Data.Migrations
 
             modelBuilder.Entity("FitHub.Domain.Users.Session", b =>
                 {
-                    b.HasOne("FitHub.Domain.Users.User", "User")
+                    b.HasOne("FitHub.Authentication.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1112,7 +1583,7 @@ namespace FitHub.Data.Migrations
 
             modelBuilder.Entity("FitHub.Domain.Users.Token", b =>
                 {
-                    b.HasOne("FitHub.Domain.Users.User", "User")
+                    b.HasOne("FitHub.Authentication.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1124,7 +1595,7 @@ namespace FitHub.Data.Migrations
 
             modelBuilder.Entity("FitHub.Domain.Users.Trainer", b =>
                 {
-                    b.HasOne("FitHub.Domain.Users.User", "User")
+                    b.HasOne("FitHub.Authentication.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1136,7 +1607,7 @@ namespace FitHub.Data.Migrations
 
             modelBuilder.Entity("FitHub.Domain.Users.Visitor", b =>
                 {
-                    b.HasOne("FitHub.Domain.Users.User", "User")
+                    b.HasOne("FitHub.Authentication.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1224,6 +1695,20 @@ namespace FitHub.Data.Migrations
                     b.Navigation("GymEquipments");
 
                     b.Navigation("Visitors");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Messaging.Chat", b =>
+                {
+                    b.Navigation("Participants");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Messaging.Message", b =>
+                {
+                    b.Navigation("Attachments");
+
+                    b.Navigation("RepliedMessages");
+
+                    b.Navigation("Views");
                 });
 
             modelBuilder.Entity("FitHub.Domain.Trainings.BaseGroupTraining", b =>

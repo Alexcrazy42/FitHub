@@ -12,5 +12,7 @@ public sealed class LoginResponse
 
     public required bool? LoginFlowDone { get; set; }
 
+    public string? JwtToken { get; set; }
+
     public required IReadOnlyList<string> RoleNames { get; set; } = [];
 }

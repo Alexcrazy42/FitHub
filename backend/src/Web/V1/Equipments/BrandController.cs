@@ -21,10 +21,10 @@ public class BrandController : ControllerBase
     [HttpGet(ApiRoutesV1.Brands)]
     public async Task<ListResponse<BrandResponse>> GetAll([FromQuery] SearchBrandRequest? searchRequest, [FromQuery] PagedRequest? request, CancellationToken ct)
     {
-        var query = request.ToDomain();
+        var query = request.ToQuery();
         var search = searchRequest.ToCommand();
         var pagedResult = await brandService.GetAllAsync(search, query, ct);
-        return pagedResult.ToResponse(EquipmentResponseExtensions.ToResponse);
+        return pagedResult.ToListResponse(EquipmentResponseExtensions.ToResponse);
     }
 
     [HttpGet(ApiRoutesV1.BrandsById)]

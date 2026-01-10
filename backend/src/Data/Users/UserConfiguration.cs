@@ -1,4 +1,5 @@
-﻿using FitHub.Common.AspNetCore.Accounting;
+﻿using FitHub.Authentication;
+using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.Utilities.System;
 using FitHub.Domain.Users;
 using Microsoft.EntityFrameworkCore;

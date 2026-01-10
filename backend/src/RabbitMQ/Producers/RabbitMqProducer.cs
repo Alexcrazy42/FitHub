@@ -1,8 +1,9 @@
 ﻿using System.Text;
-using System.Text.Json;
+using FitHub.Common.Json;
 using FitHub.Common.Utilities.System;
 using FitHub.RabbitMQ.Configuration;
 using FitHub.RabbitMQ.Contracts;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 
@@ -16,12 +17,18 @@ public class RabbitMqProducer<TMessage, TProducer, TOptions> : IRabbitProducer<T
     where TOptions : class, IRabbitMqOptions
 {
     private readonly Lazy<Task<IChannel>> channelFactory;
+    private readonly ILogger<RabbitMqProducer<TMessage, TProducer, TOptions>> logger;
     private readonly string exchangeName;
     private readonly string exchangeType;
-    private readonly string routingKey;
+    private readonly string defaultRoutingKey;
+    private readonly string fallbackRoutingKey;
 
-    public RabbitMqProducer(IRabbitMqConnection<TOptions> connection, IOptions<TOptions> rabbitOptions)
+
+    public RabbitMqProducer(IRabbitMqConnection<TOptions> connection,
+        IOptions<TOptions> rabbitOptions,
+        ILogger<RabbitMqProducer<TMessage, TProducer, TOptions>> logger)
     {
+        this.logger = logger;
         var producerAttribute = (ProducerAttribute)Attribute.GetCustomAttribute(typeof(TProducer), typeof(ProducerAttribute)).Required();
         if (producerAttribute is null)
         {
@@ -30,7 +37,8 @@ public class RabbitMqProducer<TMessage, TProducer, TOptions> : IRabbitProducer<T
 
         exchangeName = TMessage.ExchangeName;
         exchangeType = producerAttribute.ExchangeType.Required();
-        routingKey = TMessage.ExchangeRoutingKey;
+        defaultRoutingKey = TMessage.DefaultRoutingKey;
+        fallbackRoutingKey = TMessage.FallbackRoutingKey;
         channelFactory = new Lazy<Task<IChannel>>(async () =>
         {
             var channel = await connection.CreateChannelAsync();
@@ -38,6 +46,34 @@ public class RabbitMqProducer<TMessage, TProducer, TOptions> : IRabbitProducer<T
             {
                 await SetupExchangeAsync(channel);
             }
+
+            channel.BasicReturnAsync += async (_, args) =>
+            {
+                logger.LogWarning("Unrouted message, replyKey={ReplyKey}, replyText={ReplyText}, routingKey={RoutingKey}", args.ReplyCode, args.ReplyText, args.RoutingKey);
+                var body = args.Body.ToArray();
+
+                var publishTimeout = TimeSpan.FromSeconds(5);
+                using var cts = new CancellationTokenSource();
+                cts.CancelAfter(publishTimeout);
+
+                try
+                {
+                    await channel.BasicPublishAsync(
+                        exchangeName,
+                        fallbackRoutingKey,
+                        body: body,
+                        mandatory: false,
+                        cancellationToken: cts.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    if (cts.Token.IsCancellationRequested)
+                    {
+                        throw new TimeoutException($"Message publishing timed out after {publishTimeout.TotalSeconds} seconds.");
+                    }
+                    throw;
+                }
+            };
 
             return channel;
         });
@@ -51,7 +87,7 @@ public class RabbitMqProducer<TMessage, TProducer, TOptions> : IRabbitProducer<T
     public async Task BasicPublishAsync(TMessage message, CancellationToken ct)
     {
         var channel = await channelFactory.Value;
-        var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
+        var body = Encoding.UTF8.GetBytes(CommonJsonSerializer.Serialize(message));
         var publishTimeout = TimeSpan.FromSeconds(5);
 
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
@@ -59,7 +95,40 @@ public class RabbitMqProducer<TMessage, TProducer, TOptions> : IRabbitProducer<T
 
         try
         {
-            await channel.BasicPublishAsync(exchangeName, routingKey, body: body, cancellationToken: cts.Token);
+            await channel.BasicPublishAsync(
+                exchangeName,
+                defaultRoutingKey,
+                body: body,
+                mandatory: true,
+                cancellationToken: cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            if (cts.Token.IsCancellationRequested)
+            {
+                throw new TimeoutException($"Message publishing timed out after {publishTimeout.TotalSeconds} seconds.");
+            }
+            throw;
+        }
+    }
+
+    public async Task BasicPublishAsync(string routingKey, TMessage message, CancellationToken ct = default)
+    {
+        var channel = await channelFactory.Value;
+        var body = Encoding.UTF8.GetBytes(CommonJsonSerializer.Serialize(message));
+        var publishTimeout = TimeSpan.FromSeconds(5);
+
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        cts.CancelAfter(publishTimeout);
+
+        try
+        {
+            await channel.BasicPublishAsync(
+                exchangeName,
+                routingKey,
+                body: body,
+                mandatory: true,
+                cancellationToken: cts.Token);
         }
         catch (OperationCanceledException)
         {
@@ -71,3 +140,4 @@ public class RabbitMqProducer<TMessage, TProducer, TOptions> : IRabbitProducer<T
         }
     }
 }
+

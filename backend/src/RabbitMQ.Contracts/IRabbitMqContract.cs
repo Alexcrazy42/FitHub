@@ -12,7 +12,13 @@ public interface IRabbitMqContract
 
 
     /// <summary>
-    /// Routing Key на Exchange
+    /// Дефолтный Routing Key
     /// </summary>
-    static abstract string ExchangeRoutingKey { get; }
+    static abstract string DefaultRoutingKey { get; }
+
+    /// <summary>
+    /// Fallback Routing Key
+    /// </summary>
+    static abstract string FallbackRoutingKey { get; }
+
 }

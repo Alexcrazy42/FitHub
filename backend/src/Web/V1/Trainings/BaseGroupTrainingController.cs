@@ -35,9 +35,9 @@ public class BaseGroupTrainingController : ControllerBase
     public async Task<ListResponse<BaseGroupTrainingResponse>> GetAllAsync([FromQuery] PagedRequest? paged, CancellationToken ct)
     {
         await accessService.EnsureHasAnyPolicyAsync(AuthorizationPolicies.CmsAdminOnly, AuthorizationPolicies.GymAdminOnly);
-        var pagedQuery = paged.ToDomain();
+        var pagedQuery = paged.ToQuery();
         var all = await service.GetAsync(pagedQuery, ct);
-        return all.ToResponse(TrainingResponseExtensions.ToResponse);
+        return all.ToListResponse(TrainingResponseExtensions.ToResponse);
     }
 
 

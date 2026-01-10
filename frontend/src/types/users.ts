@@ -16,3 +16,7 @@ export interface IVisitorResponse {
     id: string;
     user: UserResponse;
 }
+
+export interface IGetUsersRequest {
+    partName: string | null;
+}

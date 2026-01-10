@@ -1,5 +1,6 @@
 ﻿using FitHub.Application.Users;
 using FitHub.Application.Users.CmsAdmins;
+using FitHub.Authentication;
 using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.AspNetCore.Auth;
 using FitHub.Common.Entities;
@@ -32,9 +33,9 @@ public class CmsAdminController : ControllerBase
     [Authorize(Policy = AuthorizationPolicies.CmsAdminOnly)]
     public async Task<ListResponse<UserResponse>> Get([FromQuery] PagedRequest? paged, CancellationToken ct)
     {
-        var query = paged.ToDomain();
+        var query = paged.ToQuery();
         var usersResult = await cmsAdminService.GetCmsAdmins(query, ct);
-        return usersResult.ToResponse(UserExtensions.ToResponse);
+        return usersResult.ToListResponse(UserExtensions.ToResponse);
     }
 
     [HttpPost(ApiRoutesV1.CmsAdmins)]

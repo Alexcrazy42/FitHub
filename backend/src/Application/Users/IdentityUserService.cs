@@ -1,8 +1,11 @@
-﻿using FitHub.Application.EmailNotifications;
+﻿using FitHub.Application.Common;
+using FitHub.Application.EmailNotifications;
 using FitHub.Application.Equipments.Gyms;
+using FitHub.Application.Users.Commands;
 using FitHub.Application.Users.GymAdmins;
 using FitHub.Application.Users.Trainers;
 using FitHub.Application.Users.Visitors;
+using FitHub.Authentication;
 using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.AspNetCore.Auth;
 using FitHub.Common.AspNetCore.Tokens;
@@ -100,6 +103,17 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
         var user = await userRepository.GetFirstOrDefaultAsync(x => x.Id == userId, ct);
         NotFoundException.ThrowIfNull(user, "Пользователь не найден!");
         return user;
+    }
+
+    public async Task<IReadOnlyList<User>> GetUsersAsync(List<IdentityUserId> userIds, CancellationToken ct)
+    {
+        var users = await userRepository.GetUsersAsync(userIds, ct);
+        if (users.Count != userIds.Count)
+        {
+            throw new NotFoundException("Не найдены все пользователи");
+        }
+
+        return users;
     }
 
     public async Task<User> StartRegister(StartRegisterRequest request, CancellationToken ct)
@@ -366,6 +380,31 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
         context.Response.Cookies.Delete(IAuthOptions.CookieName);
     }
 
+    public Task<PagedResult<User>> GetUsersAsync(GetUserQuery query, PagedQuery pagedQuery, CancellationToken ct = default)
+    {
+        return userRepository.GetPagedUsersAsync(query, pagedQuery, ct);
+    }
+
+    public async Task StartOnlineAt(IdentityUserId userId, CancellationToken ct)
+    {
+        var user = await GetUserAsync(userId, ct);
+
+        user.SetOnline();
+
+        await unitOfWork.SaveChangesAsync(ct);
+    }
+
+    public async Task<DateTimeOffset> EndOnlineAt(IdentityUserId userId, CancellationToken ct)
+    {
+        var user = await GetUserAsync(userId, ct);
+
+        var lastSeen = user.SetOffline();
+
+        await unitOfWork.SaveChangesAsync(ct);
+
+        return lastSeen;
+    }
+
     public async Task<LoginResponse> LoginAsync(string login, string password, CancellationToken cancellationToken)
     {
         var user = await GetByEmailAsync(login, cancellationToken);
@@ -404,9 +443,11 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
 
             await sessionService.Create(session, ct);
 
-            var claims = ITokenService.CreateCommonClaims(user.Id.ToString(), session.Id.ToString(), user.UserType);
+            var claims = ITokenService.CreateCommonClaims(user.Id.ToString(), userEntity.GetFullName(), session.Id.ToString(), user.UserType);
 
             var tokenString = tokenService.Create(claims);
+
+            loginResponse.JwtToken = tokenString;
 
             context.Response.Cookies.Append(IAuthOptions.CookieName, tokenString, new CookieOptions
             {

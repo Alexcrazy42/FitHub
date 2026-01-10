@@ -1,4 +1,5 @@
-﻿using FitHub.Common.AspNetCore.Accounting;
+﻿using FitHub.Authentication;
+using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.Entities;
 using FitHub.Common.Entities.Identity;
 using FitHub.Domain.Equipments;
@@ -38,16 +39,6 @@ public class Visitor : IEntity<VisitorId>, IAuditableEntity
     public DateTimeOffset CreatedAt { get; private set; }
 
     public DateTimeOffset UpdatedAt { get; private set; }
-
-    public void SetCreatedAt(DateTimeOffset date)
-    {
-        CreatedAt = date;
-    }
-
-    public void SetUpdatedAt(DateTimeOffset date)
-    {
-        UpdatedAt = date;
-    }
 
     public static Visitor Create(User user)
     {

@@ -1,5 +1,6 @@
 ﻿using FitHub.Application.Users;
 using FitHub.Application.Users.GymAdmins;
+using FitHub.Authentication;
 using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.AspNetCore.Auth;
 using FitHub.Common.Entities;
@@ -42,9 +43,9 @@ public class GymAdminController : ControllerBase
     [Authorize(Policy = AuthorizationPolicies.CmsAdminOnly)]
     public async Task<ListResponse<GymAdminResponse>> GetAll([FromQuery] PagedRequest? paged, CancellationToken ct)
     {
-        var domain = paged.ToDomain();
+        var domain = paged.ToQuery();
         var gymAdminResult = await gymAdminService.GetAll(domain, ct);
-        return gymAdminResult.ToResponse(UserExtensions.ToResponse);
+        return gymAdminResult.ToListResponse(UserExtensions.ToResponse);
     }
 
     [HttpPost(ApiRoutesV1.GymAdmins)]

@@ -25,9 +25,9 @@ public class MuscleGroupController : ControllerBase
     [HttpGet(ApiRoutesV1.MuscleGroups)]
     public async Task<ListResponse<MuscleGroupResponse>> GetAllAsync([FromQuery] PagedRequest? pagedRequest, CancellationToken ct)
     {
-        var query = pagedRequest.ToDomain();
+        var query = pagedRequest.ToQuery();
         var pagedResult = await muscleGroupService.GetAll(query, ct);
-        return pagedResult.ToResponse(TrainingResponseExtensions.ToMuscleGroupResponse);
+        return pagedResult.ToListResponse(TrainingResponseExtensions.ToMuscleGroupResponse);
     }
 
     [HttpPost(ApiRoutesV1.MuscleGroups)]

@@ -27,6 +27,13 @@ public static class ServiceRegistry
         services.AddScoped<IRabbitProducer<TMessage>, RabbitMqProducer<TMessage, TProducer, TOptions>>();
     }
 
+    public static void AddBasicProducer<TOptions>(this IServiceCollection services)
+        where TOptions : class, IRabbitMqOptions
+    {
+        services.AddScoped<IBasicProducer<TOptions>, BasicRabbitProducer<TOptions>>();
+    }
+
+
     /// <summary>
     /// Добавить консюмера, как BackgroundService
     /// </summary>

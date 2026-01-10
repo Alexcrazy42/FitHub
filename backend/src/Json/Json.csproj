@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>$(CompanyName).Common.$(MSBuildProjectName)</AssemblyName>
+    <RootNamespace>$(CompanyName).Common.$(MSBuildProjectName)</RootNamespace>
+    <IsPackable>True</IsPackable>
+    <TargetFrameworks>net9.0;</TargetFrameworks>
+  </PropertyGroup>
+
+
+</Project>
