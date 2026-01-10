@@ -214,23 +214,26 @@ public class ApiRoutesV1
 
     #endregion
 
+    #region Messaging
 
+    public const string Chats = Root + "/chats";
 
-    public const string Organizations = Root + "/organizations";
+    public const string ChatById = Chats + "/{id}";
 
-    public const string Organization = Organizations + "/{organizationId}";
+    public const string ChatInvite = Chats + "/invite";
 
-    public const string Employees = Organization + "/employees";
+    public const string ChatExclude = Chats + "/exclude";
 
-    public const string Employee = Employees + "/{employeeId}";
+    public const string Messages = Root + "/messages";
 
-    public static string ForPaginationOrganizations(int? limit, int? offset) => Organizations + $"?limit={limit}&offset={offset}";
+    public const string MessagesRead = Messages + "/read";
 
-    public static string ForOrganization(string organizationId) => ReplaceUrlSegment(Organization, "organizationId", organizationId);
+    public const string MessagesById = Messages + "/{id}";
 
-    public static string ForEmployees(string organizationId) => ReplaceUrlSegment(Employees, "organizationId", organizationId);
+    public const string ChatMessagesList = Root + "/chat-messages/list";
 
-    public static string ForEmployee(string organizationId, string employeeId) => ReplaceUrlSegment(ForOrganization(organizationId), "employeeId", employeeId);
+    #endregion
+
 
     private static string ReplaceUrlSegment(string urlTemplate, string name, string value)
     {

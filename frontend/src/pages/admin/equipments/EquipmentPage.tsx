@@ -82,7 +82,7 @@ export const EquipmentPage: React.FC = () => {
   };
 
   const fetchMaxFileCount = async () => {
-    const response = await apiService.get<IEntity>(`/v1/entities?entityTypeDto=${EntityType.Equipment}`);
+    const response = await apiService.get<IEntity>(`/v1/entities?entityType=${EntityType.Equipment}`);
     if(response.success) {
       const maxCount = response.data?.maxFileCount;
       if(maxCount) {

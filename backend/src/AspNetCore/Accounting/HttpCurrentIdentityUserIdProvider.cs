@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using FitHub.Authentication;
+using Microsoft.AspNetCore.Http;
 
 namespace FitHub.Common.AspNetCore.Accounting;
 

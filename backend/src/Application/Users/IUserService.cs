@@ -1,4 +1,7 @@
-﻿using FitHub.Common.AspNetCore.Accounting;
+﻿using FitHub.Application.Common;
+using FitHub.Application.Users.Commands;
+using FitHub.Authentication;
+using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.AspNetCore.Auth;
 using FitHub.Contracts.V1.Auth;
 using FitHub.Contracts.V1.Users.GymAdmins;
@@ -13,6 +16,8 @@ public interface IUserService
     /// Получить пользователя
     /// </summary>
     Task<User> GetUserAsync(IdentityUserId userId, CancellationToken ct);
+
+    Task<IReadOnlyList<User>> GetUsersAsync(List<IdentityUserId> userIds, CancellationToken ct);
 
     /// <summary>
     /// Начать регистрацию
@@ -62,4 +67,10 @@ public interface IUserService
     /// Разлогиниться
     /// </summary>
     Task Logout(IdentityUserId userId, SessionId sessionId, CancellationToken ct = default);
+
+    Task<PagedResult<User>> GetUsersAsync(GetUserQuery query, PagedQuery pagedQuery, CancellationToken ct = default);
+
+    Task StartOnlineAt(IdentityUserId userId, CancellationToken ct);
+
+    Task<DateTimeOffset> EndOnlineAt(IdentityUserId userId, CancellationToken ct);
 }

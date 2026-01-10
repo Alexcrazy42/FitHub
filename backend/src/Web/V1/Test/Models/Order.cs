@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace FitHub.Web.V1.Test.Models;
+﻿namespace FitHub.Web.V1.Test.Models;
 
 public class Order
 {

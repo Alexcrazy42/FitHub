@@ -2,6 +2,7 @@
 using Amazon.S3;
 using FitHub.Application.Files;
 using FitHub.Application.Users;
+using FitHub.Authentication;
 using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.AspNetCore.Auth;
 using Microsoft.Extensions.Configuration;

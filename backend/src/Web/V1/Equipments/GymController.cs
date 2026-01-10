@@ -24,9 +24,9 @@ public class GymController : ControllerBase
     [HttpGet(ApiRoutesV1.Gyms)]
     public async Task<ListResponse<GymResponse>> GetGymsAsync([FromQuery] PagedRequest? request, CancellationToken ct)
     {
-        var query = request.ToDomain();
+        var query = request.ToQuery();
         var gymPagedResult = await gymService.GetGymsAsync(query, ct);
-        return gymPagedResult.ToResponse(EquipmentResponseExtensions.ToResponse);
+        return gymPagedResult.ToListResponse(EquipmentResponseExtensions.ToResponse);
     }
 
     [HttpGet(ApiRoutesV1.GymById)]

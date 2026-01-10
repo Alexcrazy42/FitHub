@@ -17,7 +17,7 @@ internal sealed class PostgresUnitOfWork<TContext> : IUnitOfWork
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        var message = "Произошла непредвиденная ошибка!";
+        string message;
         try
         {
             return await context.SaveChangesAsync(cancellationToken);

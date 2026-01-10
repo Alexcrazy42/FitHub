@@ -28,16 +28,6 @@ public class EmailNotification : IEntity<EmailNotificationId>, IAuditableEntity
 
     public DateTimeOffset? SentAt { get; private set; }
 
-    public void SetCreatedAt(DateTimeOffset date)
-    {
-        CreatedAt = date;
-    }
-
-    public void SetUpdatedAt(DateTimeOffset date)
-    {
-        UpdatedAt = date;
-    }
-
     public void SetSentAt(DateTimeOffset date)
     {
         SentAt = date;

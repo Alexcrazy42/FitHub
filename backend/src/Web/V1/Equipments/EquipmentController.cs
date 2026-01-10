@@ -29,9 +29,9 @@ public class EquipmentController : ControllerBase
     public async Task<ListResponse<EquipmentResponse>> GetAllAsync([FromQuery] PagedRequest? pagedRequest, CancellationToken ct)
     {
         await accessService.EnsureHasAnyPolicyAsync(AuthorizationPolicies.CmsAdminOnly, AuthorizationPolicies.GymAdminOnly);
-        var query = pagedRequest.ToDomain();
+        var query = pagedRequest.ToQuery();
         var pagedResult = await service.GetAllAsync(query, ct);
-        return pagedResult.ToResponse(EquipmentResponseExtensions.ToResponse);
+        return pagedResult.ToListResponse(EquipmentResponseExtensions.ToResponse);
     }
 
     [HttpGet(ApiRoutesV1.EquipmentById)]

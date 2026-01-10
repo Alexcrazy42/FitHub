@@ -13,6 +13,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\src\NukeBuild\NukeBuild.csproj" />
+    <ProjectReference Include="..\tests\IntegrationTests\IntegrationTests.csproj" />
+    <ProjectReference Include="..\tests\UnitTests\UnitTests.csproj" />
   </ItemGroup>
 
 </Project>

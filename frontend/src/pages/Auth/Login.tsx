@@ -18,6 +18,7 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [availableRoles, setAvailableRoles] = useState<{ role: UserRole; displayName: string; }[]>([]);
+  const [loginResponse, setLoginResponse] = useState<LoginResponse | null>(null);
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [showRoleSelection, setShowRoleSelection] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -69,7 +70,7 @@ const Login: React.FC = () => {
 
       const mapping = roleRoutes[selectedRole];
       const user: User = {
-        id: username,
+        id: loginResponse?.userId,
         email: username,
         roles: [selectedRole],
         currentRole: selectedRole
@@ -99,6 +100,7 @@ const Login: React.FC = () => {
 
       if (result.success && result.data) {
         const userData = result.data;
+        setLoginResponse(userData);
         const userRoles = userData.roleNames;
 
         if (userRoles.length === 0) {

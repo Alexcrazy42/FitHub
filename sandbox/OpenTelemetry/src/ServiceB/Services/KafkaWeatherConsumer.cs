@@ -88,7 +88,7 @@ public class KafkaWeatherConsumer : BackgroundService
                 {
                     _logger.LogError(ex, "Error consuming Kafka message");
                     Activity.Current?.SetStatus(ActivityStatusCode.Error);
-                    Activity.Current?.RecordException(ex);
+                    Activity.Current?.AddException(ex);
                 }
             }
         }

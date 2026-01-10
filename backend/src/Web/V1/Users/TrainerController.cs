@@ -1,5 +1,6 @@
 ﻿using FitHub.Application.Users;
 using FitHub.Application.Users.Trainers;
+using FitHub.Authentication;
 using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.AspNetCore.Auth;
 using FitHub.Common.Entities;
@@ -42,9 +43,9 @@ public class TrainerController : ControllerBase
     public async Task<ListResponse<TrainerResponse>> GetAll([FromQuery] PagedRequest? request, [FromQuery] TrainerQuery? trainerQuery, CancellationToken ct)
     {
         await accessService.EnsureHasAnyPolicyAsync(AuthorizationPolicies.CmsAdminOnly, AuthorizationPolicies.GymAdminOnly);
-        var query = request.ToDomain();
+        var query = request.ToQuery();
         var result = await trainerService.GetAll(query, trainerQuery, ct);
-        return result.ToResponse(UserExtensions.ToResponse);
+        return result.ToListResponse(UserExtensions.ToResponse);
     }
 
     [HttpPost(ApiRoutesV1.Trainers)]

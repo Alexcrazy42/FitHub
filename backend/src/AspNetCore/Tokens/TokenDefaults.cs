@@ -1,4 +1,5 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
 
 namespace FitHub.Common.AspNetCore.Tokens;
 
@@ -8,6 +9,8 @@ public static class TokenDefaults
     {
         return new TokenValidationParameters
         {
+            NameClaimType = ClaimTypes.NameIdentifier,
+
             // В нашем случае Audience излишен, он требуется только при сложных схемах авторизации
             ValidateAudience = false,
 
