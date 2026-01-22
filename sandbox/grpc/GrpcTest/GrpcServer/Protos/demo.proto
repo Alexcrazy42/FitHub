@@ -1,0 +1,77 @@
+﻿syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+option csharp_namespace = "GrpcDemo";
+
+package demo;
+
+// Сервис
+service DemoService {
+  rpc GetData (DataRequest) returns (DataResponse);
+  rpc GetMultipleData (DataRequest) returns (stream DataResponse);
+  rpc GetDataList (DataRequest) returns (DataListResponse);
+  rpc BulkDataRequest(stream DataRequest) returns (DataResponse);
+}
+
+// Enum
+enum Status {
+  UNKNOWN = 0;
+  ACTIVE = 1;
+  INACTIVE = 2;
+  PENDING = 3;
+}
+
+// Вложенный объект
+message Address {
+  string street = 1;
+  string city = 2;
+  int32 zipCode = 3;
+}
+
+// Запрос
+message DataRequest {
+  int32 id = 1;
+  string name = 2;
+}
+
+// Ответ со всеми типами данных
+message DataResponse {
+  // Числа
+  int32 intValue = 1;
+  int64 longValue = 2;
+  float floatValue = 3;
+  double doubleValue = 4;
+
+  // Строки
+  string stringValue = 5;
+
+  // Enum
+  Status status = 6;
+
+  // Вложенные объекты (нуллябельные через optional или message type)
+  Address address = 7; // Нуллябельный (message всегда nullable)
+  google.protobuf.StringValue nullableString = 8; // Явно нуллябельная строка
+
+  // Даты (DateTimeOffset, DateTime)
+  google.protobuf.Timestamp createdAt = 9; // DateTime/DateTimeOffset
+  google.protobuf.Timestamp updatedAt = 10;
+
+  // DateOnly - нет нативной поддержки, используем кастомное сообщение
+  DateOnlyMessage birthDate = 11;
+}
+
+// Кастомный тип для DateOnly
+message DateOnlyMessage {
+  int32 year = 1;
+  int32 month = 2;
+  int32 day = 3;
+}
+
+// Ответ с массивом
+message DataListResponse {
+  repeated DataResponse items = 1; // Массив объектов
+  repeated int32 numbers = 2; // Массив чисел
+  repeated string tags = 3; // Массив строк
+}
