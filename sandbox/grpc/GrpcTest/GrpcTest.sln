@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrpcServer", "GrpcServer\GrpcServer.csproj", "{56D6FD7E-89A2-46D1-B792-916C78CE461B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{0A6F5B74-DF8D-4CDC-9D10-0D1EC6288E1D}"
+	ProjectSection(SolutionItems) = preProject
+		NuGet.config = NuGet.config
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrpcClient", "GrpcClient\GrpcClient.csproj", "{A59A24FD-5E07-4295-B4FB-4885B3657393}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{56D6FD7E-89A2-46D1-B792-916C78CE461B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56D6FD7E-89A2-46D1-B792-916C78CE461B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56D6FD7E-89A2-46D1-B792-916C78CE461B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56D6FD7E-89A2-46D1-B792-916C78CE461B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A59A24FD-5E07-4295-B4FB-4885B3657393}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A59A24FD-5E07-4295-B4FB-4885B3657393}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A59A24FD-5E07-4295-B4FB-4885B3657393}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A59A24FD-5E07-4295-B4FB-4885B3657393}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
