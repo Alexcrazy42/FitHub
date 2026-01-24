@@ -95,6 +95,47 @@ public class DemoClientService : IDemoClientService
         }
 
     }
+    
+    public async IAsyncEnumerable<DataResponseModel> StreamBidirectionalAsync()
+    {
+        var call = _grpcClient.StreamRequest();
+        
+        var sendTask = Task.Run(async () =>
+        {
+            try
+            {
+                for (int i = 1; i <= 10; i++)
+                {
+                    await call.RequestStream.WriteAsync(new DataRequest
+                    {
+                        Id = i,
+                        Name = $"Request {i}"
+                    });
+                
+                    Console.WriteLine($"[Client] Sent request {i}");
+                
+                    // Задержка между отправками
+                    await Task.Delay(500);
+                }
+            
+                // Сообщаем что больше не будем отправлять
+                await call.RequestStream.CompleteAsync();
+                Console.WriteLine("[Client] Finished sending requests");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Client] Send error: {ex.Message}");
+            }
+        });
+        
+        await foreach (var response in call.ResponseStream.ReadAllAsync())
+        {
+            Console.WriteLine($"[Client] Received response: {response.StringValue}");
+            yield return MapToModel(response);
+        }
+        
+        await sendTask;
+    }
 
     private DataResponseModel MapToModel(DataResponse response)
     {

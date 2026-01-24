@@ -136,4 +136,74 @@ public class DemoServiceImpl : DemoService.DemoServiceBase
         
         return response;
     }
+
+    /// <summary>
+    /// Bidirectional Streaming с параллельной обработкой
+    /// Читаем запросы и отправляем ответы независимо друг от друга
+    /// </summary>
+    public override async Task StreamRequest(
+        IAsyncStreamReader<DataRequest> requestStream,
+        IServerStreamWriter<DataResponse> responseStream,
+        ServerCallContext context)
+    {
+        // Channel для связи между чтением и отправкой
+        var channel = System.Threading.Channels.Channel.CreateUnbounded<DataResponse>();
+        
+        // Task 1: Читаем входящие запросы и обрабатываем их
+        var readTask = Task.Run(async () =>
+        {
+            try
+            {
+                await foreach (var request in requestStream.ReadAllAsync(context.CancellationToken))
+                {
+                    Console.WriteLine($"[Server] Received: Id={request.Id}, Name={request.Name}");
+                    
+                    // Обрабатываем запрос
+                    var response = new DataResponse
+                    {
+                        IntValue = request.Id * 2,
+                        StringValue = $"Processed: {request.Name}",
+                        Status = request.Id % 2 == 0 ? Status.Active : Status.Inactive,
+                        CreatedAt = Timestamp.FromDateTime(DateTime.UtcNow)
+                    };
+                    
+                    // Отправляем в канал для отправки клиенту
+                    await channel.Writer.WriteAsync(response, context.CancellationToken);
+                    
+                    // Имитация обработки
+                    await Task.Delay(100, context.CancellationToken);
+                }
+                
+                Console.WriteLine("[Server] Client finished sending requests");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Server] Read error: {ex.Message}");
+            }
+            finally
+            {
+                // Сигнализируем что больше не будет данных
+                channel.Writer.Complete();
+            }
+        }, context.CancellationToken);
+        
+        // Task 2: Читаем из канала и отправляем клиенту
+        try
+        {
+            await foreach (var response in channel.Reader.ReadAllAsync(context.CancellationToken))
+            {
+                await responseStream.WriteAsync(response, context.CancellationToken);
+                Console.WriteLine($"[Server] Sent: IntValue={response.IntValue}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Server] Write error: {ex.Message}");
+        }
+        
+        // Ждем завершения чтения
+        await readTask;
+        
+        Console.WriteLine("[Server] StreamRequest completed");
+    }
 }

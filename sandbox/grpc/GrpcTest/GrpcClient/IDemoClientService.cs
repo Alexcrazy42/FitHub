@@ -11,4 +11,6 @@ public interface IDemoClientService
     Task<List<DataResponseModel>> GetDataStreamAsync(int id, string name);
 
     Task BulkUpdate();
+    
+    IAsyncEnumerable<DataResponseModel> StreamBidirectionalAsync();
 }

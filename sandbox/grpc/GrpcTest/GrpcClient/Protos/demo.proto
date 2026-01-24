@@ -13,6 +13,7 @@ service DemoService {
   rpc GetMultipleData (DataRequest) returns (stream DataResponse);
   rpc GetDataList (DataRequest) returns (DataListResponse);
   rpc BulkDataRequest(stream DataRequest) returns (DataResponse);
+  rpc StreamRequest (stream DataRequest) returns (stream DataResponse);
 }
 
 // Enum

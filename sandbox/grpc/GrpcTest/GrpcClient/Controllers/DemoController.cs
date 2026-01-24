@@ -59,4 +59,18 @@ public class DemoController : ControllerBase
         await _demoService.BulkUpdate();
         return Ok();
     }
+    
+    /// <summary>
+    /// Bidirectional streaming через HTTP (стримим JSON клиенту)
+    /// </summary>
+    [HttpGet("bidirectional-stream")]
+    public async IAsyncEnumerable<DataResponseModel> GetBidirectionalStream()
+    {
+        // ASP.NET Core автоматически стримит IAsyncEnumerable как JSON
+        await foreach (var item in _demoService.StreamBidirectionalAsync())
+        {
+            await Task.Delay(2000);
+            yield return item;
+        }
+    }
 }
