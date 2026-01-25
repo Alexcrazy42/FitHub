@@ -24,6 +24,13 @@ public class OrdersController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPut("update")]
+    public async Task<IActionResult> UpdateOrder()
+    {
+        await _orderService.UpdateOrders();
+        return Ok();
+    }
+
     /// <summary>
     /// Детали конкретного заказа (множественный JOIN)
     /// </summary>

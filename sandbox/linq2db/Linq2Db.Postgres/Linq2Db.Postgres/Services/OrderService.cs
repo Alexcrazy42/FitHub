@@ -36,6 +36,13 @@ public class OrderService
         return result.Cast<object>().ToList();
     }
 
+    public async Task UpdateOrders()
+    {
+        var updated = await _db.Orders
+            .Set(o => o.TotalAmount, p => p.TotalAmount + 10)
+            .UpdateAsync();
+    }
+
     // === ПРИМЕР 2: LEFT JOIN ===
     // Все пользователи с количеством их заказов (включая без заказов)
     public async Task<List<object>> GetUsersWithOrderCount()
