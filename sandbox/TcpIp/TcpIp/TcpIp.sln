@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "Server\Server.csproj", "{16C521E8-13DE-4B90-8F5C-8D28E76354FC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client.Console", "Client.Console\Client.Console.csproj", "{6A2CEAE3-313D-4E23-8FC6-8797C864CBDB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{16C521E8-13DE-4B90-8F5C-8D28E76354FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16C521E8-13DE-4B90-8F5C-8D28E76354FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16C521E8-13DE-4B90-8F5C-8D28E76354FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16C521E8-13DE-4B90-8F5C-8D28E76354FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A2CEAE3-313D-4E23-8FC6-8797C864CBDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A2CEAE3-313D-4E23-8FC6-8797C864CBDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A2CEAE3-313D-4E23-8FC6-8797C864CBDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A2CEAE3-313D-4E23-8FC6-8797C864CBDB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
