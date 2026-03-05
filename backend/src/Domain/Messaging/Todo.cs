@@ -5,8 +5,9 @@
 // 2. для пользователя: как в вк - раздел где можно добавить к себе стикеры и гифки
 
 // модельки:
-// sticker_group (id, name, cost?), sticker (id, name, group_id, s3path)
-// gif: id, name, s3path
+// sticker_group (id, name)
+    // sticker (id, name, sticker_group, file_id, position)
+// gif: id, name, file_id
 
 public class Todo
 {
