@@ -23,4 +23,13 @@ public class StickerGroup : IEntity<StickerGroupId>, IAuditableEntity
 
     public DateTimeOffset CreatedAt { get; }
     public DateTimeOffset UpdatedAt { get; }
+
+    public void SetName(string name) => Name = name;
+
+    public void SetIsActive(bool isActive) => IsActive = isActive;
+
+    public void SetIsDeleted(bool isDeleted) => IsDeleted = isDeleted;
+
+    public static StickerGroup Create(string name)
+        => new(StickerGroupId.New(), name, isActive: false);
 }

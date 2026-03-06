@@ -42,4 +42,11 @@ public class Sticker : IEntity<StickerId>, IAuditableEntity
 
     public DateTimeOffset CreatedAt { get; }
     public DateTimeOffset UpdatedAt { get; }
+
+    public void SetName(string name) => Name = name;
+
+    public void SetFile(FileId fileId) => FileId = fileId;
+
+    public static Sticker Create(string name, StickerGroup group, FileId fileId, int position)
+        => new(StickerId.New(), name, group.Id, fileId, position);
 }

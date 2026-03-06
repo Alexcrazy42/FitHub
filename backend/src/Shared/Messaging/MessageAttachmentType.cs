@@ -33,5 +33,10 @@ public enum MessageAttachmentType
     /// <summary>
     /// Исключение пользователя
     /// </summary>
-    ExcludeUser
+    ExcludeUser,
+
+    /// <summary>
+    /// Стикер
+    /// </summary>
+    Sticker
 }
