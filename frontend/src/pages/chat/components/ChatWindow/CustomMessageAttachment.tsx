@@ -1,6 +1,7 @@
 ﻿import React from 'react';
 import { IMessageResponse, MessageAttachmentType } from '../../../../types/messaging';
 import { CreateGroupAttachment } from './attachments/CreateGroupAttachment';
+import { StickerAttachment } from './attachments/StickerAttachment';
 
 interface CustomMessageAttachmentProps {
   message: IMessageResponse;
@@ -18,18 +19,20 @@ export const CustomMessageAttachment: React.FC<CustomMessageAttachmentProps> = (
   switch (attachment.type) {
     case MessageAttachmentType.CreateGroup:
       return <CreateGroupAttachment message={message} attachment={attachment} />;
-    
+
+    case MessageAttachmentType.Sticker:
+      return <StickerAttachment message={message} attachment={attachment} />;
 
     // TODO: доделать
     // case MessageAttachmentType.InviteUser:
     //   return <AddUserAttachment message={message} attachment={attachment} />;
-    
+
     // case MessageAttachmentType.ExcludeUser:
     //   return <RemoveUserAttachment message={message} attachment={attachment} />;
-    
+
     // case MessageAttachmentType.RenameGroup:
     //   return <RenameGroupAttachment message={message} attachment={attachment} />;
-    
+
     // case MessageAttachmentType.LeaveGroup:
     //   return <LeaveGroupAttachment message={message} attachment={attachment} />;
 
