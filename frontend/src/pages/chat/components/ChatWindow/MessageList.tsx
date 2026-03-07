@@ -1,16 +1,17 @@
 ﻿import { useEffect, useRef, useState } from 'react';
-import { Spin } from 'antd';
+import { Spin, Button } from 'antd';
+import { DownOutlined } from '@ant-design/icons';
 import MessageItem from './MessageItem';
 import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
-import { 
+import {
   selectMessagesLoading,
   selectAllChatMessages,
   selectChats,
 } from '../../../../store/selectors';
-import { 
-  setMessages, 
-  addMessagesToTop, 
-  setMessagesLoading 
+import {
+  setMessages,
+  addMessagesToTop,
+  setMessagesLoading
 } from '../../../../store/messagesSlice';
 import { useApiService } from '../../../../api/useApiService';
 import { useMessageService } from '../../../../api/services/messageService';
@@ -46,9 +47,11 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
   const [hasMoreOlder, setHasMoreOlder] = useState(true);
   const [hasMoreNewer, setHasMoreNewer] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
-  
+  const [newMessagesCount, setNewMessagesCount] = useState(0);
+
   const isLoadingRef = useRef(false);
   const renderCount = useRef(0);
+  const prevLastMessageIdRef = useRef<string | null>(null);
   renderCount.current++;
 
   const loadInitMessages = async () => {
@@ -107,6 +110,28 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
   useEffect(() => {
     loadInitMessages();
   }, [chatId]);
+
+  // Сброс счётчика и состояния при смене чата
+  useEffect(() => {
+    setNewMessagesCount(0);
+    prevLastMessageIdRef.current = null;
+  }, [chatId]);
+
+  // Слушатель скролла: сбрасываем счётчик когда пользователь долистал до низа
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const atBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+      if (atBottom) {
+        setNewMessagesCount(0);
+      }
+    };
+
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Скролл к первому непрочитанному или в конец после загрузки
   useEffect(() => {
@@ -268,24 +293,36 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
     return () => observer.disconnect();
   }, [initialLoadDone, hasMoreNewer, newestMessageDate, chatId]);
 
-  // TODO: возможно не надо (и все что надо это показывать возможность откатиться к непрочитанным)
-  // Auto-scroll on new message (from SignalR)
+  // При получении нового сообщения — скроллить вниз или показать кнопку
   useEffect(() => {
     if (!initialLoadDone) return;
-    
+
     const container = scrollContainerRef.current;
     if (!container) return;
 
-    // Check if user is at bottom
-    const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+    const lastMessage = messages[messages.length - 1];
+    const isNewMessageAppended = lastMessage?.id !== prevLastMessageIdRef.current;
+    prevLastMessageIdRef.current = lastMessage?.id ?? null;
 
-    if (isAtBottom) {
+    // Игнорируем загрузку старых сообщений (пагинация вверх)
+    if (!isNewMessageAppended) return;
+
+    const atBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+
+    if (atBottom) {
       scrollToBottom();
+    } else {
+      setNewMessagesCount((prev) => prev + 1);
     }
   }, [messages.length, initialLoadDone]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleScrollToBottom = () => {
+    scrollToBottom();
+    setNewMessagesCount(0);
   };
 
   if (messages.length === 0 && loading) {
@@ -315,58 +352,77 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
     ? messages.length - unreadCount 
     : -1;
 
+  const newMessagesLabel =
+    newMessagesCount > 10 ? '10+ новых' : `${newMessagesCount} ${newMessagesCount === 1 ? 'новое' : 'новых'}`;
+
   return (
-    <div
-      ref={scrollContainerRef}
-      className="h-full overflow-y-auto bg-gray-50"
-    >
-      {/* Top loader */}
-      {hasMoreOlder && (
-        <div ref={topObserverRef} className="text-center py-4">
-          {loading && <Spin />}
+    <div className="relative h-full overflow-hidden">
+      <div
+        ref={scrollContainerRef}
+        className="h-full overflow-y-auto bg-gray-50"
+      >
+        {/* Top loader */}
+        {hasMoreOlder && (
+          <div ref={topObserverRef} className="text-center py-4">
+            {loading && <Spin />}
+          </div>
+        )}
+
+        <div className="px-4 py-4 space-y-3">
+          {messages.map((message, index) => {
+            const prevMessage = index > 0 ? messages[index - 1] : null;
+            const showAvatar =
+              !prevMessage ||
+              prevMessage.createdBy.id !== message.createdBy.id ||
+              isSystemMessage(prevMessage);
+
+            //const isFirstUnread = index === firstUnreadIndex;
+
+            return (
+              <div key={message.id}>
+                {/* TODO: разобраться с этим */}
+                {/* {isFirstUnread && (
+                  <div
+                    ref={unreadMessageRef}
+                    className="flex items-center my-4"
+                  >
+                    <div className="flex-1 h-px bg-red-400" />
+                    <span className="px-3 text-xs text-red-500 font-semibold">
+                      Непрочитанные сообщения
+                    </span>
+                    <div className="flex-1 h-px bg-red-400" />
+                  </div>
+                )} */}
+
+                <MessageItem
+                  message={message}
+                  showAvatar={showAvatar}
+                />
+              </div>
+            );
+          })}
+          <div ref={messagesEndRef} />
         </div>
-      )}
 
-      <div className="px-4 py-4 space-y-3">
-        {messages.map((message, index) => {
-          const prevMessage = index > 0 ? messages[index - 1] : null;
-          const showAvatar =
-            !prevMessage || 
-            prevMessage.createdBy.id !== message.createdBy.id || 
-            isSystemMessage(prevMessage);
-
-          const isFirstUnread = index === firstUnreadIndex;
-
-          return (
-            <div key={message.id}>
-              {isFirstUnread && (
-                <div 
-                  ref={unreadMessageRef}
-                  className="flex items-center my-4"
-                >
-                  <div className="flex-1 h-px bg-red-400" />
-                  <span className="px-3 text-xs text-red-500 font-semibold">
-                    Непрочитанные сообщения
-                  </span>
-                  <div className="flex-1 h-px bg-red-400" />
-                </div>
-              )}
-
-              <MessageItem
-                message={message}
-                showAvatar={showAvatar}
-              />
-            </div>
-          );
-        })}
-        <div ref={messagesEndRef} />
+        {/* Bottom loader */}
+        {hasMoreNewer && (
+          <div ref={bottomObserverRef} className="text-center py-4">
+            {loading && <Spin />}
+          </div>
+        )}
       </div>
 
-      {/* Bottom loader */}
-      {hasMoreNewer && (
-        <div ref={bottomObserverRef} className="text-center py-4">
-          {loading && <Spin />}
-        </div>
+      {/* Scroll-to-bottom button */}
+      {newMessagesCount > 0 && (
+        <Button
+          type="primary"
+          shape="round"
+          icon={<DownOutlined />}
+          onClick={handleScrollToBottom}
+          className="absolute bottom-4 right-4 flex items-center shadow-lg"
+        >
+          {newMessagesLabel}
+        </Button>
       )}
     </div>
   );
