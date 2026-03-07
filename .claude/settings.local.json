@@ -4,7 +4,8 @@
       "Bash(dir C:\\\\Users\\\\alexc\\\\source\\\\gems\\\\pet-projects\\\\FitHub)",
       "Bash(dir:*)",
       "Bash(dotnet build:*)",
-      "Bash(npx playwright:*)"
+      "Bash(npx playwright:*)",
+      "Bash(xargs grep:*)"
     ]
   }
 }

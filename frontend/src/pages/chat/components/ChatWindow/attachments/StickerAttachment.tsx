@@ -4,9 +4,13 @@ import { IMessageAttachmentResponse, IMessageResponse } from '../../../../../typ
 import { getFileRoute } from '../../../../../api/files';
 
 interface StickerAttachmentData {
-  stickerId: string;
-  fileId: string;
-  name: string;
+  name?: string;
+  fileId: {
+    value?: string;
+  };
+  stickerId: {
+    value?: string;
+  };
 }
 
 interface StickerAttachmentProps {
@@ -15,15 +19,34 @@ interface StickerAttachmentProps {
 }
 
 export const StickerAttachment: React.FC<StickerAttachmentProps> = ({ attachment }) => {
-  const data: StickerAttachmentData = JSON.parse(attachment.data || '{}');
+  let data: StickerAttachmentData;
+  
+  try {
+    data = JSON.parse(attachment.data || '{}');
+  } catch {
+    console.warn('Invalid sticker data:', attachment.data);
+    return null; // Или fallback UI
+  }
+
+  // Безопасный доступ к fileId.value
+  const fileUrl = data.fileId?.value ? getFileRoute(data.fileId.value) : '';
+  const stickerName = data.name || 'Sticker';
+
+  if (!fileUrl) {
+    return null; // Не рендерим если нет URL
+  }
 
   return (
-    <Tooltip title={data.name}>
+    <Tooltip title={stickerName}>
       <img
-        src={getFileRoute(data.fileId)}
-        alt={data.name}
+        src={fileUrl}
+        alt={stickerName}
         className="w-32 h-32 object-contain select-none"
         draggable={false}
+        onError={(e) => {
+          console.warn('Sticker load failed:', fileUrl);
+          (e.target as HTMLImageElement).style.display = 'none';
+        }}
       />
     </Tooltip>
   );

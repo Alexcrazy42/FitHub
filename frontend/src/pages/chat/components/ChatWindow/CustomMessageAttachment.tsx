@@ -23,19 +23,6 @@ export const CustomMessageAttachment: React.FC<CustomMessageAttachmentProps> = (
     case MessageAttachmentType.Sticker:
       return <StickerAttachment message={message} attachment={attachment} />;
 
-    // TODO: доделать
-    // case MessageAttachmentType.InviteUser:
-    //   return <AddUserAttachment message={message} attachment={attachment} />;
-
-    // case MessageAttachmentType.ExcludeUser:
-    //   return <RemoveUserAttachment message={message} attachment={attachment} />;
-
-    // case MessageAttachmentType.RenameGroup:
-    //   return <RenameGroupAttachment message={message} attachment={attachment} />;
-
-    // case MessageAttachmentType.LeaveGroup:
-    //   return <LeaveGroupAttachment message={message} attachment={attachment} />;
-
     default:
       return (
         <div className="text-center py-2 px-4 bg-gray-100 rounded text-sm text-gray-600">

@@ -94,6 +94,9 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = true })
       : []),
   ];
 
+  // TODO: логику здесь пофиксить:
+  // сейчас кривая логика с CustomMessageAttachment и другими Attachment
+  // в дальнейшем компонент разъедется и будет очень неудобно это поддерживать
   if (isCustomMessageAttachment) {
     return <CustomMessageAttachment message={message} />;
   }
