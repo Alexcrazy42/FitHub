@@ -1,4 +1,4 @@
-namespace FitHub.Contracts.V1.Messaging.Messages.Attachments;
+﻿namespace FitHub.Contracts.V1.Messaging.Messages.Attachments;
 
 public class CreateVoiceAttachmentRequest
 {
