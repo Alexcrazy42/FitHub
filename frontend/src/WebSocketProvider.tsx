@@ -1,4 +1,4 @@
-﻿import { createContext, FC, ReactNode, useContext, useEffect, useState } from "react";
+﻿import { createContext, FC, ReactNode, useContext, useEffect, useRef, useState } from "react";
 import { useAppDispatch } from "./store/hooks"
 import { 
   HubConnection, 
@@ -26,8 +26,14 @@ export const WebSocketProvider : FC<{ children: ReactNode }> = ({ children }) =>
     const dispatch = useAppDispatch();
     const [connection, setConnection] = useState<HubConnection | null>(null);
     const {user} = useAuth();
+    const userRef = useRef(user);
+    useEffect(() => { userRef.current = user; }, [user]);
+
+    const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
+        let destroyed = false;
+
         const conn = new HubConnectionBuilder()
             .withUrl(`${API_URL_CLEAN}/chatHub`)
             .withAutomaticReconnect()
@@ -63,7 +69,7 @@ export const WebSocketProvider : FC<{ children: ReactNode }> = ({ children }) =>
               chatId: message.chatId,
               lastMessage: message,
               lastMessageTime: message.createdAt,
-              needIncrement: message.createdBy.id !== user?.id
+              needIncrement: message.createdBy.id !== userRef.current?.id
             })
           );
           
@@ -92,14 +98,30 @@ export const WebSocketProvider : FC<{ children: ReactNode }> = ({ children }) =>
           dispatch(setConnectionState(ConnectionState.CONNECTED));
         });
 
-        conn.start().then(() => {
-          setConnection(conn);
-        });
+        const retryDelays = [2000, 5000, 10000, 20000];
+        let attempt = 0;
+
+        const tryConnect = async () => {
+          try {
+            await conn.start();
+            if (destroyed) return;
+            setConnection(conn);
+            dispatch(setConnectionState(ConnectionState.CONNECTED));
+          } catch {
+            if (destroyed) return;
+            const delay = retryDelays[Math.min(attempt, retryDelays.length - 1)];
+            attempt++;
+            console.warn(`SignalR: initial connection failed, retrying in ${delay}ms (attempt ${attempt})`);
+            retryTimerRef.current = setTimeout(tryConnect, delay);
+          }
+        };
+
+        dispatch(setConnectionState(ConnectionState.RECONNECTING));
+        tryConnect();
 
         return () => {
-          console.log('Cleaning up SignalR connection');
-          
-          // Удаляем все обработчики
+          destroyed = true;
+          if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
           conn.off('UserTyping');
           conn.off('UserStopTyping');
           conn.off('CreateMessage');

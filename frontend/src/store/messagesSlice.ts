@@ -50,16 +50,20 @@ const messagesSlice = createSlice({
       }
 
       // Проверка на дубликаты
-      const exists = state.messages[chatId].some((m) => m.id === message.id);
-      if (!exists) {
+      const existingIndex = state.messages[chatId].findIndex((m) => m.id === message.id);
+      if (existingIndex === -1) {
         state.messages[chatId].push(message);
-        
+
         // Удаляем из sendingMessages если есть (optimistic update completed)
         if (state.sendingMessages[chatId]) {
           state.sendingMessages[chatId] = state.sendingMessages[chatId].filter(
             (m) => m.id !== message.id
           );
         }
+      } else if (message.attachments.length > state.messages[chatId][existingIndex].attachments.length) {
+        // Если дубликат, но новая версия содержит больше вложений (например, HTTP-ответ пришёл
+        // после SignalR-события, которое было отправлено до сохранения вложений) — обновляем.
+        state.messages[chatId][existingIndex] = message;
       }
     },
 

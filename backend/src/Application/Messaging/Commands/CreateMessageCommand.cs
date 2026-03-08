@@ -18,6 +18,8 @@ public class CreateMessageCommand
 
     public List<FileId> Photos { get; init; } = [];
 
+    public List<CreateStickerAttachmentCommand> Stickers { get; init; } = [];
+
     public CreateMessageCommand(ChatId chatId, string messageText)
     {
         ChatId = chatId;

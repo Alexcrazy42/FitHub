@@ -17,7 +17,8 @@ export enum MessageAttachmentType {
     Link = "Link",
     TagUser = "TagUser",
     InviteUser = "InviteUser",
-    ExcludeUser = "ExcludeUser"
+    ExcludeUser = "ExcludeUser",
+    Sticker = "Sticker"
 }
 
 
@@ -62,6 +63,12 @@ export interface ICreatePhotoAttachmentRequest {
     fileId: string
 }
 
+export interface ICreateStickerAttachmentRequest {
+    stickerId: string;
+    fileId: string;
+    name: string;
+}
+
 export interface ICreateMessageRequest {
     chatId: string;
     messageText: string;
@@ -69,6 +76,7 @@ export interface ICreateMessageRequest {
     links: ICreateLinkAttachmentRequest[];
     tags: ICreateTagUserAttachmentRequest[];
     photos: ICreatePhotoAttachmentRequest[];
+    stickers: ICreateStickerAttachmentRequest[];
 }
 
 export interface IMessageAttachmentResponse {

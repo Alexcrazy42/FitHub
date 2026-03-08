@@ -566,6 +566,32 @@ namespace FitHub.Data.Migrations
                     b.ToTable("chat_reading_model", (string)null);
                 });
 
+            modelBuilder.Entity("FitHub.Domain.Messaging.Gif", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("FileId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("file_id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_gif");
+
+                    b.HasIndex("FileId")
+                        .HasDatabaseName("ix_gif_file_id");
+
+                    b.ToTable("gif", (string)null);
+                });
+
             modelBuilder.Entity("FitHub.Domain.Messaging.Message", b =>
                 {
                     b.Property<Guid>("Id")
@@ -735,6 +761,86 @@ namespace FitHub.Data.Migrations
                         .HasDatabaseName("ix_message_view_user_id");
 
                     b.ToTable("message_view", (string)null);
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Messaging.Sticker", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("FileId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("file_id");
+
+                    b.Property<Guid>("GroupId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("group_id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer")
+                        .HasColumnName("position");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_sticker");
+
+                    b.HasIndex("FileId")
+                        .HasDatabaseName("ix_sticker_file_id");
+
+                    b.HasIndex("GroupId")
+                        .HasDatabaseName("ix_sticker_group_id");
+
+                    b.ToTable("sticker", (string)null);
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Messaging.StickerGroup", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_sticker_group");
+
+                    b.ToTable("sticker_group", (string)null);
                 });
 
             modelBuilder.Entity("FitHub.Domain.Notifications.EmailNotification", b =>
@@ -1370,6 +1476,18 @@ namespace FitHub.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("FitHub.Domain.Messaging.Gif", b =>
+                {
+                    b.HasOne("FitHub.Domain.Files.FileEntity", "File")
+                        .WithMany()
+                        .HasForeignKey("FileId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_gif_file_entity_file_id");
+
+                    b.Navigation("File");
+                });
+
             modelBuilder.Entity("FitHub.Domain.Messaging.Message", b =>
                 {
                     b.HasOne("FitHub.Domain.Messaging.Chat", "Chat")
@@ -1473,6 +1591,27 @@ namespace FitHub.Data.Migrations
                     b.Navigation("Message");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Messaging.Sticker", b =>
+                {
+                    b.HasOne("FitHub.Domain.Files.FileEntity", "File")
+                        .WithMany()
+                        .HasForeignKey("FileId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_sticker_file_entity_file_id");
+
+                    b.HasOne("FitHub.Domain.Messaging.StickerGroup", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_sticker_sticker_group_group_id");
+
+                    b.Navigation("File");
+
+                    b.Navigation("Group");
                 });
 
             modelBuilder.Entity("FitHub.Domain.Trainings.BaseGroupTrainingPhoto", b =>

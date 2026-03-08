@@ -78,6 +78,11 @@ public class MessageAttachment : IEntity<MessageAttachmentId>, IUserAuditableEnt
         return new MessageAttachment(MessageAttachmentId.New(), message.Id, MessageAttachmentType.CreateGroup, CommonJsonSerializer.Serialize(new { }));
     }
 
+    public static MessageAttachment CreateStickerAttachment(Message message, StickerAttachment stickerAttachment)
+    {
+        return new MessageAttachment(MessageAttachmentId.New(), message.Id, MessageAttachmentType.Sticker, CommonJsonSerializer.Serialize(stickerAttachment));
+    }
+
     #region CommonFields
 
     public DateTimeOffset CreatedAt { get; }

@@ -22,6 +22,7 @@ public static class CommandExtensions
             Links = request.Links.Select(CommandExtensions.FromRequest).ToList(),
             Tags = request.Tags.Select(CommandExtensions.FromRequest).ToList(),
             Photos = request.Photos.Select(x => FileId.Parse(x.FileId)).ToList(),
+            Stickers = request.Stickers.Select(CommandExtensions.FromRequest).ToList(),
         };
     }
 
@@ -66,5 +67,13 @@ public static class CommandExtensions
         var identityUserId = request.TaggedUserId != null ? IdentityUserId.Parse(request.TaggedUserId) : null;
         var command = new CreateTagUserAttachmentCommand(name, type) { TaggetUserId = identityUserId };
         return command;
+    }
+
+    public static CreateStickerAttachmentCommand FromRequest(this CreateStickerAttachmentRequest request)
+    {
+        var stickerId = StickerId.Parse(ValidationException.ThrowIfNull(request.StickerId));
+        var fileId = FileId.Parse(ValidationException.ThrowIfNull(request.FileId));
+        var name = ValidationException.ThrowIfNull(request.Name);
+        return new CreateStickerAttachmentCommand(stickerId, fileId, name);
     }
 }

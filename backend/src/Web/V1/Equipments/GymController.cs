@@ -2,11 +2,10 @@
 using FitHub.Common.Entities;
 using FitHub.Contracts;
 using FitHub.Contracts.V1;
-using FitHub.Contracts.V1.Equipments;
 using FitHub.Contracts.V1.Equipments.Gyms;
 using FitHub.Domain.Equipments;
 using FitHub.Web.Common;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FitHub.Web.V1.Equipments;
@@ -22,6 +21,7 @@ public class GymController : ControllerBase
     }
 
     [HttpGet(ApiRoutesV1.Gyms)]
+    [AllowAnonymous]
     public async Task<ListResponse<GymResponse>> GetGymsAsync([FromQuery] PagedRequest? request, CancellationToken ct)
     {
         var query = request.ToQuery();
