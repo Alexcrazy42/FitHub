@@ -1,4 +1,4 @@
-﻿import { createContext, FC, ReactNode, useContext, useEffect, useState } from "react";
+﻿import { createContext, FC, ReactNode, useContext, useEffect, useRef, useState } from "react";
 import { useAppDispatch } from "./store/hooks"
 import { 
   HubConnection, 
@@ -26,6 +26,8 @@ export const WebSocketProvider : FC<{ children: ReactNode }> = ({ children }) =>
     const dispatch = useAppDispatch();
     const [connection, setConnection] = useState<HubConnection | null>(null);
     const {user} = useAuth();
+    const userRef = useRef(user);
+    useEffect(() => { userRef.current = user; }, [user]);
 
     useEffect(() => {
         const conn = new HubConnectionBuilder()
@@ -63,7 +65,7 @@ export const WebSocketProvider : FC<{ children: ReactNode }> = ({ children }) =>
               chatId: message.chatId,
               lastMessage: message,
               lastMessageTime: message.createdAt,
-              needIncrement: message.createdBy.id !== user?.id
+              needIncrement: message.createdBy.id !== userRef.current?.id
             })
           );
           
@@ -94,6 +96,7 @@ export const WebSocketProvider : FC<{ children: ReactNode }> = ({ children }) =>
 
         conn.start().then(() => {
           setConnection(conn);
+          dispatch(setConnectionState(ConnectionState.CONNECTED));
         });
 
         return () => {

@@ -3,6 +3,7 @@ import ChatHeader from './ChatHeader';
 import { MessageList } from './MessageList';
 import MessageInput from './MessageInput';
 import TypingIndicator from './TypingIndicator';
+import ConnectionBanner from './ConnectionBanner';
 import { useAppSelector } from '../../../../store/hooks';
 import {
   selectCurrentChat,
@@ -35,6 +36,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ chatId }) => {
       <div className="flex-shrink-0">
         <ChatHeader chat={currentChat} />
       </div>
+
+      {/* Connection banner */}
+      <ConnectionBanner />
 
       {/* Messages - SCROLLABLE - займет все свободное пространство */}
       <div className="flex-1 overflow-hidden bg-gray-50 min-h-0">  {/* ✅ min-h-0 важно! */}

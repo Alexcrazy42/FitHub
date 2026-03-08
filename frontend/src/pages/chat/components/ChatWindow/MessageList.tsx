@@ -13,8 +13,10 @@ import {
   addMessagesToTop,
   setMessagesLoading
 } from '../../../../store/messagesSlice';
+import { resetUnreadCount } from '../../../../store/chatSlice';
 import { useApiService } from '../../../../api/useApiService';
 import { useMessageService } from '../../../../api/services/messageService';
+import { useAuth } from '../../../../context/useAuth';
 import { isSystemMessage } from '../../../../types/utilities/messageUtilities';
 
 interface MessageListProps {
@@ -30,6 +32,7 @@ interface MessageListProps {
 export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
   const apiService = useApiService();
   const messageService = useMessageService(apiService);
+  const { user } = useAuth();
   
   const dispatch = useAppDispatch();
   const messages = useAppSelector((state) => selectAllChatMessages(state, chatId));
@@ -48,11 +51,27 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
   const [hasMoreNewer, setHasMoreNewer] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
   const [newMessagesCount, setNewMessagesCount] = useState(0);
+  const [isAtBottom, setIsAtBottom] = useState(true);
 
   const isLoadingRef = useRef(false);
   const renderCount = useRef(0);
   const prevLastMessageIdRef = useRef<string | null>(null);
+  const markMessagesAsReadRef = useRef<(() => Promise<void>) | null>(null);
   renderCount.current++;
+
+  // Keep ref up-to-date with latest closure so scroll handler never goes stale
+  markMessagesAsReadRef.current = async () => {
+    const lastMessage = messages[messages.length - 1];
+    if (!lastMessage) return;
+    const currentChat = chats.find(c => c.chat.id === chatId);
+    if (!currentChat || currentChat.unreadCount === 0) return;
+    dispatch(resetUnreadCount(currentChat.id));
+    try {
+      await messageService.readMessages({ maxMessageId: lastMessage.id });
+    } catch (err) {
+      console.error('Failed to mark messages as read:', err);
+    }
+  };
 
   const loadInitMessages = async () => {
     if (isLoadingRef.current) return;
@@ -114,6 +133,7 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
   // Сброс счётчика и состояния при смене чата
   useEffect(() => {
     setNewMessagesCount(0);
+    setIsAtBottom(true);
     prevLastMessageIdRef.current = null;
   }, [chatId]);
 
@@ -124,8 +144,10 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
 
     const handleScroll = () => {
       const atBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+      setIsAtBottom(atBottom);
       if (atBottom) {
         setNewMessagesCount(0);
+        markMessagesAsReadRef.current?.();
       }
     };
 
@@ -142,13 +164,15 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
     
     if (unreadCount > 0 && unreadMessageRef.current) {
       setTimeout(() => {
-        unreadMessageRef.current?.scrollIntoView({ 
-          behavior: 'auto', 
-          block: 'center' 
+        unreadMessageRef.current?.scrollIntoView({
+          behavior: 'auto',
+          block: 'center'
         });
       }, 100);
     } else {
-      scrollToBottom();
+      setTimeout(() => {
+        scrollToBottom('instant');
+      }, 0);
     }
   }, [initialLoadDone]);
 
@@ -307,22 +331,24 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
     // Игнорируем загрузку старых сообщений (пагинация вверх)
     if (!isNewMessageAppended) return;
 
+    const isOwnMessage = lastMessage?.createdBy?.id === user?.id;
     const atBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
 
-    if (atBottom) {
+    if (atBottom || isOwnMessage) {
       scrollToBottom();
     } else {
       setNewMessagesCount((prev) => prev + 1);
     }
   }, [messages.length, initialLoadDone]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
+    messagesEndRef.current?.scrollIntoView({ behavior });
   };
 
   const handleScrollToBottom = () => {
     scrollToBottom();
     setNewMessagesCount(0);
+    markMessagesAsReadRef.current?.();
   };
 
   if (messages.length === 0 && loading) {
@@ -413,15 +439,19 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
       </div>
 
       {/* Scroll-to-bottom button */}
-      {newMessagesCount > 0 && (
+      {!isAtBottom && (
         <Button
           type="primary"
-          shape="round"
+          shape="circle"
           icon={<DownOutlined />}
           onClick={handleScrollToBottom}
-          className="absolute bottom-4 right-4 flex items-center shadow-lg"
+          className="absolute bottom-4 right-4 shadow-lg"
         >
-          {newMessagesLabel}
+          {newMessagesCount > 0 && (
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-5 h-5 flex items-center justify-center px-1">
+              {newMessagesCount > 99 ? '99+' : newMessagesCount}
+            </span>
+          )}
         </Button>
       )}
     </div>
