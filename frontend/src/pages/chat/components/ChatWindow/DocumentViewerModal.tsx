@@ -78,10 +78,20 @@ const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
         setObjectUrl(url);
       } else if (docType === 'excel') {
         const buffer = await blob.arrayBuffer();
-        const workbook = XLSX.read(buffer, { type: 'array' });
+        const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array' });
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        const html = XLSX.utils.sheet_to_html(firstSheet, { id: 'xlsx-table', editable: false });
-        setHtmlContent(html);
+        const rawHtml = XLSX.utils.sheet_to_html(firstSheet, { id: 'xlsx-table', editable: false });
+        // Inject basic table styles so the sheet is readable
+        const styledHtml = rawHtml.replace(
+          '<table',
+          `<style>
+            #xlsx-table { border-collapse: collapse; font-size: 13px; font-family: sans-serif; }
+            #xlsx-table td, #xlsx-table th { border: 1px solid #d0d0d0; padding: 4px 8px; white-space: nowrap; }
+            #xlsx-table tr:nth-child(even) { background: #f7f7f7; }
+            #xlsx-table tr:first-child td, #xlsx-table tr:first-child th { background: #e8f0fe; font-weight: 600; }
+          </style><table`
+        );
+        setHtmlContent(styledHtml);
       } else if (docType === 'word') {
         if (!mammoth) {
           setError('Загрузка библиотеки для Word...');
