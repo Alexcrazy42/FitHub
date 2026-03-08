@@ -73,4 +73,8 @@ public interface IUserService
     Task StartOnlineAt(IdentityUserId userId, CancellationToken ct);
 
     Task<DateTimeOffset> EndOnlineAt(IdentityUserId userId, CancellationToken ct);
+
+    Task UpdateUserProfileAsync(IdentityUserId userId, string name, string surname, CancellationToken ct);
+
+    Task ChangePasswordAsync(IdentityUserId userId, string oldPassword, string newPassword, CancellationToken ct);
 }

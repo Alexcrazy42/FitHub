@@ -11,6 +11,22 @@ export class UserService {
         this.apiService = apiService;
     }
 
+    public async getMe(): Promise<ApiResponse<UserResponse>> {
+        return this.apiService.get<UserResponse>('/v1/users/me');
+    }
+
+    public async getUser(id: string): Promise<ApiResponse<UserResponse>> {
+        return this.apiService.get<UserResponse>(`/v1/users/${id}`);
+    }
+
+    public async updateProfile(name: string, surname: string): Promise<ApiResponse<void>> {
+        return this.apiService.patch<void>('/v1/users/me/profile', { name, surname });
+    }
+
+    public async changePassword(oldPassword: string, newPassword: string): Promise<ApiResponse<void>> {
+        return this.apiService.post<void>('/v1/users/me/change-password', { oldPassword, newPassword });
+    }
+
     public async getUsers(query: IGetUsersRequest, paged: IPagedRequest) : Promise<ApiResponse<ListResponse<UserResponse>>> {
         const searchParams = new URLSearchParams();
         searchParams.append('PartName', query.partName ?? "");

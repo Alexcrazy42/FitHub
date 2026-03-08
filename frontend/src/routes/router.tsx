@@ -16,6 +16,8 @@ import { ConfirmEmail } from '../pages/Auth/ConfirmEmail';
 import { SetPassword } from '../pages/Auth/SetPassword';
 import { Main } from '../pages/Main';
 import { gymAdminMenuConfig } from './gymAdminMenuConfig';
+import UserProfilePage from '../pages/profile/UserProfilePage';
+import MyAccountPage from '../pages/account/MyAccountPage';
 
 
 const getAdminRoutePath = (fullPath: string): string => {
@@ -83,6 +85,14 @@ export const routes: RouteObject[] = [
       {
         element: <DashboardLayout />,
         children: [
+          {
+            path: '/profile/:userId',
+            element: <UserProfilePage />,
+          },
+          {
+            path: '/my-account',
+            element: <MyAccountPage />,
+          },
           {
             path: '/admin/*',
             element: <ProtectedRoute allowedRoles={['CmsAdmin']} />,
