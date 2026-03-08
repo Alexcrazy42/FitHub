@@ -129,6 +129,15 @@ export class ApiService {
     public async delete<T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
         return await this.query<T>(this.api.delete.bind(this.api), url, undefined, config);
     }
+
+    public async getBlob(url: string): Promise<Blob | null> {
+        try {
+            const response = await this.api.get<Blob>(url, { responseType: 'blob' });
+            return response.data;
+        } catch {
+            return null;
+        }
+    }
 }
 
 /**

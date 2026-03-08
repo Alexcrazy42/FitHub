@@ -7,6 +7,7 @@ using FitHub.Contracts.V1.Messaging.Messages;
 using FitHub.Contracts.V1.Messaging.Messages.Attachments;
 using FitHub.Domain.Files;
 using FitHub.Domain.Messaging;
+using FitHub.Domain.Messaging.Attachments;
 
 namespace FitHub.Application.Messaging.Commands;
 
@@ -23,6 +24,7 @@ public static class CommandExtensions
             Tags = request.Tags.Select(CommandExtensions.FromRequest).ToList(),
             Photos = request.Photos.Select(x => FileId.Parse(x.FileId)).ToList(),
             Stickers = request.Stickers.Select(CommandExtensions.FromRequest).ToList(),
+            Documents = request.Documents.Select(CommandExtensions.FromRequest).ToList(),
         };
     }
 
@@ -75,5 +77,13 @@ public static class CommandExtensions
         var fileId = FileId.Parse(ValidationException.ThrowIfNull(request.FileId));
         var name = ValidationException.ThrowIfNull(request.Name);
         return new CreateStickerAttachmentCommand(stickerId, fileId, name);
+    }
+
+    public static CreateDocumentAttachmentCommand FromRequest(this CreateDocumentAttachmentRequest request)
+    {
+        var fileId = FileId.Parse(ValidationException.ThrowIfNull(request.FileId));
+        var fileName = ValidationException.ThrowIfNull(request.FileName);
+        var mimeType = ValidationException.ThrowIfNull(request.MimeType);
+        return new CreateDocumentAttachmentCommand(fileId, fileName, request.FileSize, mimeType);
     }
 }

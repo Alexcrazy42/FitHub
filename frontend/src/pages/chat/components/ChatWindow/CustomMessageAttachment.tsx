@@ -2,12 +2,14 @@
 import { IMessageResponse, MessageAttachmentType } from '../../../../types/messaging';
 import { CreateGroupAttachment } from './attachments/CreateGroupAttachment';
 import { StickerAttachment } from './attachments/StickerAttachment';
+import { DocumentAttachmentPreview } from './attachments/DocumentAttachmentPreview';
 
 interface CustomMessageAttachmentProps {
   message: IMessageResponse;
+  isMyMessage?: boolean;
 }
 
-export const CustomMessageAttachment: React.FC<CustomMessageAttachmentProps> = ({ message }) => {
+export const CustomMessageAttachment: React.FC<CustomMessageAttachmentProps> = ({ message, isMyMessage }) => {
   // Берем первый attachment (системное сообщение имеет только один всегда)
   const attachment = message.attachments[0];
 
@@ -22,6 +24,9 @@ export const CustomMessageAttachment: React.FC<CustomMessageAttachmentProps> = (
 
     case MessageAttachmentType.Sticker:
       return <StickerAttachment message={message} attachment={attachment} />;
+
+    case MessageAttachmentType.Document:
+      return <DocumentAttachmentPreview attachment={attachment} isMyMessage={isMyMessage} />;
 
     default:
       return (

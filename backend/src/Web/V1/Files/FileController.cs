@@ -27,9 +27,9 @@ public class FileController : ControllerBase
         }
         var fileId = FileId.Parse(id);
 
-        var stream = await fileService.DownloadFile(fileId, ct);
+        var (stream, fileName) = await fileService.DownloadFile(fileId, ct);
 
-        var contentType = GetContentType(id);
+        var contentType = GetContentType(fileName);
 
         return File(
             stream,
