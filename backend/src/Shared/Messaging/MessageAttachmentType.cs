@@ -38,5 +38,10 @@ public enum MessageAttachmentType
     /// <summary>
     /// Стикер
     /// </summary>
-    Sticker
+    Sticker,
+
+    /// <summary>
+    /// Документ (PDF, Word, Excel, PowerPoint и др.)
+    /// </summary>
+    Document
 }

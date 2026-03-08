@@ -93,6 +93,7 @@ internal sealed class MessageService : IMessageService
         await AttachTagsAsync(message, command.Tags, ct);
         await AttachPhotosAsync(message, command.Photos, ct);
         await AttachStickersAsync(message, command.Stickers, ct);
+        await AttachDocumentsAsync(message, command.Documents, ct);
 
         await CreateMessageViews(chat, message, ct);
         await UpdateReadModelsAfterCreationMessageAsync(chat, message, ct);
@@ -211,6 +212,17 @@ internal sealed class MessageService : IMessageService
         {
             var stickerAttachment = new StickerAttachment(sticker.StickerId, sticker.FileId, sticker.Name);
             var messageAttachment = MessageAttachment.CreateStickerAttachment(message, stickerAttachment);
+            await messageAttachmentRepository.PendingAddAsync(messageAttachment, ct);
+        }
+    }
+
+    private async Task AttachDocumentsAsync(Message message, IEnumerable<CreateDocumentAttachmentCommand> documents, CancellationToken ct)
+    {
+        foreach (var doc in documents)
+        {
+            await fileService.GetFile(doc.FileId, ct);
+            var documentAttachment = new DocumentAttachment(doc.FileId, doc.FileName, doc.FileSize, doc.MimeType);
+            var messageAttachment = MessageAttachment.CreateDocumentAttachment(message, documentAttachment);
             await messageAttachmentRepository.PendingAddAsync(messageAttachment, ct);
         }
     }

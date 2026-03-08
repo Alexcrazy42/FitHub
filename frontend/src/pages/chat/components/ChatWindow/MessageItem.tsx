@@ -12,6 +12,7 @@ import { useAuth } from '../../../../context/useAuth';
 import { getFirstName, getFullName } from '../../mocks/fakeData';
 import { CustomMessageAttachment } from './CustomMessageAttachment';
 import { StickerAttachment } from './attachments/StickerAttachment';
+import { DocumentAttachmentPreview } from './attachments/DocumentAttachmentPreview';
 import { isSystemMessage } from '../../../../types/utilities/messageUtilities';
 import { UserProfileModal } from './UserProfileModal';
 import { MessageText } from './MessageText';
@@ -33,6 +34,9 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = true })
   const isCustomMessageAttachment = isSystemMessage(message);
   const stickerAttachment = message.attachments.find(
     (a) => a.type === MessageAttachmentType.Sticker
+  );
+  const documentAttachments = message.attachments.filter(
+    (a) => a.type === MessageAttachmentType.Document
   );
 
   const formatTime = (dateString: string) => {
@@ -223,9 +227,20 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = true })
               }`}
             >
               {/* Message text */}
-              <div className="break-words whitespace-pre-wrap">
-                <MessageText text={message.messageText} isMyMessage={isMyMessage} />
-              </div>
+              {message.messageText && (
+                <div className="break-words whitespace-pre-wrap">
+                  <MessageText text={message.messageText} isMyMessage={isMyMessage} />
+                </div>
+              )}
+
+              {/* Document attachments */}
+              {documentAttachments.length > 0 && (
+                <div className="flex flex-col gap-2 mt-1">
+                  {documentAttachments.map((att) => (
+                    <DocumentAttachmentPreview key={att.id} attachment={att} isMyMessage={isMyMessage} />
+                  ))}
+                </div>
+              )}
 
               {/* Time */}
               <div

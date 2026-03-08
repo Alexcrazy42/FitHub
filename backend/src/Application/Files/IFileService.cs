@@ -5,7 +5,7 @@ namespace FitHub.Application.Files;
 
 public interface IFileService
 {
-    public Task<Stream> DownloadFile(FileId id, CancellationToken ct);
+    public Task<(Stream stream, string fileName)> DownloadFile(FileId id, CancellationToken ct);
 
     public Task<FileEntity> GetFile(FileId id, CancellationToken ct);
 

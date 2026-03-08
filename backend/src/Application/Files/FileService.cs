@@ -19,12 +19,13 @@ public class FileService : IFileService
         this.unitOfWork = unitOfWork;
     }
 
-    public async Task<Stream> DownloadFile(FileId id, CancellationToken ct)
+    public async Task<(Stream stream, string fileName)> DownloadFile(FileId id, CancellationToken ct)
     {
         var file = await GetFile(id, ct);
 
         var decodedKey = Uri.UnescapeDataString(file.S3Key);
-        return await s3FileService.DownloadFileAsync(decodedKey);
+        var stream = await s3FileService.DownloadFileAsync(decodedKey);
+        return (stream, file.FileName);
     }
 
     public async Task<FileEntity> GetFile(FileId id, CancellationToken ct)
