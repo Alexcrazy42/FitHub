@@ -1,4 +1,4 @@
-using FitHub.Application.Common;
+﻿using FitHub.Application.Common;
 using FitHub.Application.Messaging.Commands;
 using FitHub.Application.Messaging.Queries;
 using FitHub.Domain.Messaging;

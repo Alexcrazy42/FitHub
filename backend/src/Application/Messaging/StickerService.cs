@@ -1,12 +1,12 @@
-using FitHub.Application.Common;
+﻿using FitHub.Application.Common;
 using FitHub.Application.Files;
 using FitHub.Application.Messaging.Commands;
 using FitHub.Application.Messaging.Queries;
 using FitHub.Common.Entities;
 using FitHub.Common.Entities.Storage;
-using FitHub.Shared.Common;
 using FitHub.Domain.Files;
 using FitHub.Domain.Messaging;
+using FitHub.Shared.Common;
 
 namespace FitHub.Application.Messaging;
 
@@ -59,13 +59,6 @@ internal sealed class StickerService : IStickerService
     public async Task DeleteGroupAsync(StickerGroupId id, CancellationToken ct)
     {
         var group = await GetGroupAsync(id, ct);
-
-        var stickers = await stickerRepository.GetAllAsync(x => x.GroupId == id, ct);
-        foreach (var sticker in stickers)
-        {
-            fileRepository.PendingRemove(await fileService.GetFile(sticker.FileId, ct));
-            stickerRepository.PendingRemove(sticker);
-        }
 
         group.SetIsDeleted(true);
         await unitOfWork.SaveChangesAsync(ct);

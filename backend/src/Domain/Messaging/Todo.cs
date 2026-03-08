@@ -6,7 +6,7 @@
 
 // модельки:
 // sticker_group (id, name)
-    // sticker (id, name, sticker_group, file_id, position)
+// sticker (id, name, sticker_group, file_id, position)
 // gif: id, name, file_id
 
 public class Todo

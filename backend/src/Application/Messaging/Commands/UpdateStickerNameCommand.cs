@@ -1,4 +1,4 @@
-namespace FitHub.Application.Messaging.Commands;
+﻿namespace FitHub.Application.Messaging.Commands;
 
 public class UpdateStickerNameCommand
 {

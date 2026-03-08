@@ -1,4 +1,4 @@
-using FitHub.Application.Messaging;
+﻿using FitHub.Application.Messaging;
 using FitHub.Application.Messaging.Commands;
 using FitHub.Application.Messaging.Queries;
 using FitHub.Common.AspNetCore.Auth;

@@ -1,5 +1,5 @@
-﻿using AutoFixture.AutoMoq;
-using AutoFixture;
+﻿using AutoFixture;
+using AutoFixture.AutoMoq;
 using FitHub.Authentication;
 
 namespace FitHub.UnitTests.Domain;

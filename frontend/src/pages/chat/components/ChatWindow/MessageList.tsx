@@ -382,7 +382,7 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
     newMessagesCount > 10 ? '10+ новых' : `${newMessagesCount} ${newMessagesCount === 1 ? 'новое' : 'новых'}`;
 
   return (
-    <div className="relative h-full overflow-hidden">
+    <div className="relative h-full">
       <div
         ref={scrollContainerRef}
         className="h-full overflow-y-auto bg-gray-50"
@@ -440,19 +440,22 @@ export const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
 
       {/* Scroll-to-bottom button */}
       {!isAtBottom && (
-        <Button
-          type="primary"
-          shape="circle"
-          icon={<DownOutlined />}
-          onClick={handleScrollToBottom}
-          className="absolute bottom-4 right-4 shadow-lg"
-        >
-          {newMessagesCount > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-5 h-5 flex items-center justify-center px-1">
-              {newMessagesCount > 99 ? '99+' : newMessagesCount}
-            </span>
-          )}
-        </Button>
+        <div className="absolute bottom-4 left-4 z-10">
+          <div className="relative">
+            <Button
+              type="primary"
+              shape="circle"
+              icon={<DownOutlined />}
+              onClick={handleScrollToBottom}
+              className="shadow-lg"
+            />
+            {newMessagesCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-5 h-5 flex items-center justify-center px-1 pointer-events-none">
+                {newMessagesCount > 99 ? '99+' : newMessagesCount}
+              </span>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

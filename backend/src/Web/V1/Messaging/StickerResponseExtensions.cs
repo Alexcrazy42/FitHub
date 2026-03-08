@@ -1,4 +1,4 @@
-using FitHub.Contracts.V1.Messaging.Stickers;
+﻿using FitHub.Contracts.V1.Messaging.Stickers;
 using FitHub.Domain.Messaging;
 
 namespace FitHub.Web.V1.Messaging;
