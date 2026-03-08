@@ -150,6 +150,12 @@ public class ApiRoutesV1
 
     public const string Me = Users + "/me";
 
+    public const string UserById = Users + "/{id}";
+
+    public const string UpdateMyProfile = Me + "/profile";
+
+    public const string ChangeMyPassword = Me + "/change-password";
+
     #endregion
 
     #region CmsAdmins
@@ -235,6 +241,12 @@ public class ApiRoutesV1
     public const string StickerName = StickerById + "/name";
 
     public const string StickerPhoto = StickerById + "/photo";
+
+    #endregion
+
+    #region Security
+
+    public const string SecurityCheckUrl = Root + "/security/check-url";
 
     #endregion
 

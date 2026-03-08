@@ -1,10 +1,11 @@
-﻿import { Layout, Button } from 'antd';
-import { MenuUnfoldOutlined, MenuFoldOutlined, SunOutlined, MoonOutlined, LogoutOutlined } from '@ant-design/icons';
+﻿import { Layout, Button, Avatar, Tooltip } from 'antd';
+import { MenuUnfoldOutlined, MenuFoldOutlined, SunOutlined, MoonOutlined, LogoutOutlined, UserOutlined, SettingOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import Sidebar from '../components/Sidebar/Sidebar';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/useTheme';
 import { useApiService } from '../api/useApiService';
+import { useAuth } from '../context/useAuth';
 import { toast } from 'react-toastify';
 
 const { Sider, Content, Header } = Layout;
@@ -14,6 +15,7 @@ const DashboardLayout: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
   const apiService = useApiService();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const logout = async () => {
     const response = await apiService.post<never>("/v1/auth/logout");
@@ -71,6 +73,16 @@ const DashboardLayout: React.FC = () => {
           />
 
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <Tooltip title="Настройки аккаунта">
+              <Avatar
+                size={32}
+                icon={<UserOutlined />}
+                className="cursor-pointer"
+                style={{ backgroundColor: '#3b82f6' }}
+                onClick={() => navigate('/my-account')}
+              />
+            </Tooltip>
+
             <Button
               type="text"
               icon={theme === "dark" ? <SunOutlined /> : <MoonOutlined />}

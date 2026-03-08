@@ -405,6 +405,32 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
         return lastSeen;
     }
 
+    public async Task UpdateUserProfileAsync(IdentityUserId userId, string name, string surname, CancellationToken ct)
+    {
+        var user = await GetUserAsync(userId, ct);
+        user.SetName(name, surname);
+        await unitOfWork.SaveChangesAsync(ct);
+    }
+
+    public async Task ChangePasswordAsync(IdentityUserId userId, string oldPassword, string newPassword, CancellationToken ct)
+    {
+        var user = await GetUserAsync(userId, ct);
+
+        if (!BCrypt.Net.BCrypt.Verify(oldPassword, user.PasswordHash))
+        {
+            throw new ValidationException("Текущий пароль неверен!");
+        }
+
+        if (BCrypt.Net.BCrypt.Verify(newPassword, user.PasswordHash))
+        {
+            throw new ValidationException("Новый пароль не может совпадать со старым!");
+        }
+
+        var passwordHash = BCrypt.Net.BCrypt.HashPassword(newPassword).Required();
+        user.SetPassword(passwordHash);
+        await unitOfWork.SaveChangesAsync(ct);
+    }
+
     public async Task<LoginResponse> LoginAsync(string login, string password, CancellationToken cancellationToken)
     {
         var user = await GetByEmailAsync(login, cancellationToken);
