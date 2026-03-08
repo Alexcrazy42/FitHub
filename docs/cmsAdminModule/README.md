@@ -31,3 +31,5 @@
 ![chatStart](./images/11_chat_start.png)
 
 ![chatTyping](./images/12_chat_typing.png)
+
+![Stickers](./images/13_stickers.png)

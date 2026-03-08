@@ -3,13 +3,14 @@ import { Avatar, Dropdown, Button } from 'antd';
 import { UserOutlined, MoreOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { format } from 'date-fns';
-import { IMessageResponse } from '../../../../types/messaging';
+import { IMessageResponse, MessageAttachmentType } from '../../../../types/messaging';
 import { useAppDispatch } from '../../../../store/hooks';
 import { setReplyingToMessage, setEditingMessage } from '../../../../store/uiSlice';
 import { getMostImportantRoleName } from '../../../../types/auth';
 import { useAuth } from '../../../../context/useAuth';
 import { getFirstName, getFullName } from '../../mocks/fakeData';
 import { CustomMessageAttachment } from './CustomMessageAttachment';
+import { StickerAttachment } from './attachments/StickerAttachment';
 import { isSystemMessage } from '../../../../types/utilities/messageUtilities';
 
 interface MessageItemProps {
@@ -26,6 +27,9 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = true })
   
   const isMyMessage = message.createdBy.id === user?.id;
   const isCustomMessageAttachment = isSystemMessage(message);
+  const stickerAttachment = message.attachments.find(
+    (a) => a.type === MessageAttachmentType.Sticker
+  );
 
   const formatTime = (dateString: string) => {
     return format(new Date(dateString), 'HH:mm');
@@ -90,8 +94,40 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = true })
       : []),
   ];
 
+  // TODO: логику здесь пофиксить:
+  // сейчас кривая логика с CustomMessageAttachment и другими Attachment
+  // в дальнейшем компонент разъедется и будет очень неудобно это поддерживать
   if (isCustomMessageAttachment) {
     return <CustomMessageAttachment message={message} />;
+  }
+
+  if (stickerAttachment) {
+    return (
+      <div className={`flex gap-3 ${isMyMessage ? 'flex-row-reverse' : 'flex-row'}`}>
+        <div className="flex-shrink-0">
+          {showAvatar ? (
+            <Avatar
+              size={36}
+              src={`https://ui-avatars.com/api/?name=${message.createdBy.name[0]}${message.createdBy.surname[0]}&background=random`}
+              icon={<UserOutlined />}
+            />
+          ) : (
+            <div className="w-9" />
+          )}
+        </div>
+        <div className={`flex flex-col ${isMyMessage ? 'items-end' : 'items-start'}`}>
+          {!isMyMessage && showAvatar && (
+            <div className="text-sm font-semibold text-gray-700 mb-1 px-1">
+              {getFullName(message.createdBy)}
+            </div>
+          )}
+          <StickerAttachment message={message} attachment={stickerAttachment} />
+          <div className="text-xs text-gray-400 mt-0.5 px-1">
+            {formatTime(message.createdAt)}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

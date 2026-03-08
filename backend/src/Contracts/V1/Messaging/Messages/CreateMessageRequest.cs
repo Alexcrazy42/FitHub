@@ -15,4 +15,6 @@ public class CreateMessageRequest
     public List<CreateTagUserAttachmentRequest> Tags { get; set; } = [];
 
     public List<CreatePhotoAttachmentRequest> Photos { get; set; } = [];
+
+    public List<CreateStickerAttachmentRequest> Stickers { get; set; } = [];
 }

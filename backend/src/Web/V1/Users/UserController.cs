@@ -36,7 +36,7 @@ public class UserController : ControllerBase
     {
         var query = new GetUserQuery() { PartName = request?.PartName, };
         var pagedQuery = pagedRequest.ToQuery();
-        var userResult =  await userService.GetUsersAsync(query, pagedQuery, ct);
+        var userResult = await userService.GetUsersAsync(query, pagedQuery, ct);
 
         return userResult.ToListResponse(UserExtensions.ToResponse);
     }

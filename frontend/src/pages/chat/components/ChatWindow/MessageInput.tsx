@@ -5,6 +5,7 @@ import {
   SmileOutlined,
   PaperClipOutlined,
   CloseOutlined,
+  FileImageOutlined,
 } from '@ant-design/icons';
 import EmojiPicker, { EmojiClickData, EmojiStyle, Theme } from 'emoji-picker-react';
 import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
@@ -26,6 +27,8 @@ import { ICreateMessageRequest, IUpdateMessageRequest } from '../../../../types/
 import { useApiService } from '../../../../api/useApiService';
 import { useMessageService } from '../../../../api/services/messageService';
 import { toast } from 'react-toastify';
+import { IStickerResponse } from '../../../../types/stickers';
+import StickerPicker from './StickerPicker';
 
 const { TextArea } = Input;
 
@@ -41,6 +44,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
   const [messageText, setMessageText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showStickerPicker, setShowStickerPicker] = useState(false);
   const textAreaRef = useRef<TextAreaRef | null>(null);
   const signalR = useSignalR();
   const currentChat = useAppSelector(selectCurrentChat);
@@ -224,6 +228,37 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
     textAreaRef.current?.focus();
   };
 
+  const handleStickerSelect = async (sticker: IStickerResponse) => {
+    setShowStickerPicker(false);
+
+    const request: ICreateMessageRequest = {
+      chatId,
+      messageText: '',
+      replyMessageId: null,
+      links: [],
+      tags: [],
+      photos: [],
+      stickers: [{ stickerId: sticker.id, fileId: sticker.fileId, name: sticker.name }],
+    };
+
+    const response = await messageService.createMessage(request);
+
+    if (response.success && response.data) {
+      const newMessage = response.data;
+      dispatch(addMessage({ chatId, message: newMessage }));
+      dispatch(
+        updateLastMessage({
+          chatId,
+          lastMessage: newMessage,
+          lastMessageTime: newMessage.createdAt,
+          needIncrement: false,
+        })
+      );
+    } else {
+      toast.error(response.error?.detail ?? 'Ошибка при отправке стикера');
+    }
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -315,6 +350,23 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
           autoSize={{ minRows: 1, maxRows: 4 }}
           className="flex-1"
         />
+
+        {/* Sticker picker */}
+        <Popover
+          content={<StickerPicker onSelect={handleStickerSelect} />}
+          trigger="click"
+          open={showStickerPicker}
+          onOpenChange={setShowStickerPicker}
+          placement="topRight"
+        >
+          <Tooltip title="Стикеры">
+            <Button
+              type="text"
+              icon={<FileImageOutlined className="text-xl" />}
+              className="flex-shrink-0"
+            />
+          </Tooltip>
+        </Popover>
 
         {/* Emoji button with popover */}
         <Popover

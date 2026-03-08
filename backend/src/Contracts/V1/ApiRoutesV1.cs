@@ -214,6 +214,30 @@ public class ApiRoutesV1
 
     #endregion
 
+    #region StickerGroups
+
+    public const string StickerGroups = Root + "/sticker-groups";
+
+    public const string StickerGroupById = StickerGroups + "/{id}";
+
+    public const string StickerGroupActivate = StickerGroupById + "/activate";
+
+    public const string StickerGroupStickers = StickerGroupById + "/stickers";
+
+    #endregion
+
+    #region Stickers
+
+    public const string Stickers = Root + "/stickers";
+
+    public const string StickerById = Stickers + "/{id}";
+
+    public const string StickerName = StickerById + "/name";
+
+    public const string StickerPhoto = StickerById + "/photo";
+
+    #endregion
+
     #region Messaging
 
     public const string Chats = Root + "/chats";

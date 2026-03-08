@@ -27,9 +27,11 @@ public static class ServiceRegistry
             {
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             });
-        services.AddSignalR();
+        services.AddSignalR().AddJsonProtocol(options =>
+        {
+            options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        });
         services.AddExceptionAsProblemDetails();
-        services.AddSignalR();
     }
 
     public static void UseWeb(this IApplicationBuilder app, IConfiguration configuration)

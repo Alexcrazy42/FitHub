@@ -92,7 +92,7 @@ internal sealed class MessageService : IMessageService
         await AttachLinksAsync(message, command.Links, ct);
         await AttachTagsAsync(message, command.Tags, ct);
         await AttachPhotosAsync(message, command.Photos, ct);
-
+        await AttachStickersAsync(message, command.Stickers, ct);
 
         await CreateMessageViews(chat, message, ct);
         await UpdateReadModelsAfterCreationMessageAsync(chat, message, ct);
@@ -115,6 +115,7 @@ internal sealed class MessageService : IMessageService
         await AttachLinksAsync(message, command.Links, ct);
         await AttachTagsAsync(message, command.Tags, ct);
         await AttachPhotosAsync(message, command.Photos, ct);
+        await AttachStickersAsync(message, command.Stickers, ct);
 
         await unitOfWork.SaveChangesAsync(ct);
         return message;
@@ -200,6 +201,16 @@ internal sealed class MessageService : IMessageService
             var file = await fileService.GetFile(photoId, ct);
             var photoAttachment = new PhotoAttachment(file.Id);
             var messageAttachment = MessageAttachment.CreatePhotoAttachment(message, photoAttachment);
+            await messageAttachmentRepository.PendingAddAsync(messageAttachment, ct);
+        }
+    }
+
+    private async Task AttachStickersAsync(Message message, IEnumerable<CreateStickerAttachmentCommand> stickers, CancellationToken ct)
+    {
+        foreach (var sticker in stickers)
+        {
+            var stickerAttachment = new StickerAttachment(sticker.StickerId, sticker.FileId, sticker.Name);
+            var messageAttachment = MessageAttachment.CreateStickerAttachment(message, stickerAttachment);
             await messageAttachmentRepository.PendingAddAsync(messageAttachment, ct);
         }
     }

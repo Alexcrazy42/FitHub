@@ -16,6 +16,8 @@ public class UpdateMessageCommand
 
     public List<FileId> Photos { get; init; } = [];
 
+    public List<CreateStickerAttachmentCommand> Stickers { get; init; } = [];
+
     public UpdateMessageCommand(string messageText)
     {
         MessageText = messageText;

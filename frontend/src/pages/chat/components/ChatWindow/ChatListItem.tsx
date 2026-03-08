@@ -6,7 +6,6 @@ import { ru } from 'date-fns/locale';
 import { ChatType, IChatMessageResponse } from '../../../../types/messaging';
 import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
 import { setCurrentChatId } from '../../../../store/uiSlice';
-import { resetUnreadCount } from '../../../../store/chatSlice';
 import { selectCurrentChatId, selectTypingUsers } from '../../../../store/selectors';
 import { getChatAvatar, currentUser, getFirstName } from '../../mocks/fakeData';
 import { roleMapping } from '../../../../types/auth';
@@ -55,11 +54,6 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat }) => {
 
   const handleClick = () => {
     dispatch(setCurrentChatId(chat.chat.id));
-    
-    if (chat.unreadCount > 0) {
-      // TODO: надо это вызывать когда дошел до конца в чате или батчами (потихоньку когда скроллишь вниз)
-      dispatch(resetUnreadCount(chat.id));
-    }
   };
 
   const formatTypingText = () => {
