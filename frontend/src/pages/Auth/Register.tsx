@@ -1,26 +1,48 @@
-﻿import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { useApiService } from "../../api/useApiService";
+import { useApiServiceWithoutNavigate } from "../../api/useApiService";
 import { StartRegisterRequest, UserResponse } from "../../types/auth";
+import { IGymResponse } from "../../types/gyms";
+import { ListResponse } from "../../types/common";
 import { toast } from "react-toastify";
-import { useState } from "react";
 
 export const Register: React.FC = () => {
   const navigate = useNavigate();
-  const apiService = useApiService();
+  const apiService = useApiServiceWithoutNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [isDark, setIsDark] = useState(false); // используй свою тему, если есть
+  const [gyms, setGyms] = useState<IGymResponse[]>([]);
+  const [gymsLoading, setGymsLoading] = useState(true);
+  const isDark = false;
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<StartRegisterRequest>({
-    mode: "onBlur",
-  });
+  } = useForm<StartRegisterRequest>({ mode: "onBlur" });
+
+  useEffect(() => {
+    const fetchGyms = async () => {
+      try {
+        const response = await apiService.get<ListResponse<IGymResponse>>(
+          "v1/gyms?PageNumber=1&PageSize=100"
+        );
+        if (response.success && response.data) {
+          setGyms(response.data.items);
+        }
+      } catch {
+        toast.error("Не удалось загрузить список залов");
+      } finally {
+        setGymsLoading(false);
+      }
+    };
+
+    fetchGyms();
+  }, []);
 
   const onSubmit = async (data: StartRegisterRequest) => {
-    document.cookie = "FitHub.Identity.Cookie=; path=/; domain=example.com; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
+    document.cookie =
+      "FitHub.Identity.Cookie=; path=/; domain=example.com; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
     try {
       setIsLoading(true);
 
@@ -41,41 +63,24 @@ export const Register: React.FC = () => {
     }
   };
 
+  const inputClass = `w-full px-4 py-2.5 rounded-lg border outline-none transition focus:ring-2 bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500`;
+  const labelClass = `block text-sm font-medium mb-2 text-gray-700`;
+
   return (
-    <div
-      className={`min-h-screen flex items-center justify-center p-4 ${
-        isDark ? "bg-gray-900" : "bg-gray-100"
-      }`}
-    >
-      <div
-        className={`w-full max-w-md rounded-2xl p-8 shadow-xl space-y-6 ${
-          isDark ? "bg-gray-800 text-gray-100" : "bg-white text-gray-800"
-        }`}
-      >
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-100">
+      <div className="w-full max-w-md rounded-2xl p-8 shadow-xl space-y-6 bg-white text-gray-800">
         <div className="text-center">
           <h2 className="text-3xl font-bold">Регистрация</h2>
-          <p className={`mt-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-            Создайте новый аккаунт
-          </p>
+          <p className="mt-2 text-gray-500">Создайте новый аккаунт</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* Фамилия */}
           <div>
-            <label
-              className={`block text-sm font-medium mb-2 ${
-                isDark ? "text-gray-300" : "text-gray-700"
-              }`}
-            >
-              Фамилия
-            </label>
+            <label className={labelClass}>Фамилия</label>
             <input
               {...register("surname", { required: "Введите фамилию" })}
-              className={`w-full px-4 py-2.5 rounded-lg border outline-none transition focus:ring-2 ${
-                isDark
-                  ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-500"
-                  : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500"
-              }`}
+              className={inputClass}
               placeholder="Введите вашу фамилию"
               disabled={isLoading}
             />
@@ -86,20 +91,10 @@ export const Register: React.FC = () => {
 
           {/* Имя */}
           <div>
-            <label
-              className={`block text-sm font-medium mb-2 ${
-                isDark ? "text-gray-300" : "text-gray-700"
-              }`}
-            >
-              Имя
-            </label>
+            <label className={labelClass}>Имя</label>
             <input
               {...register("name", { required: "Введите имя" })}
-              className={`w-full px-4 py-2.5 rounded-lg border outline-none transition focus:ring-2 ${
-                isDark
-                  ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-500"
-                  : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500"
-              }`}
+              className={inputClass}
               placeholder="Введите ваше имя"
               disabled={isLoading}
             />
@@ -110,13 +105,7 @@ export const Register: React.FC = () => {
 
           {/* Email */}
           <div>
-            <label
-              className={`block text-sm font-medium mb-2 ${
-                isDark ? "text-gray-300" : "text-gray-700"
-              }`}
-            >
-              Email
-            </label>
+            <label className={labelClass}>Email</label>
             <input
               type="email"
               {...register("email", {
@@ -126,11 +115,7 @@ export const Register: React.FC = () => {
                   message: "Некорректный email",
                 },
               })}
-              className={`w-full px-4 py-2.5 rounded-lg border outline-none transition focus:ring-2 ${
-                isDark
-                  ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-500"
-                  : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500"
-              }`}
+              className={inputClass}
               placeholder="Введите ваш email"
               disabled={isLoading}
             />
@@ -139,12 +124,35 @@ export const Register: React.FC = () => {
             )}
           </div>
 
+          {/* Зал */}
+          <div>
+            <label className={labelClass}>Зал</label>
+            <select
+              {...register("gymId", { required: "Выберите зал" })}
+              className={`${inputClass} ${gymsLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+              disabled={isLoading || gymsLoading}
+              defaultValue=""
+            >
+              <option value="" disabled>
+                {gymsLoading ? "Загрузка залов..." : "Выберите зал"}
+              </option>
+              {gyms.map((gym) => (
+                <option key={gym.id} value={gym.id}>
+                  {gym.name}
+                </option>
+              ))}
+            </select>
+            {errors.gymId && (
+              <p className="text-sm text-red-500 mt-1">{errors.gymId.message}</p>
+            )}
+          </div>
+
           {/* Button */}
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || gymsLoading}
             className={`w-full font-semibold py-2.5 rounded-lg transition duration-200 shadow ${
-              isLoading
+              isLoading || gymsLoading
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-blue-600 hover:bg-blue-700 text-white"
             }`}
@@ -153,16 +161,11 @@ export const Register: React.FC = () => {
           </button>
         </form>
 
-        {/* Bottom redirect */}
         <div className="text-center pt-1">
-          <span className={`${isDark ? "text-gray-400" : "text-gray-500"} text-sm`}>
-            Уже есть аккаунт?
-          </span>
+          <span className="text-gray-500 text-sm">Уже есть аккаунт?</span>
           <button
             onClick={() => navigate("/login")}
-            className={`ml-1 text-sm font-medium underline ${
-              isDark ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-700"
-            }`}
+            className="ml-1 text-sm font-medium underline text-blue-600 hover:text-blue-700"
           >
             Войти
           </button>

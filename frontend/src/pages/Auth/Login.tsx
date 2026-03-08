@@ -163,43 +163,43 @@ const Login: React.FC = () => {
     return <div>Загрузка...</div>
   }
 
-  if (!firstLogin) {
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-100 px-4">
-        <div className="max-w-md w-full">
-          <Alert
-            message="Вы уже зарегистрированы"
-            description={
-              <Space direction="vertical" size="middle" className="w-full">
-                <span>
-                  Вы уже вошли в аккаунт: <strong>{user?.email}</strong>
-                </span>
-                <span>Хотите выполнить повторный вход?</span>
-                <Space>
-                  <Button type="primary" onClick={() => setFirstLogin(true)}>
-                    Да
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      if(user?.currentRole) {
-                        const route = roleRoutes[user?.currentRole];
-                        navigate(route);
-                      }
+  // if (!firstLogin) {
+  //   return (
+  //     <div className="flex justify-center items-center min-h-screen bg-gray-100 px-4">
+  //       <div className="max-w-md w-full">
+  //         <Alert
+  //           message="Вы уже зарегистрированы"
+  //           description={
+  //             <Space direction="vertical" size="middle" className="w-full">
+  //               <span>
+  //                 Вы уже вошли в аккаунт: <strong>{user?.email}</strong>
+  //               </span>
+  //               <span>Хотите выполнить повторный вход?</span>
+  //               <Space>
+  //                 <Button type="primary" onClick={() => setFirstLogin(true)}>
+  //                   Да
+  //                 </Button>
+  //                 <Button
+  //                   onClick={() => {
+  //                     if(user?.currentRole) {
+  //                       const route = roleRoutes[user?.currentRole];
+  //                       navigate(route);
+  //                     }
                       
-                    }}
-                  >
-                    Нет, перейти в личный кабинет
-                  </Button>
-                </Space>
-              </Space>
-            }
-            type="info"
-            showIcon
-          />
-        </div>
-      </div>
-    );
-  }
+  //                   }}
+  //                 >
+  //                   Нет, перейти в личный кабинет
+  //                 </Button>
+  //               </Space>
+  //             </Space>
+  //           }
+  //           type="info"
+  //           showIcon
+  //         />
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   if (showRoleSelection) {
     return (

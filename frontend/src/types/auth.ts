@@ -75,6 +75,7 @@ export interface StartRegisterRequest {
   surname: string;
   name: string;
   email: string;
+  gymId: string;
 }
 
 export interface ResetPasswordRequest {
