@@ -13,6 +13,7 @@ import { getFirstName, getFullName } from '../../mocks/fakeData';
 import { CustomMessageAttachment } from './CustomMessageAttachment';
 import { StickerAttachment } from './attachments/StickerAttachment';
 import { DocumentAttachmentPreview } from './attachments/DocumentAttachmentPreview';
+import { VoiceMessageAttachment } from './attachments/VoiceMessageAttachment';
 import { isSystemMessage } from '../../../../types/utilities/messageUtilities';
 import { UserProfileModal } from './UserProfileModal';
 import { MessageText } from './MessageText';
@@ -37,6 +38,9 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = true })
   );
   const documentAttachments = message.attachments.filter(
     (a) => a.type === MessageAttachmentType.Document
+  );
+  const voiceAttachments = message.attachments.filter(
+    (a) => a.type === MessageAttachmentType.Voice
   );
 
   const formatTime = (dateString: string) => {
@@ -238,6 +242,15 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = true })
                 <div className="flex flex-col gap-2 mt-1">
                   {documentAttachments.map((att) => (
                     <DocumentAttachmentPreview key={att.id} attachment={att} isMyMessage={isMyMessage} />
+                  ))}
+                </div>
+              )}
+
+              {/* Voice attachments */}
+              {voiceAttachments.length > 0 && (
+                <div className="flex flex-col gap-2 mt-1">
+                  {voiceAttachments.map((att) => (
+                    <VoiceMessageAttachment key={att.id} attachment={att} isMyMessage={isMyMessage} />
                   ))}
                 </div>
               )}

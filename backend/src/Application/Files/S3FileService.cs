@@ -61,7 +61,6 @@ public class S3FileService : IS3FileService
             Key = s3Key,
             Verb = HttpVerb.PUT,
             Expires = DateTime.UtcNow.AddMinutes(15),
-            ContentType = GetMimeType(file),
             Protocol = Protocol.HTTP
         };
         var url = await s3Client.GetPreSignedURLAsync(presignRequest);

@@ -94,6 +94,7 @@ internal sealed class MessageService : IMessageService
         await AttachPhotosAsync(message, command.Photos, ct);
         await AttachStickersAsync(message, command.Stickers, ct);
         await AttachDocumentsAsync(message, command.Documents, ct);
+        await AttachVoicesAsync(message, command.Voices, ct);
 
         await CreateMessageViews(chat, message, ct);
         await UpdateReadModelsAfterCreationMessageAsync(chat, message, ct);
@@ -223,6 +224,17 @@ internal sealed class MessageService : IMessageService
             await fileService.GetFile(doc.FileId, ct);
             var documentAttachment = new DocumentAttachment(doc.FileId, doc.FileName, doc.FileSize, doc.MimeType);
             var messageAttachment = MessageAttachment.CreateDocumentAttachment(message, documentAttachment);
+            await messageAttachmentRepository.PendingAddAsync(messageAttachment, ct);
+        }
+    }
+
+    private async Task AttachVoicesAsync(Message message, IEnumerable<CreateVoiceAttachmentCommand> voices, CancellationToken ct)
+    {
+        foreach (var voice in voices)
+        {
+            await fileService.GetFile(voice.FileId, ct);
+            var voiceAttachment = new VoiceAttachment(voice.FileId, voice.DurationMs, voice.MimeType, voice.Peaks);
+            var messageAttachment = MessageAttachment.CreateVoiceAttachment(message, voiceAttachment);
             await messageAttachmentRepository.PendingAddAsync(messageAttachment, ct);
         }
     }
