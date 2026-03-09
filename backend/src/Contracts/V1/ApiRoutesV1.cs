@@ -57,6 +57,20 @@ public class ApiRoutesV1
 
     #endregion
 
+    #region Videos
+
+    public const string Videos = Root + "/videos";
+
+    public const string VideoById = Videos + "/{id}";
+
+    public const string VideosInitUpload = Videos + "/init-upload";
+
+    public const string VideoConfirmUpload = VideoById + "/confirm-upload";
+
+    public const string VideoResolutions = VideoById + "/resolutions";
+
+    #endregion
+
     #region BaseGroupTrainings
 
     public const string BaseGroupTrainings = Root + "/base-group-trainings";

@@ -18,6 +18,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="AutoFixture" Version="4.18.1" />
+    <PackageVersion Include="FFMpegCore" Version="5.1.0" />
     <PackageVersion Include="AutoFixture.AutoMoq" Version="4.18.1" />
     <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.4" />
     <PackageVersion Include="AWSSDK.S3" Version="4.0.7.7" />
