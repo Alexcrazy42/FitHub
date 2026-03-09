@@ -67,6 +67,8 @@ public class ApiRoutesV1
 
     public const string VideoConfirmUpload = VideoById + "/confirm-upload";
 
+    public const string VideoProcess = VideoById + "/process";
+
     public const string VideoResolutions = VideoById + "/resolutions";
 
     #endregion

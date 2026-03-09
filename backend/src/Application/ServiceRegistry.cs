@@ -2,7 +2,6 @@
 using Amazon.S3;
 using FitHub.Application.Files;
 using FitHub.Application.Users;
-using FitHub.Application.Videos;
 using FitHub.Authentication;
 using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.AspNetCore.Auth;
@@ -35,17 +34,8 @@ public static class ServiceRegistry
         services.AddTransient<IIdentityUserService, IdentityUserService>();
         services.AddTransient<IAuthenticationService, IdentityUserService>();
         services.AddFiles(configuration);
-        services.AddVideos();
 
         return services;
-    }
-
-    private static void AddVideos(this IServiceCollection services)
-    {
-        // Singleton channel shared between VideoService (writer) and VideoEncodingWorker (reader),
-        // both running in the same Host process.
-        services.AddSingleton<VideoEncodingChannel>();
-        services.AddHostedService<VideoEncodingWorker>();
     }
 
     private static void AddFiles(this IServiceCollection services, IConfiguration configuration)

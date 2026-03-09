@@ -54,7 +54,7 @@ public class FileService : IFileService
 
         await fileRepository.PendingAddAsync(file, ct);
 
-        var url = await s3FileService.GetPresignedUrlAsync(command, file.Id.ToString(), objectKey);
+        var url = await s3FileService.GetPresignedUrlAsync(file.Id.ToString(), objectKey);
 
         await unitOfWork.SaveChangesAsync(ct);
         return url;

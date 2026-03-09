@@ -4,11 +4,12 @@ namespace FitHub.Domain.Videos;
 
 public class VideoResolution : IEntity<VideoResolutionId>
 {
+    private Video? video;
+
     private VideoResolution(
         VideoResolutionId id,
         VideoId videoId,
         VideoQuality quality,
-        string s3Key,
         long fileSizeBytes,
         int widthPx,
         int heightPx,
@@ -17,7 +18,7 @@ public class VideoResolution : IEntity<VideoResolutionId>
         Id = id;
         VideoId = videoId;
         Quality = quality;
-        S3Key = s3Key;
+        ThreeKey = "s3Key";
         FileSizeBytes = fileSizeBytes;
         WidthPx = widthPx;
         HeightPx = heightPx;
@@ -26,8 +27,15 @@ public class VideoResolution : IEntity<VideoResolutionId>
 
     public VideoResolutionId Id { get; }
     public VideoId VideoId { get; }
+
+    public Video Video
+    {
+        get => UnexpectedException.ThrowIfNull(video, "Видео неожиданно оказалось null");
+        private set => video = value;
+    }
+
     public VideoQuality Quality { get; }
-    public string S3Key { get; }
+    public string ThreeKey { get; }
     public long FileSizeBytes { get; }
     public int WidthPx { get; }
     public int HeightPx { get; }
@@ -36,10 +44,10 @@ public class VideoResolution : IEntity<VideoResolutionId>
     public static VideoResolution Create(
         VideoId videoId,
         VideoQuality quality,
-        string s3Key,
+        //string s3Key,
         long fileSizeBytes,
         int widthPx,
         int heightPx,
         int bitrateKbps)
-        => new(VideoResolutionId.New(), videoId, quality, s3Key, fileSizeBytes, widthPx, heightPx, bitrateKbps);
+        => new(VideoResolutionId.New(), videoId, quality, fileSizeBytes, widthPx, heightPx, bitrateKbps);
 }

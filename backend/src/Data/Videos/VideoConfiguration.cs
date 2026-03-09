@@ -1,3 +1,4 @@
+using FitHub.Domain.Files;
 using FitHub.Domain.Videos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -8,12 +9,14 @@ public class VideoConfiguration : IEntityTypeConfiguration<Video>
 {
     public void Configure(EntityTypeBuilder<Video> builder)
     {
+        builder.HasOne(v => v.OriginalFile)
+            .WithMany()
+            .HasForeignKey(v => v.OriginalFileId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasMany(v => v.Resolutions)
             .WithOne()
             .HasForeignKey(r => r.VideoId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        builder.Navigation(v => v.Resolutions)
-            .UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }

@@ -11,12 +11,14 @@ public class VideoRepository : DefaultPendingRepository<Video, VideoId, DataCont
 
     public async Task<IReadOnlyList<Video>> GetAllWithResolutionsAsync(CancellationToken ct)
         => await ReadRaw()
+            .Include(v => v.OriginalFile)
             .Include(v => v.Resolutions)
             .OrderByDescending(v => v.CreatedAt)
             .ToListAsync(ct);
 
     public async Task<Video?> GetWithResolutionsAsync(VideoId id, CancellationToken ct)
         => await ReadRaw()
+            .Include(v => v.OriginalFile)
             .Include(v => v.Resolutions)
             .FirstOrDefaultAsync(v => v.Id == id, ct);
 

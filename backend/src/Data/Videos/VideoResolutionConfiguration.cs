@@ -8,6 +8,8 @@ public class VideoResolutionConfiguration : IEntityTypeConfiguration<VideoResolu
 {
     public void Configure(EntityTypeBuilder<VideoResolution> builder)
     {
-        builder.ToTable("VideoResolutions");
+        builder.HasOne(x => x.Video)
+            .WithMany(video => video.Resolutions)
+            .HasForeignKey(x => x.VideoId);
     }
 }

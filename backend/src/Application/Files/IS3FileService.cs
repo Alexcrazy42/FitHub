@@ -8,5 +8,6 @@ public interface IS3FileService
     Task<bool> FileExistsAsync(string key);
     Task EnsureBucketExistsAsync();
 
-    Task<PresignedUrlResult> GetPresignedUrlAsync(GetPresignedUrlCommand command, string fileId, string s3Key);
+    Task<PresignedUrlResult> GetPresignedUrlAsync(string fileId, string s3Key);
+    Task<string> GetPresignedDownloadUrlAsync(string s3Key, TimeSpan expiry);
 }

@@ -5,5 +5,6 @@ public enum EntityType
     Gym,
     Equipment,
     BaseGroupTraining,
-    Sticker
+    Sticker,
+    Video
 }

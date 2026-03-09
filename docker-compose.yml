@@ -21,6 +21,24 @@ services:
       timeout: 5s
       retries: 5
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-local
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: rabbitmq
+      RABBITMQ_DEFAULT_PASS: rabbitmq123
+    ports:
+      - "5672:5672"    # AMQP
+      - "15672:15672"  # Management UI
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   minio:
     image: minio/minio:latest
     container_name: minio-local

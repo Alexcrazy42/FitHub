@@ -52,9 +52,8 @@ public class S3FileService : IS3FileService
         }
     }
 
-    public async Task<PresignedUrlResult> GetPresignedUrlAsync(GetPresignedUrlCommand command, string fileId, string s3Key)
+    public async Task<PresignedUrlResult> GetPresignedUrlAsync(string fileId, string s3Key)
     {
-        var file = command.File;
         var presignRequest = new GetPreSignedUrlRequest
         {
             BucketName = bucketName,
@@ -71,6 +70,19 @@ public class S3FileService : IS3FileService
             FileId = fileId,
             ObjectKey = s3Key
         };
+    }
+
+    public async Task<string> GetPresignedDownloadUrlAsync(string s3Key, TimeSpan expiry)
+    {
+        var presignRequest = new GetPreSignedUrlRequest
+        {
+            BucketName = bucketName,
+            Key = s3Key,
+            Verb = HttpVerb.GET,
+            Expires = DateTime.UtcNow.Add(expiry),
+            Protocol = Protocol.HTTP
+        };
+        return await s3Client.GetPreSignedURLAsync(presignRequest);
     }
 
     public async Task<string> UploadFileAsync(string key, Stream fileStream, string contentType)
