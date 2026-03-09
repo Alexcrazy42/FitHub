@@ -33,3 +33,9 @@
 ![chatTyping](./images/12_chat_typing.png)
 
 ![Stickers](./images/13_stickers.png)
+
+Аудиосообщения и файлы:
+
+![Audio](./images/14_stickers_and_files_and_audio.png)
+
+![Files](./images/15_file_preview.png)

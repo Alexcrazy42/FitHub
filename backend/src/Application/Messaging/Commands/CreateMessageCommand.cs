@@ -20,6 +20,10 @@ public class CreateMessageCommand
 
     public List<CreateStickerAttachmentCommand> Stickers { get; init; } = [];
 
+    public List<CreateDocumentAttachmentCommand> Documents { get; init; } = [];
+
+    public List<CreateVoiceAttachmentCommand> Voices { get; init; } = [];
+
     public CreateMessageCommand(ChatId chatId, string messageText)
     {
         ChatId = chatId;

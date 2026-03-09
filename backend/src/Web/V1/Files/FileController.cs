@@ -27,9 +27,9 @@ public class FileController : ControllerBase
         }
         var fileId = FileId.Parse(id);
 
-        var stream = await fileService.DownloadFile(fileId, ct);
+        var (stream, fileName) = await fileService.DownloadFile(fileId, ct);
 
-        var contentType = GetContentType(id);
+        var contentType = GetContentType(fileName);
 
         return File(
             stream,
@@ -102,7 +102,12 @@ public class FileController : ControllerBase
             { ".pdf", "application/pdf" },
             { ".txt", "text/plain" },
             { ".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document" },
-            { ".xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
+            { ".xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
+            { ".webm", "audio/webm" },
+            { ".ogg", "audio/ogg" },
+            { ".mp3", "audio/mpeg" },
+            { ".wav", "audio/wav" },
+            { ".mp4", "video/mp4" },
         };
 
         var ext = Path.GetExtension(fileName).ToLowerInvariant();

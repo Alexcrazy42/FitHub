@@ -22,8 +22,10 @@
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.19",
     "emoji-picker-react": "^4.16.1",
+    "lamejs": "^1.2.1",
     "lodash": "^4.17.21",
     "lodash.debounce": "^4.0.8",
+    "mammoth": "^1.11.0",
     "maplibre-gl": "^5.9.0",
     "react": "^19.1.1",
     "react-big-calendar": "^1.19.4",
@@ -35,6 +37,7 @@
     "react-toastify": "^11.0.5",
     "react-window": "^2.2.3",
     "redux-persist": "^6.0.0",
+    "xlsx": "^0.18.5",
     "yup": "^1.7.0"
   },
   "devDependencies": {

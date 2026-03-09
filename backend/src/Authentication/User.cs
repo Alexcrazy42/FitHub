@@ -49,6 +49,12 @@ public class User : IdentityUser, IAuditableEntity
         return LastSeenAt;
     }
 
+    public void SetName(string name, string surname)
+    {
+        Name = name;
+        Surname = surname;
+    }
+
     public static User Create(IdentityUserId id,
         string surname,
         string name,

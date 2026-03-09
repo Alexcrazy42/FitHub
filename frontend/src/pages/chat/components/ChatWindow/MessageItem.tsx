@@ -4,6 +4,7 @@ import { UserOutlined, MoreOutlined, EditOutlined, DeleteOutlined } from '@ant-d
 import type { MenuProps } from 'antd';
 import { format } from 'date-fns';
 import { IMessageResponse, MessageAttachmentType } from '../../../../types/messaging';
+import { UserResponse } from '../../../../types/auth';
 import { useAppDispatch } from '../../../../store/hooks';
 import { setReplyingToMessage, setEditingMessage } from '../../../../store/uiSlice';
 import { getMostImportantRoleName } from '../../../../types/auth';
@@ -11,7 +12,11 @@ import { useAuth } from '../../../../context/useAuth';
 import { getFirstName, getFullName } from '../../mocks/fakeData';
 import { CustomMessageAttachment } from './CustomMessageAttachment';
 import { StickerAttachment } from './attachments/StickerAttachment';
+import { DocumentAttachmentPreview } from './attachments/DocumentAttachmentPreview';
+import { VoiceMessageAttachment } from './attachments/VoiceMessageAttachment';
 import { isSystemMessage } from '../../../../types/utilities/messageUtilities';
+import { UserProfileModal } from './UserProfileModal';
+import { MessageText } from './MessageText';
 
 interface MessageItemProps {
   message: IMessageResponse;
@@ -22,6 +27,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = true })
   const dispatch = useAppDispatch();
   const [isHovered, setIsHovered] = useState(false);
   const [contextMenuOpen, setContextMenuOpen] = useState(false); // ✅ для ПКМ меню
+  const [profileUser, setProfileUser] = useState<UserResponse | null>(null);
 
   const { user } = useAuth();
   
@@ -29,6 +35,12 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = true })
   const isCustomMessageAttachment = isSystemMessage(message);
   const stickerAttachment = message.attachments.find(
     (a) => a.type === MessageAttachmentType.Sticker
+  );
+  const documentAttachments = message.attachments.filter(
+    (a) => a.type === MessageAttachmentType.Document
+  );
+  const voiceAttachments = message.attachments.filter(
+    (a) => a.type === MessageAttachmentType.Voice
   );
 
   const formatTime = (dateString: string) => {
@@ -103,34 +115,43 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = true })
 
   if (stickerAttachment) {
     return (
-      <div className={`flex gap-3 ${isMyMessage ? 'flex-row-reverse' : 'flex-row'}`}>
-        <div className="flex-shrink-0">
-          {showAvatar ? (
-            <Avatar
-              size={36}
-              src={`https://ui-avatars.com/api/?name=${message.createdBy.name[0]}${message.createdBy.surname[0]}&background=random`}
-              icon={<UserOutlined />}
-            />
-          ) : (
-            <div className="w-9" />
-          )}
-        </div>
-        <div className={`flex flex-col ${isMyMessage ? 'items-end' : 'items-start'}`}>
-          {!isMyMessage && showAvatar && (
-            <div className="text-sm font-semibold text-gray-700 mb-1 px-1">
-              {getFullName(message.createdBy)}
+      <>
+        <div className={`flex gap-3 ${isMyMessage ? 'flex-row-reverse' : 'flex-row'}`}>
+          <div className="flex-shrink-0">
+            {showAvatar ? (
+              <Avatar
+                size={36}
+                src={`https://ui-avatars.com/api/?name=${message.createdBy.name[0]}${message.createdBy.surname[0]}&background=random`}
+                icon={<UserOutlined />}
+                className={!isMyMessage ? 'cursor-pointer' : ''}
+                onClick={!isMyMessage ? () => setProfileUser(message.createdBy) : undefined}
+              />
+            ) : (
+              <div className="w-9" />
+            )}
+          </div>
+          <div className={`flex flex-col ${isMyMessage ? 'items-end' : 'items-start'}`}>
+            {!isMyMessage && showAvatar && (
+              <div
+                className="text-sm font-semibold text-gray-700 mb-1 px-1 cursor-pointer hover:underline"
+                onClick={() => setProfileUser(message.createdBy)}
+              >
+                {getFullName(message.createdBy)}
+              </div>
+            )}
+            <StickerAttachment message={message} attachment={stickerAttachment} />
+            <div className="text-xs text-gray-400 mt-0.5 px-1">
+              {formatTime(message.createdAt)}
             </div>
-          )}
-          <StickerAttachment message={message} attachment={stickerAttachment} />
-          <div className="text-xs text-gray-400 mt-0.5 px-1">
-            {formatTime(message.createdAt)}
           </div>
         </div>
-      </div>
+        <UserProfileModal user={profileUser} onClose={() => setProfileUser(null)} />
+      </>
     );
   }
 
   return (
+    <>
     <Dropdown
       menu={{ items: menuItems }}
       trigger={['contextMenu']} // ✅ открывается по ПКМ
@@ -151,6 +172,8 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = true })
               size={36}
               src={`https://ui-avatars.com/api/?name=${message.createdBy.name[0]}${message.createdBy.surname[0]}&background=random`}
               icon={<UserOutlined />}
+              className={!isMyMessage ? 'cursor-pointer' : ''}
+              onClick={!isMyMessage ? () => setProfileUser(message.createdBy) : undefined}
             />
           ) : (
             <div className="w-9" />
@@ -162,7 +185,10 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = true })
           {/* Author name (only for others' messages) */}
           {!isMyMessage && showAvatar && (
             <div className="flex items-center gap-2 mb-1 px-3">
-              <span className="text-sm font-semibold text-gray-700">
+              <span
+                className="text-sm font-semibold text-gray-700 cursor-pointer hover:underline"
+                onClick={() => setProfileUser(message.createdBy)}
+              >
                 {getFullName(message.createdBy)}
               </span>
               {message.createdBy.roleNames.length > 0 && (
@@ -205,9 +231,29 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = true })
               }`}
             >
               {/* Message text */}
-              <div className="break-words whitespace-pre-wrap">
-                {message.messageText}
-              </div>
+              {message.messageText && (
+                <div className="break-words whitespace-pre-wrap">
+                  <MessageText text={message.messageText} isMyMessage={isMyMessage} />
+                </div>
+              )}
+
+              {/* Document attachments */}
+              {documentAttachments.length > 0 && (
+                <div className="flex flex-col gap-2 mt-1">
+                  {documentAttachments.map((att) => (
+                    <DocumentAttachmentPreview key={att.id} attachment={att} isMyMessage={isMyMessage} />
+                  ))}
+                </div>
+              )}
+
+              {/* Voice attachments */}
+              {voiceAttachments.length > 0 && (
+                <div className="flex flex-col gap-2 mt-1">
+                  {voiceAttachments.map((att) => (
+                    <VoiceMessageAttachment key={att.id} attachment={att} isMyMessage={isMyMessage} />
+                  ))}
+                </div>
+              )}
 
               {/* Time */}
               <div
@@ -244,6 +290,8 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = true })
         </div>
       </div>
     </Dropdown>
+    <UserProfileModal user={profileUser} onClose={() => setProfileUser(null)} />
+    </>
   );
 };
 

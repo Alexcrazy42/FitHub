@@ -83,6 +83,16 @@ public class MessageAttachment : IEntity<MessageAttachmentId>, IUserAuditableEnt
         return new MessageAttachment(MessageAttachmentId.New(), message.Id, MessageAttachmentType.Sticker, CommonJsonSerializer.Serialize(stickerAttachment));
     }
 
+    public static MessageAttachment CreateDocumentAttachment(Message message, DocumentAttachment documentAttachment)
+    {
+        return new MessageAttachment(MessageAttachmentId.New(), message.Id, MessageAttachmentType.Document, CommonJsonSerializer.Serialize(documentAttachment));
+    }
+
+    public static MessageAttachment CreateVoiceAttachment(Message message, VoiceAttachment voiceAttachment)
+    {
+        return new MessageAttachment(MessageAttachmentId.New(), message.Id, MessageAttachmentType.Voice, CommonJsonSerializer.Serialize(voiceAttachment));
+    }
+
     #region CommonFields
 
     public DateTimeOffset CreatedAt { get; }
