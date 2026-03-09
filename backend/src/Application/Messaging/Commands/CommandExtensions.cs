@@ -25,6 +25,7 @@ public static class CommandExtensions
             Photos = request.Photos.Select(x => FileId.Parse(x.FileId)).ToList(),
             Stickers = request.Stickers.Select(CommandExtensions.FromRequest).ToList(),
             Documents = request.Documents.Select(CommandExtensions.FromRequest).ToList(),
+            Voices = request.Voices.Select(CommandExtensions.FromRequest).ToList(),
         };
     }
 
@@ -85,5 +86,12 @@ public static class CommandExtensions
         var fileName = ValidationException.ThrowIfNull(request.FileName);
         var mimeType = ValidationException.ThrowIfNull(request.MimeType);
         return new CreateDocumentAttachmentCommand(fileId, fileName, request.FileSize, mimeType);
+    }
+
+    public static CreateVoiceAttachmentCommand FromRequest(this CreateVoiceAttachmentRequest request)
+    {
+        var fileId = FileId.Parse(ValidationException.ThrowIfNull(request.FileId));
+        var mimeType = ValidationException.ThrowIfNull(request.MimeType);
+        return new CreateVoiceAttachmentCommand(fileId, request.DurationMs, mimeType, request.Peaks.ToArray());
     }
 }

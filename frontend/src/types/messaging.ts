@@ -19,7 +19,8 @@ export enum MessageAttachmentType {
     InviteUser = "InviteUser",
     ExcludeUser = "ExcludeUser",
     Sticker = "Sticker",
-    Document = "Document"
+    Document = "Document",
+    Voice = "Voice"
 }
 
 
@@ -77,6 +78,13 @@ export interface ICreateDocumentAttachmentRequest {
     mimeType: string;
 }
 
+export interface ICreateVoiceAttachmentRequest {
+    fileId: string;
+    durationMs: number;
+    mimeType: string;
+    peaks: number[];
+}
+
 export interface ICreateMessageRequest {
     chatId: string;
     messageText: string;
@@ -86,6 +94,7 @@ export interface ICreateMessageRequest {
     photos: ICreatePhotoAttachmentRequest[];
     stickers: ICreateStickerAttachmentRequest[];
     documents?: ICreateDocumentAttachmentRequest[];
+    voices?: ICreateVoiceAttachmentRequest[];
 }
 
 export interface IMessageAttachmentResponse {

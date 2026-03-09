@@ -6,6 +6,7 @@ import {
   PaperClipOutlined,
   CloseOutlined,
   FileImageOutlined,
+  AudioOutlined,
 } from '@ant-design/icons';
 import EmojiPicker, { EmojiClickData, EmojiStyle, Theme } from 'emoji-picker-react';
 import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
@@ -23,7 +24,7 @@ import { getFirstName } from '../../mocks/fakeData';
 import { debounce } from 'lodash';
 import { useSignalR } from '../../../../WebSocketProvider';
 import { TextAreaRef } from 'antd/es/input/TextArea';
-import { ICreateMessageRequest, IUpdateMessageRequest } from '../../../../types/messaging';
+import { ICreateMessageRequest, IUpdateMessageRequest, ICreateVoiceAttachmentRequest } from '../../../../types/messaging';
 import { useApiService } from '../../../../api/useApiService';
 import { useMessageService } from '../../../../api/services/messageService';
 import { toast } from 'react-toastify';
@@ -32,6 +33,7 @@ import StickerPicker from './StickerPicker';
 import FileUploader, { FileUploadResult, FileUploaderHandle } from '../../../../components/FileUploader/FileUploader';
 import { ICreateDocumentAttachmentRequest } from '../../../../types/messaging';
 import { FileOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import VoiceRecorder, { VoiceRecordResult } from '../../../../components/VoiceRecorder/VoiceRecorder';
 
 const { TextArea } = Input;
 
@@ -49,6 +51,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showStickerPicker, setShowStickerPicker] = useState(false);
   const [pendingDocuments, setPendingDocuments] = useState<ICreateDocumentAttachmentRequest[]>([]);
+  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
   const textAreaRef = useRef<TextAreaRef | null>(null);
   const fileUploaderRef = useRef<FileUploaderHandle | null>(null);
   const signalR = useSignalR();
@@ -297,6 +300,33 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
     setMessageText('');
   };
 
+  const handleVoiceSend = async (result: VoiceRecordResult) => {
+    const voice: ICreateVoiceAttachmentRequest = {
+      fileId: result.fileId,
+      durationMs: result.durationMs,
+      mimeType: result.mimeType,
+      peaks: result.peaks,
+    };
+    const request: ICreateMessageRequest = {
+      chatId,
+      messageText: '',
+      replyMessageId: null,
+      links: [],
+      tags: [],
+      photos: [],
+      stickers: [],
+      documents: [],
+      voices: [voice],
+    };
+    const response = await messageService.createMessage(request);
+    if (response.success && response.data) {
+      const newMessage = response.data;
+      dispatch(addMessage({ chatId, message: newMessage }));
+      dispatch(updateLastMessage({ chatId, lastMessage: newMessage, lastMessageTime: newMessage.createdAt, needIncrement: false }));
+    }
+    setShowVoiceRecorder(false);
+  };
+
   // Emoji picker content
   const emojiPickerContent = (
     <div className="emoji-picker-wrapper">
@@ -372,81 +402,95 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
         </div>
       )}
 
-      {/* Input area */}
-      <div className="p-4 flex items-end gap-2">
-        {/* Attachments button */}
-        <Tooltip title="Прикрепить файл">
-          <Button
-            type="text"
-            icon={<PaperClipOutlined className="text-xl" />}
-            className="flex-shrink-0"
-            onClick={() => fileUploaderRef.current?.openFileDialog()}
+      {/* Voice recorder or normal input area */}
+      {showVoiceRecorder ? (
+        <VoiceRecorder onSend={handleVoiceSend} onCancel={() => setShowVoiceRecorder(false)} />
+      ) : (
+        <div className="p-4 flex items-end gap-2">
+          {/* Attachments button */}
+          <Tooltip title="Прикрепить файл">
+            <Button
+              type="text"
+              icon={<PaperClipOutlined className="text-xl" />}
+              className="flex-shrink-0"
+              onClick={() => fileUploaderRef.current?.openFileDialog()}
+            />
+          </Tooltip>
+          <FileUploader
+            ref={fileUploaderRef}
+            accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
+            maxFileCount={5}
+            onFileUploaded={handleFileUploaded}
           />
-        </Tooltip>
-        <FileUploader
-          ref={fileUploaderRef}
-          accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
-          maxFileCount={5}
-          onFileUploaded={handleFileUploaded}
-        />
 
-        {/* Text input */}
-        <TextArea
-          ref={textAreaRef}
-          value={messageText}
-          onChange={handleInputChange}
-          onKeyPress={handleKeyPress}
-          placeholder="Введите сообщение..."
-          autoSize={{ minRows: 1, maxRows: 4 }}
-          className="flex-1"
-        />
+          {/* Text input */}
+          <TextArea
+            ref={textAreaRef}
+            value={messageText}
+            onChange={handleInputChange}
+            onKeyPress={handleKeyPress}
+            placeholder="Введите сообщение..."
+            autoSize={{ minRows: 1, maxRows: 4 }}
+            className="flex-1"
+          />
 
-        {/* Sticker picker */}
-        <Popover
-          content={<StickerPicker onSelect={handleStickerSelect} />}
-          trigger="click"
-          open={showStickerPicker}
-          onOpenChange={setShowStickerPicker}
-          placement="topRight"
-        >
-          <Tooltip title="Стикеры">
+          {/* Sticker picker */}
+          <Popover
+            content={<StickerPicker onSelect={handleStickerSelect} />}
+            trigger="click"
+            open={showStickerPicker}
+            onOpenChange={setShowStickerPicker}
+            placement="topRight"
+          >
+            <Tooltip title="Стикеры">
+              <Button
+                type="text"
+                icon={<FileImageOutlined className="text-xl" />}
+                className="flex-shrink-0"
+              />
+            </Tooltip>
+          </Popover>
+
+          {/* Emoji button with popover */}
+          <Popover
+            content={emojiPickerContent}
+            trigger="click"
+            open={showEmojiPicker}
+            onOpenChange={setShowEmojiPicker}
+            placement="topRight"
+            overlayClassName="emoji-popover"
+          >
+            <Tooltip title="Эмодзи">
+              <Button
+                type="text"
+                icon={<SmileOutlined className="text-xl" />}
+                className="flex-shrink-0"
+              />
+            </Tooltip>
+          </Popover>
+
+          {/* Send button */}
+          <Button
+            type="primary"
+            icon={<SendOutlined />}
+            onClick={handleSend}
+            disabled={!messageText.trim() && pendingDocuments.length === 0}
+            className="flex-shrink-0"
+          >
+            Отправить
+          </Button>
+
+          {/* Voice message button */}
+          <Tooltip title="Голосовое сообщение">
             <Button
               type="text"
-              icon={<FileImageOutlined className="text-xl" />}
+              icon={<AudioOutlined className="text-xl" />}
               className="flex-shrink-0"
+              onClick={() => setShowVoiceRecorder(true)}
             />
           </Tooltip>
-        </Popover>
-
-        {/* Emoji button with popover */}
-        <Popover
-          content={emojiPickerContent}
-          trigger="click"
-          open={showEmojiPicker}
-          onOpenChange={setShowEmojiPicker}
-          placement="topRight"
-          overlayClassName="emoji-popover"
-        >
-          <Tooltip title="Эмодзи">
-            <Button
-              type="text"
-              icon={<SmileOutlined className="text-xl" />}
-              className="flex-shrink-0"
-            />
-          </Tooltip>
-        </Popover>
-
-        {/* Send button */}
-        <Button
-          type="primary"
-          icon={<SendOutlined />}
-          onClick={handleSend}
-          disabled={!messageText.trim() && pendingDocuments.length === 0}
-          className="flex-shrink-0"
-        >
-          Отправить
-        </Button>
-      </div>
+        </div>
+      )}
     </div>
   );
 };

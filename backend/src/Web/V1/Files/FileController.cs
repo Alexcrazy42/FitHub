@@ -102,7 +102,12 @@ public class FileController : ControllerBase
             { ".pdf", "application/pdf" },
             { ".txt", "text/plain" },
             { ".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document" },
-            { ".xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
+            { ".xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
+            { ".webm", "audio/webm" },
+            { ".ogg", "audio/ogg" },
+            { ".mp3", "audio/mpeg" },
+            { ".wav", "audio/wav" },
+            { ".mp4", "video/mp4" },
         };
 
         var ext = Path.GetExtension(fileName).ToLowerInvariant();

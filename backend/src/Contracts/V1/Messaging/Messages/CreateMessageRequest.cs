@@ -19,4 +19,6 @@ public class CreateMessageRequest
     public List<CreateStickerAttachmentRequest> Stickers { get; set; } = [];
 
     public List<CreateDocumentAttachmentRequest> Documents { get; set; } = [];
+
+    public List<CreateVoiceAttachmentRequest> Voices { get; set; } = [];
 }

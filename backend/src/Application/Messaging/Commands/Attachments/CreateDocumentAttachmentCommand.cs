@@ -1,4 +1,4 @@
-using FitHub.Domain.Files;
+﻿using FitHub.Domain.Files;
 
 namespace FitHub.Application.Messaging.Commands.Attachments;
 

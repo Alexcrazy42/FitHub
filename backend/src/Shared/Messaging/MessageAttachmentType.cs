@@ -43,5 +43,10 @@ public enum MessageAttachmentType
     /// <summary>
     /// Документ (PDF, Word, Excel, PowerPoint и др.)
     /// </summary>
-    Document
+    Document,
+
+    /// <summary>
+    /// Голосовое сообщение
+    /// </summary>
+    Voice
 }
