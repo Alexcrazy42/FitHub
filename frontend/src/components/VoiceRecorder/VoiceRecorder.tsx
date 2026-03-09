@@ -92,6 +92,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onSend, onCancel }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
+  const micSourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const peaksRef = useRef<number[]>([]);
@@ -148,6 +149,8 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onSend, onCancel }) => {
       mr.onstop = null;
       mr.stop();
     }
+    micSourceRef.current?.disconnect();
+    micSourceRef.current = null;
     streamRef.current?.getTracks().forEach((t) => t.stop());
     audioCtxRef.current?.close();
     audioRef.current?.pause();
@@ -166,6 +169,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onSend, onCancel }) => {
       const ctx = new AudioContext();
       audioCtxRef.current = ctx;
       const source = ctx.createMediaStreamSource(stream);
+      micSourceRef.current = source;
       const analyser = ctx.createAnalyser();
       analyser.fftSize = 1024;
       source.connect(analyser);
@@ -214,8 +218,12 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onSend, onCancel }) => {
     clearInterval(timerRef.current);
     if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
 
-    // Close AudioContext immediately — its MediaStreamSource holds a mic reference.
-    // Waiting for onstop keeps the browser mic indicator active unnecessarily.
+    // Disconnect the MediaStreamSourceNode synchronously — this is the only reliable way
+    // to release the AudioContext's hold on the stream before stopping tracks.
+    // audioCtx.close() is async (Promise), so calling it without await still holds
+    // the stream reference when track.stop() runs, keeping the mic indicator active.
+    micSourceRef.current?.disconnect();
+    micSourceRef.current = null;
     audioCtxRef.current?.close();
     audioCtxRef.current = null;
 

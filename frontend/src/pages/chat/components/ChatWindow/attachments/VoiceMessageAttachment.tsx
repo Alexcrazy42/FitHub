@@ -60,77 +60,169 @@ export const VoiceMessageAttachment: React.FC<Props> = ({ attachment, isMyMessag
   const data: VoiceData = JSON.parse(attachment.data);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const animRef = useRef<number>();
 
+  // AudioContext-based playback — fully decodes blob before play so there are
+  // no streaming/buffering pauses at MediaRecorder chunk boundaries.
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const audioBufferRef = useRef<AudioBuffer | null>(null);
+  const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
+  // Tracks where in the buffer we are (seconds) across pause/resume/seek.
+  const playOffsetRef = useRef<number>(0);
+  // AudioContext.currentTime when the last play() started.
+  const playStartCtxTimeRef = useRef<number>(0);
+
   const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [currentMs, setCurrentMs] = useState(data.durationMs);
-  const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const peaks = data.peaks?.length ? data.peaks : Array(40).fill(0.3);
+  const totalDurationSec = data.durationMs / 1000;
 
-  const redrawCanvas = useCallback(() => {
-    if (canvasRef.current) {
-      drawWaveform(canvasRef.current, peaks, progress, !!isMyMessage);
+  // Draw initial static waveform once on mount (progress = 0)
+  useEffect(() => {
+    if (canvasRef.current) drawWaveform(canvasRef.current, peaks, 0, !!isMyMessage);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const stopRaf = useCallback(() => {
+    if (animRef.current) {
+      cancelAnimationFrame(animRef.current);
+      animRef.current = undefined;
     }
-  }, [peaks, progress, isMyMessage]);
+  }, []);
 
-  useEffect(() => { redrawCanvas(); }, [redrawCanvas]);
+  // RAF loop reads AudioContext.currentTime directly — no streaming, no browser guessing.
+  const startRaf = useCallback(() => {
+    let lastLabel = '';
+    const tick = () => {
+      const ctx = audioCtxRef.current;
+      if (!ctx) return;
+      const currentSec = Math.min(
+        (ctx.currentTime - playStartCtxTimeRef.current) + playOffsetRef.current,
+        totalDurationSec
+      );
+      const progress = totalDurationSec > 0 ? currentSec / totalDurationSec : 0;
+      if (canvasRef.current) drawWaveform(canvasRef.current, peaks, progress, !!isMyMessage);
 
-  const loadAudio = async (): Promise<HTMLAudioElement | null> => {
-    if (blobUrl) return audioRef.current;
+      const remainingMs = Math.max(0, (totalDurationSec - currentSec) * 1000);
+      const label = formatDuration(remainingMs);
+      if (label !== lastLabel) {
+        lastLabel = label;
+        setCurrentMs(remainingMs);
+      }
+
+      animRef.current = requestAnimationFrame(tick);
+    };
+    animRef.current = requestAnimationFrame(tick);
+  }, [peaks, isMyMessage, totalDurationSec]);
+
+  const loadBuffer = async (): Promise<AudioBuffer | null> => {
+    if (audioBufferRef.current) return audioBufferRef.current;
     setLoading(true);
     const blob = await apiService.getBlob(`/v1/files/${data.fileId.value}`);
     setLoading(false);
     if (!blob) return null;
-    // Force the correct MIME type — the server may return application/octet-stream
-    const typedBlob = new Blob([blob], { type: data.mimeType || 'audio/mpeg' });
-    const url = URL.createObjectURL(typedBlob);
-    setBlobUrl(url);
-    const audio = new Audio(url);
-    audioRef.current = audio;
 
-    audio.ontimeupdate = () => {
-      const p = audio.duration ? audio.currentTime / audio.duration : 0;
-      setProgress(p);
-      setCurrentMs(Math.max(0, (audio.duration - audio.currentTime) * 1000));
+    const ctx = new AudioContext();
+    audioCtxRef.current = ctx;
+
+    // decodeAudioData fully decodes the webm/opus blob into a PCM AudioBuffer —
+    // eliminates any chunk-boundary pauses that the <audio> element can have.
+    const arrayBuffer = await blob.arrayBuffer();
+    const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+    audioBufferRef.current = audioBuffer;
+    return audioBuffer;
+  };
+
+  const stopSource = () => {
+    if (sourceNodeRef.current) {
+      sourceNodeRef.current.onended = null;
+      try { sourceNodeRef.current.stop(); } catch { /* already stopped */ }
+      sourceNodeRef.current = null;
+    }
+  };
+
+  const playFrom = (offsetSec: number) => {
+    const ctx = audioCtxRef.current;
+    const buffer = audioBufferRef.current;
+    if (!ctx || !buffer) return;
+
+    stopSource();
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(ctx.destination);
+    source.onended = () => {
+      // onended fires both on natural end AND on stop() — guard with isPlaying state
+      // by checking if we reached the end naturally.
+      const elapsed = ctx.currentTime - playStartCtxTimeRef.current;
+      const position = offsetSec + elapsed;
+      if (position >= buffer.duration - 0.05) {
+        playOffsetRef.current = 0;
+        stopRaf();
+        setIsPlaying(false);
+        setCurrentMs(data.durationMs);
+        if (canvasRef.current) drawWaveform(canvasRef.current, peaks, 0, !!isMyMessage);
+      }
     };
-    audio.onended = () => {
-      setIsPlaying(false);
-      setProgress(0);
-      setCurrentMs(data.durationMs);
-    };
-    return audio;
+    playOffsetRef.current = offsetSec;
+    playStartCtxTimeRef.current = ctx.currentTime;
+    source.start(0, offsetSec);
+    sourceNodeRef.current = source;
   };
 
   const togglePlay = async () => {
-    let audio = audioRef.current;
-    if (!audio) {
-      audio = await loadAudio();
-      if (!audio) return;
-    }
     if (isPlaying) {
-      audio.pause();
-      setIsPlaying(false);
-    } else {
-      try {
-        await audio.play();
-        setIsPlaying(true);
-      } catch (err) {
-        if ((err as Error).name !== 'AbortError') console.error(err);
+      // Capture current position before stopping
+      const ctx = audioCtxRef.current;
+      if (ctx) {
+        playOffsetRef.current = Math.min(
+          (ctx.currentTime - playStartCtxTimeRef.current) + playOffsetRef.current,
+          totalDurationSec
+        );
       }
+      stopSource();
+      stopRaf();
+      setIsPlaying(false);
+      return;
+    }
+
+    let buffer = audioBufferRef.current;
+    if (!buffer) {
+      buffer = await loadBuffer();
+      if (!buffer) return;
+    }
+
+    // Resume AudioContext if suspended (browser autoplay policy)
+    await audioCtxRef.current?.resume();
+
+    playFrom(playOffsetRef.current);
+    setIsPlaying(true);
+    startRaf();
+  };
+
+  const handleSeek = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const buffer = audioBufferRef.current;
+    if (!buffer) return;
+    const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
+    const ratio = (e.clientX - rect.left) / rect.width;
+    const seekSec = ratio * buffer.duration;
+
+    if (isPlaying) {
+      playFrom(seekSec);
+    } else {
+      playOffsetRef.current = seekSec;
+      if (canvasRef.current) drawWaveform(canvasRef.current, peaks, ratio, !!isMyMessage);
+      setCurrentMs(Math.max(0, (buffer.duration - seekSec) * 1000));
     }
   };
 
   useEffect(() => {
     return () => {
-      audioRef.current?.pause();
-      if (blobUrl) URL.revokeObjectURL(blobUrl);
-      if (animRef.current) cancelAnimationFrame(animRef.current);
+      stopSource();
+      stopRaf();
+      audioCtxRef.current?.close();
     };
-  }, [blobUrl]);
+  }, [stopRaf]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const bg = isMyMessage ? 'bg-blue-500' : 'bg-white border border-gray-200';
   const textColor = isMyMessage ? 'text-white' : 'text-gray-700';
@@ -156,12 +248,7 @@ export const VoiceMessageAttachment: React.FC<Props> = ({ attachment, isMyMessag
           width={160}
           height={32}
           className="w-full cursor-pointer"
-          onClick={(e) => {
-            if (!audioRef.current || !audioRef.current.duration) return;
-            const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
-            const ratio = (e.clientX - rect.left) / rect.width;
-            audioRef.current.currentTime = ratio * audioRef.current.duration;
-          }}
+          onClick={handleSeek}
         />
         <span className={`text-xs ${textColor} opacity-80`}>{formatDuration(currentMs)}</span>
       </div>
