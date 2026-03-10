@@ -15,6 +15,7 @@ public class TokenCleanerWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        // TODO: перевести на ApiClient
         logger.LogInformation("{WorkerName} starting", GetType().Name);
         while (!stoppingToken.IsCancellationRequested)
         {

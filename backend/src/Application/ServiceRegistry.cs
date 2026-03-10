@@ -44,6 +44,7 @@ public static class ServiceRegistry
 
     private static void ConfigureFfMpeg(this IServiceCollection services, IConfiguration configuration)
     {
+        // TODO: чет странное, надо поресерчить как без этого это делать
         var binaryFolder = configuration["Video:FFmpegBinaryFolder"];
         if (!String.IsNullOrWhiteSpace(binaryFolder))
         {

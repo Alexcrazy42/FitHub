@@ -13,23 +13,24 @@ namespace FitHub.Web.V1.Videos;
 public class VideoController : ControllerBase
 {
     private readonly IVideoService videoService;
-    private readonly IS3FileService s3;
+    private readonly IS3FileService s3FileService; // TODO: это не обязанность контроллера
 
-    public VideoController(IVideoService videoService, IS3FileService s3)
+    public VideoController(IVideoService videoService, IS3FileService s3FileService)
     {
         this.videoService = videoService;
-        this.s3 = s3;
+        this.s3FileService = s3FileService;
     }
 
     [HttpGet(ApiRoutesV1.Videos)]
     public async Task<ListResponse<VideoResponse>> GetAll(CancellationToken ct)
     {
+        // TODO: пагинация
         var videos = await videoService.GetAllAsync(ct);
         var responses = new List<VideoResponse>();
         foreach (var v in videos)
         {
             var posterUrl = v.PosterS3Key is not null
-                ? await s3.GetPresignedDownloadUrlAsync(v.PosterS3Key, TimeSpan.FromHours(2))
+                ? await s3FileService.GetPresignedDownloadUrlAsync(v.PosterS3Key, TimeSpan.FromHours(2)) // предкомпиляция
                 : null;
             responses.Add(v.ToResponse(posterUrl));
         }
@@ -42,8 +43,8 @@ public class VideoController : ControllerBase
     {
         var videoId = VideoId.Parse(id);
         var video = await videoService.GetAsync(videoId, ct);
-        var posterUrl = video.PosterS3Key is not null
-            ? await s3.GetPresignedDownloadUrlAsync(video.PosterS3Key, TimeSpan.FromHours(2))
+        var posterUrl = video.PosterS3Key is not null // TODO: постер можно предкомпилировать + выдавать доступ через наш FileId
+            ? await s3FileService.GetPresignedDownloadUrlAsync(video.PosterS3Key, TimeSpan.FromHours(2))
             : null;
         return video.ToResponse(posterUrl);
     }
@@ -52,9 +53,9 @@ public class VideoController : ControllerBase
     public async Task<InitVideoUploadResponse> InitUpload([FromBody] InitVideoUploadRequest? request, CancellationToken ct)
     {
         var title = ValidationException.ThrowIfNull(request?.Title, "Название не может быть пустым");
-        var ext = ValidationException.ThrowIfNull(request?.FileExtension, "Расширение файла обязательно");
+        var ext = ValidationException.ThrowIfNull(request.FileExtension, "Расширение файла обязательно");
         var result = await videoService.InitUploadAsync(title, ext, ct);
-        return new InitVideoUploadResponse(result.VideoId.ToString(), result.PresignedPutUrl);
+        return new InitVideoUploadResponse(result.VideoId.ToString(), result.PresignedPutUrl); // TODO: extensions метод
     }
 
     [HttpPost(ApiRoutesV1.VideoConfirmUpload)]
@@ -65,6 +66,7 @@ public class VideoController : ControllerBase
         return Accepted();
     }
 
+    // TODO: убрать AllowAnonymous, выписать токен + дать нормальный URL
     [HttpPost(ApiRoutesV1.VideoProcess)]
     [AllowAnonymous]
     public async Task<IActionResult> Process([FromRoute] string id, CancellationToken ct)
@@ -80,7 +82,7 @@ public class VideoController : ControllerBase
         var videoId = VideoId.Parse(id);
         var urls = await videoService.GetResolutionUrlsAsync(videoId, ct);
         var responses = urls.Select(u => new VideoResolutionUrlResponse(
-            u.Quality.ToString(), (int)u.Quality, u.WidthPx, u.HeightPx, u.BitrateKbps, u.Url)).ToList();
+            u.Quality.ToString(), (int)u.Quality, u.WidthPx, u.HeightPx, u.BitrateKbps, u.Url)).ToList(); // TODO: extension метод
         return ListResponse<VideoResolutionUrlResponse>.Create(responses);
     }
 

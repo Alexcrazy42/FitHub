@@ -24,12 +24,14 @@ public record VideoResolutionResponse(
 
 public record VideoResolutionUrlResponse(
     string Quality,
-    int QualityLabel,
+    int QualityLabel, // TODO: enum
     int WidthPx,
     int HeightPx,
     int BitrateKbps,
     string Url);
 
+
+// TODO: вынести из Contracts сборки
 public static class VideoMappings
 {
     public static VideoResponse ToResponse(this Video v, string? posterUrl) => new(

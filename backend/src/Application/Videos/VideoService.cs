@@ -72,6 +72,7 @@ public class VideoService : IVideoService
             throw new InvalidOperationException($"Video {id} is not in Pending state.");
         }
 
+        // TODO: outbox
         await videoQueue.EnqueueAsync(id, ct);
 
         var file = await fileRepository.GetFirstOrDefaultAsync(f => f.Id == video.OriginalFileId, ct);
@@ -107,7 +108,7 @@ public class VideoService : IVideoService
         var urls = new List<VideoResolutionUrl>();
         foreach (var res in video.Resolutions.OrderBy(r => r.Quality))
         {
-            var url = await s3FileService.GetPresignedDownloadUrlAsync(res.S3Key, expiry);
+            var url = await s3FileService.GetPresignedDownloadUrlAsync(res.S3Key, expiry); // TODO: вычислить один раз и все
             urls.Add(new VideoResolutionUrl(res.Quality, res.WidthPx, res.HeightPx, res.BitrateKbps, url));
         }
 
@@ -223,8 +224,7 @@ public class VideoService : IVideoService
 
             // 4. Poster snapshot at 1 second (or midpoint for short clips)
 
-
-            // TODO: fix
+            // TODO: фикс что постер не сканится, хз почему
             // var posterLocal = Path.Combine(workDir, "poster.jpg");
             // var posterS3Key = $"videos/{id}/poster.jpg";
             // var snapAt = TimeSpan.FromSeconds(Math.Min(1, durationSeconds / 2.0));
