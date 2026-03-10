@@ -1,4 +1,4 @@
-using FitHub.Application.Files;
+﻿using FitHub.Application.Files;
 using FitHub.Application.Videos;
 using FitHub.Common.Entities;
 using FitHub.Contracts;

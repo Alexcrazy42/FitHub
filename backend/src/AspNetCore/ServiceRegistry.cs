@@ -177,7 +177,7 @@ public static class ServiceRegistry
         });
     }
 
-    private static void AddCurrentIdentityUserAccessor(this IServiceCollection services)
+    public static void AddCurrentIdentityUserAccessor(this IServiceCollection services)
     {
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentIdentityUserIdProvider, HttpCurrentIdentityUserIdProvider>();

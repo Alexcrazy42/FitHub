@@ -1,5 +1,8 @@
-using FitHub.RabbitMQ.Contracts.Videos;
+﻿using FitHub.Queue.Contracts.Videos;
+using FitHub.RabbitMQ;
+using FitHub.RabbitMQ.Configuration;
 using FitHub.RabbitMQ.Producers;
+using Microsoft.Extensions.Options;
 
 namespace FitHub.Host.Videos;
 
@@ -8,8 +11,12 @@ namespace FitHub.Host.Videos;
 /// Never instantiated directly — only used as a type parameter for AddProducer.
 /// </summary>
 [Producer("direct")]
-public sealed class VideoEncodingProducer : IRabbitProducer<VideoEncodingMessage>
+public sealed class VideoEncodingProducer : RabbitMqProducer<VideoEncodingMessage, VideoEncodingProducer, RabbitMqClusterOptions>
 {
-    public Task BasicPublishAsync(VideoEncodingMessage message, CancellationToken ct = default)
-        => throw new NotSupportedException("Not called directly. Resolved via RabbitMqProducer.");
+    public VideoEncodingProducer(IRabbitMqConnection<RabbitMqClusterOptions> connection,
+        IOptions<RabbitMqClusterOptions> rabbitOptions,
+        ILogger<RabbitMqProducer<VideoEncodingMessage, VideoEncodingProducer, RabbitMqClusterOptions>> logger)
+            : base(connection, rabbitOptions, logger)
+    {
+    }
 }

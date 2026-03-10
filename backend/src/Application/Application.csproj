@@ -3,6 +3,8 @@
     <ProjectReference Include="..\AspNetCore\AspNetCore.csproj" />
     <ProjectReference Include="..\Contracts\Contracts.csproj" />
     <ProjectReference Include="..\Domain\Domain.csproj" />
+    <ProjectReference Include="..\Queue.Contracts\Queue.Contracts.csproj" />
+    <ProjectReference Include="..\RabbitMQ\RabbitMQ.csproj" />
   </ItemGroup>
 
   <ItemGroup>

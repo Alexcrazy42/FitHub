@@ -1,4 +1,4 @@
-using FitHub.Common.Entities.Identity;
+﻿using FitHub.Common.Entities.Identity;
 
 namespace FitHub.Domain.Videos;
 

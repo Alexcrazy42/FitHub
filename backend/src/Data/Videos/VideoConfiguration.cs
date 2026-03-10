@@ -1,4 +1,4 @@
-using FitHub.Domain.Files;
+﻿using FitHub.Domain.Files;
 using FitHub.Domain.Videos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;

@@ -1,4 +1,4 @@
-using FitHub.Application.Videos;
+﻿using FitHub.Application.Videos;
 using FitHub.Common.EntityFramework;
 using FitHub.Domain.Videos;
 using Microsoft.EntityFrameworkCore;

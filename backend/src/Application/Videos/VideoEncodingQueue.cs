@@ -1,9 +1,8 @@
-using FitHub.Application.Videos;
-using FitHub.Domain.Videos;
-using FitHub.RabbitMQ.Contracts.Videos;
+﻿using FitHub.Domain.Videos;
+using FitHub.Queue.Contracts.Videos;
 using FitHub.RabbitMQ.Producers;
 
-namespace FitHub.Host.Videos;
+namespace FitHub.Application.Videos;
 
 internal sealed class VideoEncodingQueue : IVideoEncodingQueue
 {

@@ -1,4 +1,4 @@
-using FitHub.Domain.Videos;
+﻿using FitHub.Domain.Videos;
 
 namespace FitHub.Contracts.V1.Videos;
 

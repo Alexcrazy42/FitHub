@@ -1,7 +1,9 @@
 ﻿using Amazon.Runtime;
 using Amazon.S3;
+using FFMpegCore;
 using FitHub.Application.Files;
 using FitHub.Application.Users;
+using FitHub.Application.Videos;
 using FitHub.Authentication;
 using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.AspNetCore.Auth;
@@ -33,9 +35,20 @@ public static class ServiceRegistry
 
         services.AddTransient<IIdentityUserService, IdentityUserService>();
         services.AddTransient<IAuthenticationService, IdentityUserService>();
+        services.AddScoped<IVideoEncodingQueue, VideoEncodingQueue>();
         services.AddFiles(configuration);
+        services.ConfigureFfMpeg(configuration);
 
         return services;
+    }
+
+    private static void ConfigureFfMpeg(this IServiceCollection services, IConfiguration configuration)
+    {
+        var binaryFolder = configuration["Video:FFmpegBinaryFolder"];
+        if (!String.IsNullOrWhiteSpace(binaryFolder))
+        {
+            GlobalFFOptions.Configure(opts => opts.BinaryFolder = binaryFolder);
+        }
     }
 
     private static void AddFiles(this IServiceCollection services, IConfiguration configuration)

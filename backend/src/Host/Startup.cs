@@ -5,9 +5,9 @@ using FitHub.Common.Extensions.Configuration;
 using FitHub.Common.Logging;
 using FitHub.Data;
 using FitHub.Host.Videos;
+using FitHub.Queue.Contracts.Videos;
 using FitHub.RabbitMQ;
 using FitHub.RabbitMQ.Configuration;
-using FitHub.RabbitMQ.Contracts.Videos;
 using FitHub.Web;
 using FitHub.Web.V1;
 
@@ -33,7 +33,6 @@ public sealed class Startup
 
         services.AddRabbitMq<RabbitMqClusterOptions>();
         services.AddProducer<VideoEncodingMessage, VideoEncodingProducer, RabbitMqClusterOptions>();
-        services.AddScoped<IVideoEncodingQueue, VideoEncodingQueue>();
 
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(options =>

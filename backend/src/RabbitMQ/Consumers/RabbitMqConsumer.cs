@@ -20,7 +20,6 @@ internal sealed class RabbitMqConsumer<TMessage, TOptions> : BackgroundService
     private readonly IServiceScopeFactory scopeFactory;
     private readonly IOptions<TOptions> rabbitOptions;
 
-    private string? exchangeName;
     private string? queueName;
     private string? routingKey;
     private Lazy<Task<IChannel>>? channelFactory;
@@ -49,7 +48,6 @@ internal sealed class RabbitMqConsumer<TMessage, TOptions> : BackgroundService
                 throw new ArgumentException("Consumer attribute is not defined on the consumer");
             }
 
-            exchangeName = TMessage.ExchangeName;
             queueName = consumerAttribute.QueueName;
             routingKey = consumerAttribute.BindingRoutingKey;
 
@@ -85,6 +83,8 @@ internal sealed class RabbitMqConsumer<TMessage, TOptions> : BackgroundService
             { "x-queue-type", "quorum" }
         };
 
+        await channel.ExchangeDeclareAsync(TMessage.ExchangeName, TMessage.ExchangeType, true, false);
+
         await channel.QueueDeclareAsync(dlqName, durable: true, exclusive: false, autoDelete: false, arguments: argsForDlq);
 
         var args = new Dictionary<string, object?>
@@ -95,7 +95,7 @@ internal sealed class RabbitMqConsumer<TMessage, TOptions> : BackgroundService
         };
 
         await channel.QueueDeclareAsync(queueName.Required(), durable: true, exclusive: false, autoDelete: false, arguments: args);
-        await channel.QueueBindAsync(queueName, exchangeName.Required(), routingKey.Required());
+        await channel.QueueBindAsync(queueName, TMessage.ExchangeName, routingKey.Required());
 
         logger.LogInformation("{QueueName} declared with DLQ {DLQName}", queueName, dlqName);
     }

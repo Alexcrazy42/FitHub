@@ -1,12 +1,14 @@
-namespace FitHub.RabbitMQ.Contracts.Videos;
+﻿using FitHub.RabbitMQ.Contracts;
+
+namespace FitHub.Queue.Contracts.Videos;
 
 public sealed class VideoEncodingMessage : IRabbitMqContract
 {
-    public string VideoId { get; init; } = string.Empty;
-
     public static string ExchangeName => "video.encoding";
+
+    public static string ExchangeType => "direct";
 
     public static string DefaultRoutingKey => "video.encoding.process";
 
-    public static string FallbackRoutingKey => "video.encoding.process.fallback";
+    public string VideoId { get; init; } = String.Empty;
 }

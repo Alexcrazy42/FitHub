@@ -1,4 +1,4 @@
-namespace FitHub.Clients.Videos;
+﻿namespace FitHub.Clients.Videos;
 
 public interface IVideoClient
 {

@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using FitHub.Common.Entities;
 using FitHub.Common.Json;
 using FitHub.Common.Utilities.System;
 using FitHub.RabbitMQ.Configuration;
@@ -21,7 +22,6 @@ public class RabbitMqProducer<TMessage, TProducer, TOptions> : IRabbitProducer<T
     private readonly string exchangeName;
     private readonly string exchangeType;
     private readonly string defaultRoutingKey;
-    private readonly string fallbackRoutingKey;
 
 
     public RabbitMqProducer(IRabbitMqConnection<TOptions> connection,
@@ -38,7 +38,6 @@ public class RabbitMqProducer<TMessage, TProducer, TOptions> : IRabbitProducer<T
         exchangeName = TMessage.ExchangeName;
         exchangeType = producerAttribute.ExchangeType.Required();
         defaultRoutingKey = TMessage.DefaultRoutingKey;
-        fallbackRoutingKey = TMessage.FallbackRoutingKey;
         channelFactory = new Lazy<Task<IChannel>>(async () =>
         {
             var channel = await connection.CreateChannelAsync();
@@ -47,32 +46,11 @@ public class RabbitMqProducer<TMessage, TProducer, TOptions> : IRabbitProducer<T
                 await SetupExchangeAsync(channel);
             }
 
-            channel.BasicReturnAsync += async (_, args) =>
+            channel.BasicReturnAsync += (_, args) =>
             {
                 logger.LogWarning("Unrouted message, replyKey={ReplyKey}, replyText={ReplyText}, routingKey={RoutingKey}", args.ReplyCode, args.ReplyText, args.RoutingKey);
-                var body = args.Body.ToArray();
 
-                var publishTimeout = TimeSpan.FromSeconds(5);
-                using var cts = new CancellationTokenSource();
-                cts.CancelAfter(publishTimeout);
-
-                try
-                {
-                    await channel.BasicPublishAsync(
-                        exchangeName,
-                        fallbackRoutingKey,
-                        body: body,
-                        mandatory: false,
-                        cancellationToken: cts.Token);
-                }
-                catch (OperationCanceledException)
-                {
-                    if (cts.Token.IsCancellationRequested)
-                    {
-                        throw new TimeoutException($"Message publishing timed out after {publishTimeout.TotalSeconds} seconds.");
-                    }
-                    throw;
-                }
+                throw new UnexpectedException($"Unrouted message, replyKey={args.ReplyCode}, replyText={args.ReplyText}, routingKey={args.RoutingKey}");
             };
 
             return channel;

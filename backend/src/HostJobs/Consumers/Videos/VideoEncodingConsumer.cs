@@ -1,8 +1,8 @@
-using FitHub.Clients.Videos;
+﻿using FitHub.Clients.Videos;
+using FitHub.Queue.Contracts.Videos;
 using FitHub.RabbitMQ.Consumers;
-using FitHub.RabbitMQ.Contracts.Videos;
 
-namespace FitHub.HostJobs.Workers.Videos;
+namespace FitHub.HostJobs.Consumers.Videos;
 
 [Consumer("video.encoding.queue", "video.encoding.process")]
 public sealed class VideoEncodingConsumer : IRabbitMqConsumerHandler<VideoEncodingMessage>
@@ -15,5 +15,7 @@ public sealed class VideoEncodingConsumer : IRabbitMqConsumerHandler<VideoEncodi
     }
 
     public Task HandleAsync(VideoEncodingMessage message, CancellationToken ct)
-        => videoClient.ProcessAsync(message.VideoId, ct);
+    {
+        return videoClient.ProcessAsync(message.VideoId, ct);
+    }
 }

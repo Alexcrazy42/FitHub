@@ -1,4 +1,4 @@
-namespace FitHub.Domain.Videos;
+﻿namespace FitHub.Domain.Videos;
 
 public enum VideoQuality
 {
