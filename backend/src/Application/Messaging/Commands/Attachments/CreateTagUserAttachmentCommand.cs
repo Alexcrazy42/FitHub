@@ -1,7 +1,5 @@
 ﻿using FitHub.Authentication;
-using FitHub.Common.Entities;
-using FitHub.Contracts.V1.Messaging.Messages.Attachments;
-using FitHub.Domain.Messaging.Attachments;
+using FitHub.Shared.Messaging;
 
 namespace FitHub.Application.Messaging.Commands.Attachments;
 

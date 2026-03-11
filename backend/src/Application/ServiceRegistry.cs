@@ -7,6 +7,7 @@ using FitHub.Application.Videos;
 using FitHub.Authentication;
 using FitHub.Common.AspNetCore.Accounting;
 using FitHub.Common.AspNetCore.Auth;
+using FitHub.Common.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -46,10 +47,13 @@ public static class ServiceRegistry
     {
         // TODO: чет странное, надо поресерчить как без этого это делать
         var binaryFolder = configuration["Video:FFmpegBinaryFolder"];
-        if (!String.IsNullOrWhiteSpace(binaryFolder))
+
+        if (String.IsNullOrWhiteSpace(binaryFolder))
         {
-            GlobalFFOptions.Configure(opts => opts.BinaryFolder = binaryFolder);
+            throw new UnexpectedException("Video:FFmpegBinaryFolder is null");
         }
+
+        GlobalFFOptions.Configure(opts => opts.BinaryFolder = binaryFolder);
     }
 
     private static void AddFiles(this IServiceCollection services, IConfiguration configuration)

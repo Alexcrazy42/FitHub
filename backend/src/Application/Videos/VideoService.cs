@@ -72,7 +72,7 @@ public class VideoService : IVideoService
             throw new InvalidOperationException($"Video {id} is not in Pending state.");
         }
 
-        // TODO: outbox
+        // TODO: outbox или продумать что будет не так
         await videoQueue.EnqueueAsync(id, ct);
 
         var file = await fileRepository.GetFirstOrDefaultAsync(f => f.Id == video.OriginalFileId, ct);
@@ -248,7 +248,7 @@ public class VideoService : IVideoService
         {
             try
             { Directory.Delete(workDir, recursive: true); }
-            catch { /* best-effort */ }
+            catch { /* best-effort */ } // TODO: и что у нас будет бесконечно формироваться папки на сервере?
         }
     }
 }

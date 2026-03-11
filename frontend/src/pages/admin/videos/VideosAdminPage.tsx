@@ -81,7 +81,7 @@ export const VideosAdminPage: React.FC = () => {
   // Auto-refresh while any video is Processing
   useEffect(() => {
     const hasProcessing = videos.some((v) => v.status === 'Pending' || v.status === 'Processing');
-    if (!hasProcessing) return;
+    if (!hasProcessing) return; 
     const timer = setInterval(fetchVideos, 8000);
     return () => clearInterval(timer);
   }, [videos]);
@@ -97,16 +97,13 @@ export const VideosAdminPage: React.FC = () => {
     setUploadProgress(0);
 
     try {
-      // 1. Init upload → get presigned URL
       const initRes = await videoApi.initUpload(values.title.trim(), ext);
       if (!initRes.success || !initRes.data) throw new Error(initRes.error?.detail);
 
       const { videoId, presignedPutUrl } = initRes.data;
 
-      // 2. PUT file directly to MinIO
       await videoApi.uploadToS3(presignedPutUrl, selectedFile, setUploadProgress);
 
-      // 3. Confirm → trigger encoding
       await videoApi.confirmUpload(videoId);
 
       toast.success('Видео загружено и поставлено в очередь на обработку');

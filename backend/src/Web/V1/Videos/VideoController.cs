@@ -30,7 +30,7 @@ public class VideoController : ControllerBase
         foreach (var v in videos)
         {
             var posterUrl = v.PosterS3Key is not null
-                ? await s3FileService.GetPresignedDownloadUrlAsync(v.PosterS3Key, TimeSpan.FromHours(2)) // предкомпиляция
+                ? await s3FileService.GetPresignedDownloadUrlAsync(v.PosterS3Key, TimeSpan.FromHours(2)) // TODO: предкомпиляция
                 : null;
             responses.Add(v.ToResponse(posterUrl));
         }
@@ -55,7 +55,7 @@ public class VideoController : ControllerBase
         var title = ValidationException.ThrowIfNull(request?.Title, "Название не может быть пустым");
         var ext = ValidationException.ThrowIfNull(request.FileExtension, "Расширение файла обязательно");
         var result = await videoService.InitUploadAsync(title, ext, ct);
-        return new InitVideoUploadResponse(result.VideoId.ToString(), result.PresignedPutUrl); // TODO: extensions метод
+        return new InitVideoUploadResponse(result.VideoId.ToString(), result.PresignedPutUrl);
     }
 
     [HttpPost(ApiRoutesV1.VideoConfirmUpload)]
@@ -81,8 +81,7 @@ public class VideoController : ControllerBase
     {
         var videoId = VideoId.Parse(id);
         var urls = await videoService.GetResolutionUrlsAsync(videoId, ct);
-        var responses = urls.Select(u => new VideoResolutionUrlResponse(
-            u.Quality.ToString(), (int)u.Quality, u.WidthPx, u.HeightPx, u.BitrateKbps, u.Url)).ToList(); // TODO: extension метод
+        var responses = urls.Select(VideoExtensions.ToResponse).ToList();
         return ListResponse<VideoResolutionUrlResponse>.Create(responses);
     }
 

@@ -3,6 +3,7 @@ using Amazon.S3.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace FitHub.Application.Files;
 
@@ -11,14 +12,16 @@ public class S3FileService : IS3FileService
     private readonly IAmazonS3 s3Client;
     private readonly string bucketName;
     private readonly bool needToEnsureBucketExists;
+    private readonly ILogger<S3FileService> logger;
 
-    public S3FileService(IAmazonS3 s3Client, IConfiguration configuration)
+    public S3FileService(IAmazonS3 s3Client, IConfiguration configuration, ILogger<S3FileService> logger)
     {
         this.s3Client = s3Client;
+        this.logger = logger;
         bucketName = configuration["AWS:BucketName"]
-                      ?? throw new ArgumentException("BucketName is not configured.");
+                     ?? throw new ArgumentException("BucketName is not configured.");
 
-        needToEnsureBucketExists = Boolean.Parse(configuration["AWS:NeedToEnsureBucketExists"] ?? throw new Exception(""));
+        needToEnsureBucketExists = Boolean.Parse(configuration["AWS:NeedToEnsureBucketExists"] ?? throw new Exception("AWS:NeedToEnsureBucketExists is null"));
     }
 
     public async Task EnsureBucketExistsAsync()
@@ -43,11 +46,12 @@ public class S3FileService : IS3FileService
                 UseClientRegion = true
             };
             await s3Client.PutBucketAsync(bucketRequest);
-            Console.WriteLine($"Bucket '{bucketName}' created.");
+            logger.LogDebug("Bucket {BucketName} created", bucketName);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error checking or creating bucket: {ex.Message}");
+            logger.LogError(ex, "Error checking or creating bucket");
             throw;
         }
     }

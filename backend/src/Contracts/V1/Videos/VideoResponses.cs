@@ -1,6 +1,4 @@
-﻿using FitHub.Domain.Videos;
-
-namespace FitHub.Contracts.V1.Videos;
+﻿namespace FitHub.Contracts.V1.Videos;
 
 public record InitVideoUploadResponse(string VideoId, string PresignedPutUrl);
 
@@ -29,26 +27,3 @@ public record VideoResolutionUrlResponse(
     int HeightPx,
     int BitrateKbps,
     string Url);
-
-
-// TODO: вынести из Contracts сборки
-public static class VideoMappings
-{
-    public static VideoResponse ToResponse(this Video v, string? posterUrl) => new(
-        v.Id.ToString(),
-        v.Title,
-        v.Status.ToString(),
-        v.DurationSeconds,
-        posterUrl,
-        v.FailureReason,
-        v.CreatedAt,
-        v.Resolutions.Select(r => r.ToResponse()).ToList());
-
-    public static VideoResolutionResponse ToResponse(this VideoResolution r) => new(
-        r.Quality.ToString(),
-        (int)r.Quality,
-        r.WidthPx,
-        r.HeightPx,
-        r.BitrateKbps,
-        r.FileSizeBytes);
-}
