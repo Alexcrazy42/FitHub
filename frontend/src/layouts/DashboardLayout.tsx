@@ -7,6 +7,8 @@ import { useTheme } from '../context/useTheme';
 import { useApiService } from '../api/useApiService';
 import { useAuth } from '../context/useAuth';
 import { toast } from 'react-toastify';
+import { VideoUploadProvider } from '../context/VideoUploadContext';
+import { VideoUploadProgress } from '../components/VideoUploadProgress/VideoUploadProgress';
 
 const { Sider, Content, Header } = Layout;
 
@@ -27,6 +29,7 @@ const DashboardLayout: React.FC = () => {
   }
 
   return (
+    <VideoUploadProvider>
     <Layout style={{ height: '100vh', overflow: 'hidden' }}>
       <Sider
         collapsible
@@ -128,6 +131,8 @@ const DashboardLayout: React.FC = () => {
         </Content>
       </Layout>
     </Layout>
+    <VideoUploadProgress />
+    </VideoUploadProvider>
   );
 };
 

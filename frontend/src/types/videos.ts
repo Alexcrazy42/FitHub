@@ -25,6 +25,16 @@ export interface IInitVideoUploadResponse {
   presignedPutUrl: string;
 }
 
+export interface IMultipartPartUrl {
+  partNumber: number;
+  url: string;
+}
+
+export interface IInitVideoMultipartUploadResponse {
+  videoId: string;
+  parts: IMultipartPartUrl[];
+}
+
 export interface IVideoResolutionUrlResponse {
   quality: string;
   qualityLabel: number;

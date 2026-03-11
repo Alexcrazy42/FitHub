@@ -5,6 +5,7 @@ using FitHub.Contracts;
 using FitHub.Contracts.V1;
 using FitHub.Contracts.V1.Videos;
 using FitHub.Domain.Videos;
+using FitHub.Web.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,12 +23,12 @@ public class VideoController : ControllerBase
     }
 
     [HttpGet(ApiRoutesV1.Videos)]
-    public async Task<ListResponse<VideoResponse>> GetAll(CancellationToken ct)
+    public async Task<ListResponse<VideoResponse>> GetAll([FromQuery] PagedRequest? paged, CancellationToken ct)
     {
-        // TODO: пагинация
-        var videos = await videoService.GetAllAsync(ct);
-        var responses = new List<VideoResponse>();
-        foreach (var v in videos)
+        var query = paged.ToQuery();
+        var pagedResult = await videoService.GetAllAsync(query, ct);
+        var responses = new List<VideoResponse>(pagedResult.Items.Count);
+        foreach (var v in pagedResult.Items)
         {
             var posterUrl = v.PosterS3Key is not null
                 ? await s3FileService.GetPresignedDownloadUrlAsync(v.PosterS3Key, TimeSpan.FromHours(2)) // TODO: предкомпиляция
@@ -35,7 +36,7 @@ public class VideoController : ControllerBase
             responses.Add(v.ToResponse(posterUrl));
         }
 
-        return ListResponse<VideoResponse>.Create(responses);
+        return ListResponse<VideoResponse>.Create(responses, pagedResult.TotalItems!.Value, pagedResult.CurrentPage!.Value, pagedResult.PageSize!.Value);
     }
 
     [HttpGet(ApiRoutesV1.VideoById)]
@@ -56,6 +57,27 @@ public class VideoController : ControllerBase
         var ext = ValidationException.ThrowIfNull(request.FileExtension, "Расширение файла обязательно");
         var result = await videoService.InitUploadAsync(title, ext, ct);
         return new InitVideoUploadResponse(result.VideoId.ToString(), result.PresignedPutUrl);
+    }
+
+    [HttpPost(ApiRoutesV1.VideosInitMultipartUpload)]
+    public async Task<InitVideoMultipartUploadResponse> InitMultipartUpload([FromBody] InitVideoMultipartUploadRequest? request, CancellationToken ct)
+    {
+        var title = ValidationException.ThrowIfNull(request?.Title, "Название не может быть пустым");
+        var ext = ValidationException.ThrowIfNull(request.FileExtension, "Расширение файла обязательно");
+        var size = ValidationException.ThrowIfNull(request.FileSizeBytes, "Размер файла обязателен");
+        var result = await videoService.InitMultipartUploadAsync(title, ext, size, ct);
+        var parts = result.Parts.Select(p => new MultipartPartUrlResponse(p.PartNumber, p.Url)).ToList();
+        return new InitVideoMultipartUploadResponse(result.VideoId.ToString(), parts);
+    }
+
+    [HttpPost(ApiRoutesV1.VideoCompleteMultipart)]
+    public async Task<IActionResult> CompleteMultipart([FromRoute] string id, [FromBody] CompleteVideoMultipartUploadRequest? request, CancellationToken ct)
+    {
+        var videoId = VideoId.Parse(id);
+        var parts = ValidationException.ThrowIfNull(request?.Parts, "Parts обязательны");
+        var s3Parts = parts.Select(p => new S3MultipartPart(p.PartNumber, p.ETag)).ToList();
+        await videoService.CompleteMultipartUploadAsync(videoId, s3Parts, ct);
+        return Accepted();
     }
 
     [HttpPost(ApiRoutesV1.VideoConfirmUpload)]

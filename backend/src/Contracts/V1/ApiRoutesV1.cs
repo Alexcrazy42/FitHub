@@ -65,7 +65,11 @@ public class ApiRoutesV1
 
     public const string VideosInitUpload = Videos + "/init-upload";
 
+    public const string VideosInitMultipartUpload = Videos + "/init-multipart-upload";
+
     public const string VideoConfirmUpload = VideoById + "/confirm-upload";
+
+    public const string VideoCompleteMultipart = VideoById + "/complete-multipart";
 
     public const string VideoProcess = VideoById + "/process";
 

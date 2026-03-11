@@ -1,5 +1,6 @@
 ﻿using FFMpegCore;
 using FFMpegCore.Enums;
+using FitHub.Application.Common;
 using FitHub.Application.Files;
 using FitHub.Common.Entities;
 using FitHub.Common.Entities.Storage;
@@ -14,7 +15,6 @@ internal record EncodeProfile(int Width, int Height, int Crf, string Preset, int
 
 public class VideoService : IVideoService
 {
-    // TODO: надо брать не все профайлы, а только <= оригинала + надо выпилить для оригинала
     private static readonly Dictionary<VideoQuality, EncodeProfile> Profiles = new()
     {
         [VideoQuality.Q360P] = new(640, 360, Crf: 28, "faster", AudioKbps: 96, BitrateKbps: 500),
@@ -63,6 +63,76 @@ public class VideoService : IVideoService
         return new VideoUploadInitResult(video.Id, result.Url);
     }
 
+    private const int MultipartPartSize = 10 * 1024 * 1024; // 10 MB
+
+    private static string GetVideoContentType(string ext) => ext.ToLowerInvariant() switch
+    {
+        "mp4" => "video/mp4",
+        "webm" => "video/webm",
+        "mov" => "video/quicktime",
+        "avi" => "video/x-msvideo",
+        "mkv" => "video/x-matroska",
+        _ => "application/octet-stream",
+    };
+
+    public async Task<VideoMultipartInitResult> InitMultipartUploadAsync(
+        string title, string fileExtension, long fileSizeBytes, CancellationToken ct)
+    {
+        var videoId = VideoId.New();
+        var ext = fileExtension.TrimStart('.');
+        var s3Key = $"videos/{videoId}/original.{ext}";
+
+        var fileId = FileId.New();
+        var fileEntity = FileEntity.Create(fileId, $"original.{ext}", s3Key, FileStatus.WaitingUpload);
+        var video = Video.Create(videoId, title.Trim(), fileEntity);
+
+        var uploadId = await s3FileService.InitiateMultipartUploadAsync(s3Key, GetVideoContentType(ext));
+        fileEntity.SetMultipartUploadId(uploadId);
+
+        await fileRepository.PendingAddAsync(fileEntity, ct);
+        await videoRepository.PendingAddAsync(video, ct);
+        await unitOfWork.SaveChangesAsync(ct);
+
+        var totalParts = (int)Math.Ceiling((double)fileSizeBytes / MultipartPartSize);
+        var partUrls = new List<MultipartPartUrl>(totalParts);
+        for (var i = 1; i <= totalParts; i++)
+        {
+            var url = await s3FileService.GetPresignedPartUrlAsync(s3Key, uploadId, i);
+            partUrls.Add(new MultipartPartUrl(i, url));
+        }
+
+        return new VideoMultipartInitResult(videoId, partUrls);
+    }
+
+    public async Task CompleteMultipartUploadAsync(VideoId id, IReadOnlyList<S3MultipartPart> parts, CancellationToken ct)
+    {
+        var video = await GetAsync(id, ct);
+
+        if (video.Status != VideoStatus.Pending)
+        {
+            throw new InvalidOperationException($"Video {id} is not in Pending state.");
+        }
+
+        var file = await fileRepository.GetFirstOrDefaultAsync(f => f.Id == video.OriginalFileId, ct);
+        if (file is null)
+        {
+            throw new InvalidOperationException($"Original file for video {id} not found.");
+        }
+
+        if (file.MultipartUploadId is null)
+        {
+            throw new InvalidOperationException($"No multipart upload ID for video {id}.");
+        }
+
+        await s3FileService.CompleteMultipartUploadAsync(file.S3Key, file.MultipartUploadId, parts);
+
+        file.SetEntity(video.Id.ToString(), EntityType.Video);
+        file.SetStatus(FileStatus.Active);
+
+        await videoQueue.EnqueueAsync(id, ct);
+        await unitOfWork.SaveChangesAsync(ct);
+    }
+
     public async Task<Video> ConfirmUploadAsync(VideoId id, CancellationToken ct)
     {
         var video = await GetAsync(id, ct);
@@ -93,8 +163,8 @@ public class VideoService : IVideoService
         return video;
     }
 
-    public async Task<IReadOnlyList<Video>> GetAllAsync(CancellationToken ct)
-        => await videoRepository.GetAllWithResolutionsAsync(ct);
+    public Task<PagedResult<Video>> GetAllAsync(PagedQuery query, CancellationToken ct)
+        => videoRepository.GetPagedWithResolutionsAsync(query, ct);
 
     public async Task<IReadOnlyList<VideoResolutionUrl>> GetResolutionUrlsAsync(VideoId id, CancellationToken ct)
     {
@@ -134,11 +204,18 @@ public class VideoService : IVideoService
         }
 
         var file = await fileRepository.GetFirstOrDefaultAsync(f => f.Id == video.OriginalFileId, ct);
+
         if (file is not null)
         {
             try
-            { await s3FileService.DeleteFileAsync(file.S3Key); }
-            catch { /* best-effort */ }
+            {
+                await s3FileService.DeleteFileAsync(file.S3Key);
+            }
+            catch
+            {
+                 /* best-effort */
+            }
+
             fileRepository.PendingRemove(file);
         }
 
@@ -162,6 +239,12 @@ public class VideoService : IVideoService
             return;
         }
 
+        if (video.Status is not VideoStatus.Pending)
+        {
+            logger.LogDebug("Video {Id} not pending, not processing", video.Id);
+            return;
+        }
+
         video.MarkProcessing();
         await unitOfWork.SaveChangesAsync(ct);
 
@@ -181,62 +264,51 @@ public class VideoService : IVideoService
                 await stream.CopyToAsync(file, ct);
             }
 
-            // 2. Probe duration
+            // 2. Probe duration + resolution
             var mediaInfo = await FFProbe.AnalyseAsync(originalLocal, cancellationToken: ct);
             var durationSeconds = (int)mediaInfo.Duration.TotalSeconds;
+            var originalHeight = mediaInfo.PrimaryVideoStream?.Height ?? 0;
 
-            // 3. Encode each resolution
-            foreach (var (quality, profile) in Profiles)
+            logger.LogInformation("Video {VideoId}: {Height}p, {Duration}s", id, originalHeight, durationSeconds);
+
+            // 3. Only encode profiles <= original height; fall back to smallest if original is tiny
+            var eligible = Profiles
+                .Where(kvp => originalHeight == 0 || kvp.Value.Height <= originalHeight)
+                .OrderByDescending(kvp => kvp.Value.Height)
+                .ToList();
+
+            if (eligible.Count == 0)
             {
-                var outputLocal = Path.Combine(workDir, $"{(int)quality}p.mp4");
-                var s3Key = $"videos/{id}/{(int)quality}p.mp4";
-
-                logger.LogInformation("Encoding {Quality} for video {VideoId}", quality, id);
-
-                var scaleFilter =
-                    $"scale={profile.Width}:{profile.Height}:force_original_aspect_ratio=decrease," +
-                    $"pad={profile.Width}:{profile.Height}:(ow-iw)/2:(oh-ih)/2";
-
-                await FFMpegArguments
-                    .FromFileInput(originalLocal)
-                    .OutputToFile(outputLocal, overwrite: true, options => options
-                        .WithVideoCodec(VideoCodec.LibX264)
-                        .WithCustomArgument($"-vf \"{scaleFilter}\"")
-                        .WithCustomArgument($"-crf {profile.Crf} -preset {profile.Preset}")
-                        .WithAudioCodec(AudioCodec.Aac)
-                        .WithCustomArgument($"-b:a {profile.AudioKbps}k")
-                        .WithCustomArgument("-movflags +faststart"))
-                    .ProcessAsynchronously(throwOnError: true);
-
-                logger.LogInformation("Uploading {Quality} for video {VideoId}", quality, id);
-                await using (var stream = File.OpenRead(outputLocal))
-                {
-                    await s3FileService.UploadFileAsync(s3Key, stream, "video/mp4");
-                }
-
-                var fileSize = new FileInfo(outputLocal).Length;
-                var resolution = VideoResolution.Create(id, quality, fileSize,
-                    profile.Width, profile.Height, profile.BitrateKbps, s3Key);
-
-                video.AddResolution(resolution);
-                await videoRepository.PendingAddResolutionAsync(resolution, ct);
+                eligible = [Profiles.MinBy(kvp => kvp.Value.Height)];
             }
 
-            // 4. Poster snapshot at 1 second (or midpoint for short clips)
+            // 4. Encode best-match (highest eligible) profile first → mark Ready immediately
+            var (firstQuality, firstProfile) = eligible[0];
+            var firstResolution = await EncodeAndUploadAsync(id, firstQuality, firstProfile, originalLocal, workDir, ct);
+            video.AddResolution(firstResolution);
+            await videoRepository.PendingAddResolutionAsync(firstResolution, ct);
 
-            // TODO: фикс что постер не сканится, хз почему
-            // var posterLocal = Path.Combine(workDir, "poster.jpg");
-            // var posterS3Key = $"videos/{id}/poster.jpg";
-            // var snapAt = TimeSpan.FromSeconds(Math.Min(1, durationSeconds / 2.0));
-            // await FFMpeg.SnapshotAsync(originalLocal, posterLocal, captureTime: snapAt);
-            // await using (var stream = File.OpenRead(posterLocal))
-            // {
-            //     await s3FileService.UploadFileAsync(posterS3Key, stream, "image/jpeg");
-            // }
-
+            // TODO: poster не сканится, хз почему — TODO #1
             video.MarkReady(durationSeconds, "");
             await unitOfWork.SaveChangesAsync(ct);
-            logger.LogInformation("Video {VideoId} encoding completed successfully", id);
+            logger.LogInformation("Video {VideoId} is Ready with {Quality}", id, firstQuality);
+
+            // 5. Encode lower resolutions; per-profile errors don't fail the video
+            foreach (var (quality, profile) in eligible.Skip(1))
+            {
+                try
+                {
+                    var resolution = await EncodeAndUploadAsync(id, quality, profile, originalLocal, workDir, ct);
+                    video.AddResolution(resolution);
+                    await videoRepository.PendingAddResolutionAsync(resolution, ct);
+                    await unitOfWork.SaveChangesAsync(ct);
+                    logger.LogInformation("Video {VideoId} added resolution {Quality}", id, quality);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Failed to encode {Quality} for video {VideoId}, skipping", quality, id);
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -247,8 +319,45 @@ public class VideoService : IVideoService
         finally
         {
             try
-            { Directory.Delete(workDir, recursive: true); }
-            catch { /* best-effort */ } // TODO: и что у нас будет бесконечно формироваться папки на сервере?
+            {
+                Directory.Delete(workDir, recursive: true);
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Failed to clean up work dir for video {VideoId}", id);
+            }
         }
+    }
+
+    private async Task<VideoResolution> EncodeAndUploadAsync(
+        VideoId videoId, VideoQuality quality, EncodeProfile profile,
+        string originalLocal, string workDir, CancellationToken ct)
+    {
+        var outputLocal = Path.Combine(workDir, $"{(int)quality}p.mp4");
+        var s3Key = $"videos/{videoId}/{(int)quality}p.mp4";
+
+        logger.LogInformation("Encoding {Quality} for video {VideoId}", quality, videoId);
+
+        var scaleFilter =
+            $"scale={profile.Width}:{profile.Height}:force_original_aspect_ratio=decrease," +
+            $"pad={profile.Width}:{profile.Height}:(ow-iw)/2:(oh-ih)/2";
+
+        await FFMpegArguments
+            .FromFileInput(originalLocal)
+            .OutputToFile(outputLocal, overwrite: true, options => options
+                .WithVideoCodec(VideoCodec.LibX264)
+                .WithCustomArgument($"-vf \"{scaleFilter}\"")
+                .WithCustomArgument($"-crf {profile.Crf} -preset {profile.Preset}")
+                .WithAudioCodec(AudioCodec.Aac)
+                .WithCustomArgument($"-b:a {profile.AudioKbps}k")
+                .WithCustomArgument("-movflags +faststart"))
+            .ProcessAsynchronously(throwOnError: true);
+
+        logger.LogInformation("Uploading {Quality} for video {VideoId}", quality, videoId);
+        await using var stream = File.OpenRead(outputLocal);
+        await s3FileService.UploadFileAsync(s3Key, stream, "video/mp4");
+
+        var fileSize = new FileInfo(outputLocal).Length;
+        return VideoResolution.Create(videoId, quality, fileSize, profile.Width, profile.Height, profile.BitrateKbps, s3Key);
     }
 }

@@ -7,7 +7,6 @@ import {
   Input,
   Modal,
   Popconfirm,
-  Progress,
   Space,
   Table,
   Tag,
@@ -25,6 +24,7 @@ import { useApiService } from '../../../api/useApiService';
 import { useVideoApi } from '../../../api/videoApi';
 import { VideoPlayer } from '../../../components/VideoPlayer/VideoPlayer';
 import { IVideoResponse, IVideoResolutionUrlResponse } from '../../../types/videos';
+import { useVideoUpload } from '../../../context/VideoUploadContext';
 
 interface UploadFormValues {
   title: string;
@@ -50,11 +50,14 @@ export const VideosAdminPage: React.FC = () => {
 
   const [videos, setVideos] = useState<IVideoResponse[]>([]);
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [total, setTotal] = useState(0);
 
   // Upload state
+  const { uploadState, startUpload } = useVideoUpload();
+  const isUploading = uploadState.status === 'uploading' || uploadState.status === 'completing';
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [uploadLoading, setUploadLoading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const uploadForm = useForm<UploadFormValues>({ defaultValues: { title: '' } });
@@ -65,12 +68,16 @@ export const VideosAdminPage: React.FC = () => {
   const [playerPoster, setPlayerPoster] = useState<string | null>(null);
   const [playerLoading, setPlayerLoading] = useState(false);
 
-  const fetchVideos = async () => {
+  const fetchVideos = async (p = page, ps = pageSize) => {
     setLoading(true);
     try {
-      const res = await videoApi.getAll();
-      if (res.success && res.data) setVideos(res.data.items);
-      else toast.error(res.error?.detail ?? 'Ошибка загрузки видео');
+      const res = await videoApi.getAll(p, ps);
+      if (res.success && res.data) {
+        setVideos(res.data.items);
+        setTotal(res.data.totalItems ?? 0);
+      } else {
+        toast.error(res.error?.detail ?? 'Ошибка загрузки видео');
+      }
     } finally {
       setLoading(false);
     }
@@ -81,43 +88,22 @@ export const VideosAdminPage: React.FC = () => {
   // Auto-refresh while any video is Processing
   useEffect(() => {
     const hasProcessing = videos.some((v) => v.status === 'Pending' || v.status === 'Processing');
-    if (!hasProcessing) return; 
-    const timer = setInterval(fetchVideos, 8000);
+    if (!hasProcessing) return;
+    const timer = setInterval(() => fetchVideos(), 8000);
     return () => clearInterval(timer);
   }, [videos]);
 
-  const handleUpload = async (values: UploadFormValues) => {
+  const handleUpload = (values: UploadFormValues) => {
     if (!selectedFile) {
       toast.error('Выберите файл');
       return;
     }
-
-    const ext = selectedFile.name.split('.').pop() ?? 'mp4';
-    setUploadLoading(true);
-    setUploadProgress(0);
-
-    try {
-      const initRes = await videoApi.initUpload(values.title.trim(), ext);
-      if (!initRes.success || !initRes.data) throw new Error(initRes.error?.detail);
-
-      const { videoId, presignedPutUrl } = initRes.data;
-
-      await videoApi.uploadToS3(presignedPutUrl, selectedFile, setUploadProgress);
-
-      await videoApi.confirmUpload(videoId);
-
-      toast.success('Видео загружено и поставлено в очередь на обработку');
-      setUploadOpen(false);
-      uploadForm.reset();
-      setSelectedFile(null);
-      await fetchVideos();
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Ошибка загрузки';
-      toast.error(msg);
-    } finally {
-      setUploadLoading(false);
-      setUploadProgress(0);
-    }
+    startUpload(selectedFile, values.title);
+    setUploadOpen(false);
+    uploadForm.reset();
+    setSelectedFile(null);
+    // Refresh list after a short delay so the new Pending video appears
+    setTimeout(() => fetchVideos(), 1500);
   };
 
   const handleOpenPlayer = async (video: IVideoResponse) => {
@@ -235,7 +221,17 @@ export const VideosAdminPage: React.FC = () => {
           dataSource={videos}
           rowKey="id"
           loading={loading}
-          pagination={{ pageSize: 20 }}
+          pagination={{
+            current: page,
+            pageSize,
+            total,
+            showSizeChanger: true,
+            onChange: (p, ps) => {
+              setPage(p);
+              setPageSize(ps);
+              fetchVideos(p, ps);
+            },
+          }}
           locale={{ emptyText: 'Видео не загружены' }}
         />
       </Card>
@@ -246,49 +242,54 @@ export const VideosAdminPage: React.FC = () => {
         open={uploadOpen}
         onCancel={() => { setUploadOpen(false); uploadForm.reset(); setSelectedFile(null); }}
         onOk={uploadForm.handleSubmit(handleUpload)}
-        confirmLoading={uploadLoading}
-        okText="Загрузить"
+        okText="Начать загрузку"
         cancelText="Отмена"
-        okButtonProps={{ disabled: !selectedFile }}
+        okButtonProps={{ disabled: !selectedFile || isUploading }}
         destroyOnClose
       >
-        <AntForm layout="vertical">
-          <AntForm.Item
-            label="Название"
-            validateStatus={uploadForm.formState.errors.title ? 'error' : ''}
-            help={uploadForm.formState.errors.title?.message}
-          >
-            <Controller
-              name="title"
-              control={uploadForm.control}
-              rules={{ required: 'Введите название' }}
-              render={({ field }) => <Input {...field} placeholder="Например: Разминка" autoFocus />}
-            />
-          </AntForm.Item>
+        {isUploading ? (
+          <div className="py-4 text-center text-gray-500">
+            Загрузка уже выполняется в фоне. Дождитесь её завершения.
+          </div>
+        ) : (
+          <AntForm layout="vertical">
+            <AntForm.Item
+              label="Название"
+              validateStatus={uploadForm.formState.errors.title ? 'error' : ''}
+              help={uploadForm.formState.errors.title?.message}
+            >
+              <Controller
+                name="title"
+                control={uploadForm.control}
+                rules={{ required: 'Введите название' }}
+                render={({ field }) => <Input {...field} placeholder="Например: Разминка" autoFocus />}
+              />
+            </AntForm.Item>
 
-          <AntForm.Item label="Файл">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="video/*"
-              className="hidden"
-              onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
-            />
-            <div className="flex items-center gap-3">
-              <Button onClick={() => fileInputRef.current?.click()}>
-                {selectedFile ? 'Заменить файл' : 'Выбрать файл'}
-              </Button>
-              {selectedFile && (
-                <span className="text-sm text-gray-600 truncate max-w-[200px]">
-                  {selectedFile.name}
-                </span>
-              )}
-            </div>
-            {uploadLoading && uploadProgress > 0 && (
-              <Progress percent={uploadProgress} className="mt-2" />
-            )}
-          </AntForm.Item>
-        </AntForm>
+            <AntForm.Item label="Файл">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="video/*"
+                className="hidden"
+                onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
+              />
+              <div className="flex items-center gap-3">
+                <Button onClick={() => fileInputRef.current?.click()}>
+                  {selectedFile ? 'Заменить файл' : 'Выбрать файл'}
+                </Button>
+                {selectedFile && (
+                  <span className="text-sm text-gray-600 truncate max-w-[200px]">
+                    {selectedFile.name}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-gray-400 mt-2">
+                Загрузка выполняется в фоне — можно переходить на другие страницы.
+              </p>
+            </AntForm.Item>
+          </AntForm>
+        )}
       </Modal>
 
       {/* Player modal */}

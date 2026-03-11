@@ -164,6 +164,56 @@ public class S3FileService : IS3FileService
         }
     }
 
+    public async Task<string> InitiateMultipartUploadAsync(string s3Key, string contentType)
+    {
+        var request = new InitiateMultipartUploadRequest
+        {
+            BucketName = bucketName,
+            Key = s3Key,
+            ContentType = contentType,
+        };
+        var response = await s3Client.InitiateMultipartUploadAsync(request);
+        return response.UploadId;
+    }
+
+    public Task<string> GetPresignedPartUrlAsync(string s3Key, string uploadId, int partNumber)
+    {
+        var presignRequest = new GetPreSignedUrlRequest
+        {
+            BucketName = bucketName,
+            Key = s3Key,
+            Verb = HttpVerb.PUT,
+            Expires = DateTime.UtcNow.AddHours(2),
+            Protocol = Protocol.HTTP,
+            UploadId = uploadId,
+            PartNumber = partNumber,
+        };
+        return s3Client.GetPreSignedURLAsync(presignRequest);
+    }
+
+    public async Task CompleteMultipartUploadAsync(string s3Key, string uploadId, IReadOnlyList<S3MultipartPart> parts)
+    {
+        var request = new CompleteMultipartUploadRequest
+        {
+            BucketName = bucketName,
+            Key = s3Key,
+            UploadId = uploadId,
+            PartETags = parts.Select(p => new PartETag(p.PartNumber, p.ETag.Trim('"'))).ToList(),
+        };
+        await s3Client.CompleteMultipartUploadAsync(request);
+    }
+
+    public async Task AbortMultipartUploadAsync(string s3Key, string uploadId)
+    {
+        var request = new AbortMultipartUploadRequest
+        {
+            BucketName = bucketName,
+            Key = s3Key,
+            UploadId = uploadId,
+        };
+        await s3Client.AbortMultipartUploadAsync(request);
+    }
+
     private string GetMimeType(IFormFile file)
     {
         var provider = new FileExtensionContentTypeProvider();

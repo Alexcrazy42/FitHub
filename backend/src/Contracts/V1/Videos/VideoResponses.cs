@@ -2,6 +2,10 @@
 
 public record InitVideoUploadResponse(string VideoId, string PresignedPutUrl);
 
+public record InitVideoMultipartUploadResponse(string VideoId, IReadOnlyList<MultipartPartUrlResponse> Parts);
+
+public record MultipartPartUrlResponse(int PartNumber, string Url);
+
 public record VideoResponse(
     string Id,
     string Title,

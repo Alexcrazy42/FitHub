@@ -1,4 +1,5 @@
-﻿using FitHub.Application.Videos;
+﻿using FitHub.Application.Common;
+using FitHub.Application.Videos;
 using FitHub.Common.EntityFramework;
 using FitHub.Domain.Videos;
 using Microsoft.EntityFrameworkCore;
@@ -9,12 +10,22 @@ public class VideoRepository : DefaultPendingRepository<Video, VideoId, DataCont
 {
     public VideoRepository(DataContext context) : base(context) { }
 
-    public async Task<IReadOnlyList<Video>> GetAllWithResolutionsAsync(CancellationToken ct)
-        => await ReadRaw()
+    public async Task<PagedResult<Video>> GetPagedWithResolutionsAsync(PagedQuery query, CancellationToken ct)
+    {
+        var baseQuery = ReadRaw()
             .Include(v => v.OriginalFile)
             .Include(v => v.Resolutions)
-            .OrderByDescending(v => v.CreatedAt)
+            .OrderBy(v => v.Status == VideoStatus.Pending || v.Status == VideoStatus.Processing ? 0 : 1)
+            .ThenByDescending(v => v.CreatedAt);
+
+        var total = await baseQuery.CountAsync(ct);
+        var items = await baseQuery
+            .Skip((query.PageNumber - 1) * query.PageSize)
+            .Take(query.PageSize)
             .ToListAsync(ct);
+
+        return PagedResult<Video>.Create(items, totalItems: total, currentPage: query.PageNumber, pageSize: query.PageSize);
+    }
 
     public async Task<Video?> GetWithResolutionsAsync(VideoId id, CancellationToken ct)
         => await ReadRaw()
