@@ -11,6 +11,12 @@ namespace FitHub.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AddColumn<string>(
+                name: "multipart_upload_id",
+                table: "file_entity",
+                type: "text",
+                nullable: true);
+
             migrationBuilder.CreateTable(
                 name: "video",
                 columns: table => new
@@ -21,6 +27,10 @@ namespace FitHub.Data.Migrations
                     status = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     duration_seconds = table.Column<int>(type: "integer", nullable: true),
                     poster_s3key = table.Column<string>(type: "text", nullable: true),
+                    poster_cached_url = table.Column<string>(type: "text", nullable: true),
+                    poster_url_expires_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    original_cached_url = table.Column<string>(type: "text", nullable: true),
+                    original_url_expires_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     failure_reason = table.Column<string>(type: "text", nullable: true),
                     created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
@@ -46,7 +56,9 @@ namespace FitHub.Data.Migrations
                     file_size_bytes = table.Column<long>(type: "bigint", nullable: false),
                     width_px = table.Column<int>(type: "integer", nullable: false),
                     height_px = table.Column<int>(type: "integer", nullable: false),
-                    bitrate_kbps = table.Column<int>(type: "integer", nullable: false)
+                    bitrate_kbps = table.Column<int>(type: "integer", nullable: false),
+                    cached_url = table.Column<string>(type: "text", nullable: true),
+                    url_expires_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -78,6 +90,10 @@ namespace FitHub.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "video");
+
+            migrationBuilder.DropColumn(
+                name: "multipart_upload_id",
+                table: "file_entity");
         }
     }
 }

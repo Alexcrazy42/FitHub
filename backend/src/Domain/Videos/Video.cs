@@ -37,10 +37,26 @@ public class Video : IEntity<VideoId>
     public VideoStatus Status { get; private set; }
     public int? DurationSeconds { get; private set; }
     public string? PosterS3Key { get; private set; }
+    public string? PosterCachedUrl { get; private set; }
+    public DateTimeOffset? PosterUrlExpiresAt { get; private set; }
+    public string? OriginalCachedUrl { get; private set; }
+    public DateTimeOffset? OriginalUrlExpiresAt { get; private set; }
     public string? FailureReason { get; private set; }
     public DateTimeOffset CreatedAt { get; }
 
     public IReadOnlyList<VideoResolution> Resolutions => resolutions;
+
+    public void SetPosterCachedUrl(string url, DateTimeOffset expiresAt)
+    {
+        PosterCachedUrl = url;
+        PosterUrlExpiresAt = expiresAt;
+    }
+
+    public void SetOriginalCachedUrl(string url, DateTimeOffset expiresAt)
+    {
+        OriginalCachedUrl = url;
+        OriginalUrlExpiresAt = expiresAt;
+    }
 
     public void MarkProcessing() => Status = VideoStatus.Processing;
 

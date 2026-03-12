@@ -50,7 +50,6 @@ public class S3FileService : IS3FileService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error checking or creating bucket: {ex.Message}");
             logger.LogError(ex, "Error checking or creating bucket");
             throw;
         }

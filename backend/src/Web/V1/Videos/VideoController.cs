@@ -14,12 +14,10 @@ namespace FitHub.Web.V1.Videos;
 public class VideoController : ControllerBase
 {
     private readonly IVideoService videoService;
-    private readonly IS3FileService s3FileService; // TODO: это не обязанность контроллера
 
-    public VideoController(IVideoService videoService, IS3FileService s3FileService)
+    public VideoController(IVideoService videoService)
     {
         this.videoService = videoService;
-        this.s3FileService = s3FileService;
     }
 
     [HttpGet(ApiRoutesV1.Videos)]
@@ -27,15 +25,7 @@ public class VideoController : ControllerBase
     {
         var query = paged.ToQuery();
         var pagedResult = await videoService.GetAllAsync(query, ct);
-        var responses = new List<VideoResponse>(pagedResult.Items.Count);
-        foreach (var v in pagedResult.Items)
-        {
-            var posterUrl = v.PosterS3Key is not null
-                ? await s3FileService.GetPresignedDownloadUrlAsync(v.PosterS3Key, TimeSpan.FromHours(2)) // TODO: предкомпиляция
-                : null;
-            responses.Add(v.ToResponse(posterUrl));
-        }
-
+        var responses = pagedResult.Items.Select(v => v.ToResponse(v.PosterCachedUrl)).ToList();
         return ListResponse<VideoResponse>.Create(responses, pagedResult.TotalItems!.Value, pagedResult.CurrentPage!.Value, pagedResult.PageSize!.Value);
     }
 
@@ -44,10 +34,7 @@ public class VideoController : ControllerBase
     {
         var videoId = VideoId.Parse(id);
         var video = await videoService.GetAsync(videoId, ct);
-        var posterUrl = video.PosterS3Key is not null // TODO: постер можно предкомпилировать + выдавать доступ через наш FileId
-            ? await s3FileService.GetPresignedDownloadUrlAsync(video.PosterS3Key, TimeSpan.FromHours(2))
-            : null;
-        return video.ToResponse(posterUrl);
+        return video.ToResponse(video.PosterCachedUrl);
     }
 
     [HttpPost(ApiRoutesV1.VideosInitUpload)]

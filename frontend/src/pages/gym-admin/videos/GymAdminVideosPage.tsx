@@ -64,7 +64,7 @@ export const GymAdminVideosPage: React.FC = () => {
   useEffect(() => { fetchVideos(); }, []);
 
   const handlePlay = async (video: IVideoResponse) => {
-    if (video.status !== 'Ready') return;
+    if (video.status === 'Failed') return;
     setPlayerTitle(video.title);
     setPlayerPoster(video.posterUrl);
     setPlayerResolutions([]);
@@ -105,7 +105,7 @@ export const GymAdminVideosPage: React.FC = () => {
             return (
               <Col key={video.id} xs={24} sm={12} md={8} lg={6}>
                 <Card
-                  hoverable={isReady}
+                  hoverable={video.status !== 'Failed'}
                   cover={
                     video.posterUrl ? (
                       <div className="relative overflow-hidden" style={{ paddingBottom: '56.25%' }}>

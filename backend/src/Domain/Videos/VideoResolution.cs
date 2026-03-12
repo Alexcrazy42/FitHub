@@ -42,6 +42,14 @@ public class VideoResolution : IEntity<VideoResolutionId>
     public int WidthPx { get; private set; }
     public int HeightPx { get; private set; }
     public int BitrateKbps { get; private set; }
+    public string? CachedUrl { get; private set; }
+    public DateTimeOffset? UrlExpiresAt { get; private set; }
+
+    public void SetCachedUrl(string url, DateTimeOffset expiresAt)
+    {
+        CachedUrl = url;
+        UrlExpiresAt = expiresAt;
+    }
 
     public static VideoResolution Create(
         VideoId videoId,

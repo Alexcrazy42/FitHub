@@ -22,6 +22,7 @@ export const useVideoApi = (api: ApiService) => ({
   initUpload: (title: string, fileExtension: string) =>
     api.post<IInitVideoUploadResponse>(`${BASE}/init-upload`, { title, fileExtension }),
 
+  // not use
   uploadToS3: (presignedUrl: string, file: File, onProgress?: (pct: number) => void) =>
     axios.put(presignedUrl, file, {
       headers: { 'Content-Type': file.type },
@@ -29,8 +30,6 @@ export const useVideoApi = (api: ApiService) => ({
         if (onProgress && e.total) onProgress(Math.round((e.loaded / e.total) * 100));
       },
     }),
-
-  confirmUpload: (id: string) => api.post(`${BASE}/${id}/confirm-upload`, {}),
 
   initMultipartUpload: (title: string, fileExtension: string, fileSizeBytes: number) =>
     api.post<IInitVideoMultipartUploadResponse>(`${BASE}/init-multipart-upload`, { title, fileExtension, fileSizeBytes }),

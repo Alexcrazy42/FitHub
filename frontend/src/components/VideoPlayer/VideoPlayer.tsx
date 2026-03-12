@@ -8,7 +8,9 @@ interface Props {
   durationSeconds?: number | null;
 }
 
-type QualityKey = 'auto' | string; // 'auto' | '360' | '720' | '1080'
+type QualityKey = 'auto' | string; // 'auto' | '0' (original) | '360' | '720' | '1080'
+
+const qualityName = (label: number) => label === 0 ? 'Оригинал' : `${label}p`;
 
 // Bandwidth thresholds to pick initial quality automatically (bits/sec)
 const AUTO_QUALITY_THRESHOLDS: { minBps: number; label: number }[] = [
@@ -152,12 +154,12 @@ export const VideoPlayer: React.FC<Props> = ({ resolutions, posterUrl, durationS
 
   const qualityOptions = [
     { label: 'Авто', value: 'auto' },
-    ...sortedRes.map((r) => ({ label: `${r.qualityLabel}p`, value: String(r.qualityLabel) })),
+    ...sortedRes.map((r) => ({ label: qualityName(r.qualityLabel), value: String(r.qualityLabel) })),
   ];
 
   const displayLabel = selectedQuality === 'auto'
-    ? `Авто (${resolvedLabel ?? '…'}p)`
-    : `${selectedQuality}p`;
+    ? `Авто (${resolvedLabel != null ? qualityName(resolvedLabel) : '…'})`
+    : qualityName(Number(selectedQuality));
 
   return (
     <div className="relative w-full bg-black rounded-xl overflow-hidden group">

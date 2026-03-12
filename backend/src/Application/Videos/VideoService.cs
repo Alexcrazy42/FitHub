@@ -22,6 +22,10 @@ public class VideoService : IVideoService
         [VideoQuality.Q1080P] = new(1920, 1080, Crf: 20, "medium", AudioKbps: 192, BitrateKbps: 5000),
     };
 
+    private static readonly TimeSpan UrlTtl = TimeSpan.FromDays(7);
+    private static readonly TimeSpan RefreshThreshold = TimeSpan.FromDays(1);
+    private const int MultipartPartSize = 10 * 1024 * 1024; // 10 MB
+
     private readonly IVideoRepository videoRepository;
     private readonly IFileRepository fileRepository;
     private readonly IS3FileService s3FileService;
@@ -62,8 +66,6 @@ public class VideoService : IVideoService
         var result = await s3FileService.GetPresignedUrlAsync(fileId.ToString(), s3Key);
         return new VideoUploadInitResult(video.Id, result.Url);
     }
-
-    private const int MultipartPartSize = 10 * 1024 * 1024; // 10 MB
 
     private static string GetVideoContentType(string ext) => ext.ToLowerInvariant() switch
     {
@@ -142,7 +144,7 @@ public class VideoService : IVideoService
             throw new InvalidOperationException($"Video {id} is not in Pending state.");
         }
 
-        // TODO: outbox или продумать что будет не так
+        // без outbox, тк максимум ым можем себе позволить опубликовать и упасть на подтверждении файла
         await videoQueue.EnqueueAsync(id, ct);
 
         var file = await fileRepository.GetFirstOrDefaultAsync(f => f.Id == video.OriginalFileId, ct);
@@ -160,29 +162,88 @@ public class VideoService : IVideoService
     {
         var video = await videoRepository.GetWithResolutionsAsync(id, ct);
         NotFoundException.ThrowIfNull(video, "Видео не найдено");
+
+        if (await RefreshVideoMetaUrlsAsync(video, ct))
+        {
+            await unitOfWork.SaveChangesAsync(ct);
+        }
         return video;
     }
 
-    public Task<PagedResult<Video>> GetAllAsync(PagedQuery query, CancellationToken ct)
-        => videoRepository.GetPagedWithResolutionsAsync(query, ct);
+    public async Task<PagedResult<Video>> GetAllAsync(PagedQuery query, CancellationToken ct)
+    {
+        var result = await videoRepository.GetPagedWithResolutionsAsync(query, ct);
+        var dirty = false;
+        foreach (var video in result.Items)
+        {
+            dirty |= await RefreshVideoMetaUrlsAsync(video, ct);
+        }
+
+        if (dirty)
+        {
+            await unitOfWork.SaveChangesAsync(ct);
+        }
+        return result;
+    }
 
     public async Task<IReadOnlyList<VideoResolutionUrl>> GetResolutionUrlsAsync(VideoId id, CancellationToken ct)
     {
-        var video = await GetAsync(id, ct);
+        var video = await GetAsync(id, ct); // poster + original URL already refreshed here
+
+        if (video.Status is VideoStatus.Pending or VideoStatus.Processing)
+        {
+            return [new VideoResolutionUrl(VideoQuality.Original, 0, 0, 0, video.OriginalCachedUrl!)];
+        }
+
         if (video.Status != VideoStatus.Ready)
         {
             return [];
         }
 
-        var expiry = TimeSpan.FromHours(2);
+        var dirty = false;
         var urls = new List<VideoResolutionUrl>();
         foreach (var res in video.Resolutions.OrderBy(r => r.Quality))
         {
-            var url = await s3FileService.GetPresignedDownloadUrlAsync(res.S3Key, expiry); // TODO: вычислить один раз и все
-            urls.Add(new VideoResolutionUrl(res.Quality, res.WidthPx, res.HeightPx, res.BitrateKbps, url));
+            if (NeedsRefresh(res.UrlExpiresAt))
+            {
+                var url = await s3FileService.GetPresignedDownloadUrlAsync(res.S3Key, UrlTtl);
+                res.SetCachedUrl(url, DateTimeOffset.UtcNow.Add(UrlTtl));
+                dirty = true;
+            }
+            urls.Add(new VideoResolutionUrl(res.Quality, res.WidthPx, res.HeightPx, res.BitrateKbps, res.CachedUrl!));
+        }
+
+        if (dirty)
+        {
+            await unitOfWork.SaveChangesAsync(ct);
         }
 
         return urls;
+    }
+
+    private static bool NeedsRefresh(DateTimeOffset? expiresAt)
+        => expiresAt is null || expiresAt.Value - DateTimeOffset.UtcNow < RefreshThreshold;
+
+    private async Task<bool> RefreshVideoMetaUrlsAsync(Video video, CancellationToken ct)
+    {
+        var dirty = false;
+        var expiresAt = DateTimeOffset.UtcNow.Add(UrlTtl);
+
+        if (video.PosterS3Key is not null && NeedsRefresh(video.PosterUrlExpiresAt))
+        {
+            var url = await s3FileService.GetPresignedDownloadUrlAsync(video.PosterS3Key, UrlTtl);
+            video.SetPosterCachedUrl(url, expiresAt);
+            dirty = true;
+        }
+
+        if (video.Status is VideoStatus.Pending or VideoStatus.Processing && NeedsRefresh(video.OriginalUrlExpiresAt))
+        {
+            var url = await s3FileService.GetPresignedDownloadUrlAsync(video.OriginalFile!.S3Key, UrlTtl);
+            video.SetOriginalCachedUrl(url, expiresAt);
+            dirty = true;
+        }
+
+        return dirty;
     }
 
     public async Task DeleteAsync(VideoId id, CancellationToken ct)
@@ -324,6 +385,7 @@ public class VideoService : IVideoService
             }
             catch (Exception ex)
             {
+                // на это мы бы навесили alert + можно сделать джобу в ОС
                 logger.LogWarning(ex, "Failed to clean up work dir for video {VideoId}", id);
             }
         }

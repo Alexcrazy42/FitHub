@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FitHub.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20260311191015_AddFileMultipartUploadId")]
-    partial class AddFileMultipartUploadId
+    [Migration("20260312183735_Add_Videos")]
+    partial class Add_Videos
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1275,14 +1275,30 @@ namespace FitHub.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("failure_reason");
 
+                    b.Property<string>("OriginalCachedUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("original_cached_url");
+
                     b.Property<Guid>("OriginalFileId")
                         .HasMaxLength(255)
                         .HasColumnType("uuid")
                         .HasColumnName("original_file_id");
 
+                    b.Property<DateTimeOffset?>("OriginalUrlExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("original_url_expires_at");
+
+                    b.Property<string>("PosterCachedUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("poster_cached_url");
+
                     b.Property<string>("PosterS3Key")
                         .HasColumnType("text")
                         .HasColumnName("poster_s3key");
+
+                    b.Property<DateTimeOffset?>("PosterUrlExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("poster_url_expires_at");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -1315,6 +1331,10 @@ namespace FitHub.Data.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("bitrate_kbps");
 
+                    b.Property<string>("CachedUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("cached_url");
+
                     b.Property<long>("FileSizeBytes")
                         .HasColumnType("bigint")
                         .HasColumnName("file_size_bytes");
@@ -1333,6 +1353,10 @@ namespace FitHub.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("s3key");
+
+                    b.Property<DateTimeOffset?>("UrlExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("url_expires_at");
 
                     b.Property<Guid>("VideoId")
                         .HasMaxLength(255)

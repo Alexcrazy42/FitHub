@@ -26,7 +26,7 @@ public record VideoResolutionResponse(
 
 public record VideoResolutionUrlResponse(
     string Quality,
-    int QualityLabel, // TODO: enum
+    int QualityLabel,
     int WidthPx,
     int HeightPx,
     int BitrateKbps,

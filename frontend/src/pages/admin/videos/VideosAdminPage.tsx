@@ -107,7 +107,7 @@ export const VideosAdminPage: React.FC = () => {
   };
 
   const handleOpenPlayer = async (video: IVideoResponse) => {
-    if (video.status !== 'Ready') return;
+    if (video.status === 'Failed') return;
     setPlayerLoading(true);
     setPlayerOpen(true);
     try {
@@ -180,11 +180,12 @@ export const VideosAdminPage: React.FC = () => {
       key: 'actions',
       render: (_: unknown, v: IVideoResponse) => (
         <Space>
-          <Tooltip title={v.status === 'Ready' ? 'Воспроизвести' : 'Видео ещё не готово'}>
+          <Tooltip
+            title={v.status === 'Failed' ? 'Ошибка обработки' : 'Воспроизвести'}>
             <Button
               type="text"
               icon={<PlayCircleOutlined />}
-              disabled={v.status !== 'Ready'}
+              disabled={v.status === 'Failed'}
               onClick={() => handleOpenPlayer(v)}
             />
           </Tooltip>
