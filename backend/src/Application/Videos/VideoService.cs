@@ -274,7 +274,7 @@ public class VideoService : IVideoService
             }
             catch
             {
-                 /* best-effort */
+                /* best-effort */
             }
 
             fileRepository.PendingRemove(file);
@@ -349,8 +349,33 @@ public class VideoService : IVideoService
             video.AddResolution(firstResolution);
             await videoRepository.PendingAddResolutionAsync(firstResolution, ct);
 
-            // TODO: poster не сканится, хз почему — TODO #1
-            video.MarkReady(durationSeconds, "");
+            // Poster: snapshot at midpoint (or 1 s for short clips)
+            var snapAt = durationSeconds > 2
+                ? TimeSpan.FromSeconds(durationSeconds / 2.0)
+                : TimeSpan.FromSeconds(1);
+            var posterLocal = Path.Combine(workDir, "poster.jpg");
+            var posterS3Key = $"videos/{id}/poster.jpg";
+            string? resolvedPosterS3Key = null;
+            try
+            {
+                await FFMpegArguments
+                    .FromFileInput(originalLocal, false, o => o.Seek(snapAt))
+                    .OutputToFile(posterLocal, true, o => o
+                        .WithFrameOutputCount(1)
+                        .ForceFormat("image2"))
+                    .ProcessAsynchronously(throwOnError: true);
+
+                await using var posterStream = File.OpenRead(posterLocal);
+                await s3FileService.UploadFileAsync(posterS3Key, posterStream, "image/jpeg");
+                resolvedPosterS3Key = posterS3Key;
+                logger.LogInformation("Poster uploaded for video {VideoId}", id);
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Poster generation failed for video {VideoId}, continuing without poster", id);
+            }
+
+            video.MarkReady(durationSeconds, resolvedPosterS3Key);
             await unitOfWork.SaveChangesAsync(ct);
             logger.LogInformation("Video {VideoId} is Ready with {Quality}", id, firstQuality);
 

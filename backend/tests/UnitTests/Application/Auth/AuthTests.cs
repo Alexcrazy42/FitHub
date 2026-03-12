@@ -41,7 +41,7 @@ public class AuthTests
 
         var tokenService = new TokenService(optionsMock.Object);
 
-        var claims = ITokenService.CreateCommonClaims(sub: "a88a98f0-35e8-46c4-a38e-bf88bd5c9ebc", name: "Мамедов Александр", sessionId: "sid",  userType: IdentityUserType.CmsAdmin);
+        var claims = ITokenService.CreateCommonClaims(sub: "a88a98f0-35e8-46c4-a38e-bf88bd5c9ebc", name: "Мамедов Александр", sessionId: "sid", userType: IdentityUserType.CmsAdmin);
         var accessToken = tokenService.Create(claims);
 
         testOutputHelper.WriteLine(accessToken);
