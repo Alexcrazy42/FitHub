@@ -20,11 +20,6 @@ export interface IVideoResponse {
   resolutions: IVideoResolutionResponse[];
 }
 
-export interface IInitVideoUploadResponse {
-  videoId: string;
-  presignedPutUrl: string;
-}
-
 export interface IMultipartPartUrl {
   partNumber: number;
   url: string;
