@@ -1,4 +1,4 @@
-﻿import { CalendarOutlined, HomeOutlined, ToolOutlined, UserOutlined, WechatOutlined } from "@ant-design/icons";
+﻿import { CalendarOutlined, HomeOutlined, ToolOutlined, UserOutlined, VideoCameraOutlined, WechatOutlined } from "@ant-design/icons";
 import { MenuItem } from "./MenuItem";
 import GymAdminDashboard from "../pages/gym-admin/GymAdminDashboard";
 import { Users } from "../pages/gym-admin/users/Users";
@@ -6,6 +6,7 @@ import { Equipments } from "../pages/gym-admin/equipments/Equipments";
 import { Schedule } from "../pages/gym-admin/schedules/Schedule";
 import { ScheduleOld } from "../pages/gym-admin/schedules/ScheduleOld";
 import { ChatLayout } from "../pages/chat/components/ChatLayout";
+import { GymAdminVideosPage } from "../pages/gym-admin/videos/GymAdminVideosPage";
 
 export const gymAdminMenuConfig: MenuItem[] = [
   {
@@ -37,10 +38,17 @@ export const gymAdminMenuConfig: MenuItem[] = [
     element: <Schedule />
   },
   {
-      key: 'chat',
-      label: 'Чат',
-      icon: <WechatOutlined />,
-      path: '/gym-admin/chat',
-      element: <ChatLayout />
-    },
+    key: 'videos',
+    label: 'Видео',
+    icon: <VideoCameraOutlined />,
+    path: '/gym-admin/videos',
+    element: <GymAdminVideosPage />,
+  },
+  {
+    key: 'chat',
+    label: 'Чат',
+    icon: <WechatOutlined />,
+    path: '/gym-admin/chat',
+    element: <ChatLayout />
+  },
 ];

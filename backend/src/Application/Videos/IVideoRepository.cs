@@ -1,0 +1,12 @@
+﻿using FitHub.Application.Common;
+using FitHub.Common.Entities.Storage;
+using FitHub.Domain.Videos;
+
+namespace FitHub.Application.Videos;
+
+public interface IVideoRepository : IPendingRepository<Video, VideoId>
+{
+    Task<PagedResult<Video>> GetPagedWithResolutionsAsync(PagedQuery query, CancellationToken ct);
+    Task<Video?> GetWithResolutionsAsync(VideoId id, CancellationToken ct);
+    Task PendingAddResolutionAsync(VideoResolution resolution, CancellationToken ct);
+}

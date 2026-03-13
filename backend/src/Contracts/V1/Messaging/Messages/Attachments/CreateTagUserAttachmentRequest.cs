@@ -1,4 +1,4 @@
-﻿using FitHub.Domain.Messaging.Attachments;
+﻿using FitHub.Shared.Messaging;
 
 namespace FitHub.Contracts.V1.Messaging.Messages.Attachments;
 

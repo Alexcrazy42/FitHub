@@ -1,4 +1,5 @@
 ﻿using FitHub.Authentication;
+using FitHub.Shared.Messaging;
 
 namespace FitHub.Domain.Messaging.Attachments;
 

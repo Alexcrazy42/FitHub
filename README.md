@@ -14,10 +14,11 @@
     - [Read Model денормализация для производительности](#read-model-денормалидация)
     - [JSONB для динамических данных, и как это связано с BDUI](#jsonb-для-динамических-данных-и-как-это-связано-с-bdui)
     - [SignalR для real-time чата и не только](#signalr)
+    - [Загрузка видео](#videoupload)
 
 
 ## Tech stack
-- Монолит (пока что)
+- Монолит с элементами микросервисов
 - Clean Architecture (Presentation, Infrastucture, Core)
 - в домене прослеживается DDD (Аггрегаты, Value Objects; инварианты внутри Entity, а не размазаны по сервисам)
 - .NET 9
@@ -29,10 +30,11 @@
 - EF Core 9
     - либа: базовые репозитории, UnitOfWork, конвеншны (enum as string, ValueType Identifiers, Interceptors для аудитабл полей и тд)
     - PostgreSQL: реляционная модель, индексы, jsonb, read-models денормализация для perfomance
-- RabbitMQ (🌱 на будущее)
+- RabbitMQ
     - Базовая библиотека production-readiness: producer, consumer, DLQ, routing
 - Minio S3
     - upload via presigned urls
+    - multipart upload video
     - отказоустойчивый upload flow для фотографий благодаря компенсирующей cleanup job (запись в бд не остается без файла в s3, файл в s3 не остается без записи в бд)
 - Unit And Integration Testing
     - xUnit, Moq, Autofixture
@@ -77,3 +79,6 @@
 
 ### SignalR
 [Readme](./docs/signalR/README.md)
+
+### VideoUpload
+[Readme](./docs/videoUpload/README.md)

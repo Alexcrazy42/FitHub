@@ -1,4 +1,4 @@
-﻿namespace FitHub.Domain.Messaging.Attachments;
+﻿namespace FitHub.Shared.Messaging;
 
 /// <summary>
 /// Тип тэга пользователя в чате

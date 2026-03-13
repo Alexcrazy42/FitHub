@@ -30,6 +30,10 @@ public class FileEntity : IEntity<FileId>
 
     public DateTimeOffset? DeletedAt { get; private set; }
 
+    public string? MultipartUploadId { get; private set; }
+
+    public void SetMultipartUploadId(string uploadId) => MultipartUploadId = uploadId;
+
     public void SetEntity(string entityId, EntityType entityType)
     {
         EntityId = entityId;
