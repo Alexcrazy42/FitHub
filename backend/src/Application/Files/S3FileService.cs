@@ -3,6 +3,7 @@ using Amazon.S3.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace FitHub.Application.Files;
 
@@ -11,14 +12,16 @@ public class S3FileService : IS3FileService
     private readonly IAmazonS3 s3Client;
     private readonly string bucketName;
     private readonly bool needToEnsureBucketExists;
+    private readonly ILogger<S3FileService> logger;
 
-    public S3FileService(IAmazonS3 s3Client, IConfiguration configuration)
+    public S3FileService(IAmazonS3 s3Client, IConfiguration configuration, ILogger<S3FileService> logger)
     {
         this.s3Client = s3Client;
+        this.logger = logger;
         bucketName = configuration["AWS:BucketName"]
-                      ?? throw new ArgumentException("BucketName is not configured.");
+                     ?? throw new ArgumentException("BucketName is not configured.");
 
-        needToEnsureBucketExists = Boolean.Parse(configuration["AWS:NeedToEnsureBucketExists"] ?? throw new Exception(""));
+        needToEnsureBucketExists = Boolean.Parse(configuration["AWS:NeedToEnsureBucketExists"] ?? throw new Exception("AWS:NeedToEnsureBucketExists is null"));
     }
 
     public async Task EnsureBucketExistsAsync()
@@ -43,18 +46,17 @@ public class S3FileService : IS3FileService
                 UseClientRegion = true
             };
             await s3Client.PutBucketAsync(bucketRequest);
-            Console.WriteLine($"Bucket '{bucketName}' created.");
+            logger.LogDebug("Bucket {BucketName} created", bucketName);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error checking or creating bucket: {ex.Message}");
+            logger.LogError(ex, "Error checking or creating bucket");
             throw;
         }
     }
 
-    public async Task<PresignedUrlResult> GetPresignedUrlAsync(GetPresignedUrlCommand command, string fileId, string s3Key)
+    public async Task<PresignedUrlResult> GetPresignedUrlAsync(string fileId, string s3Key)
     {
-        var file = command.File;
         var presignRequest = new GetPreSignedUrlRequest
         {
             BucketName = bucketName,
@@ -71,6 +73,19 @@ public class S3FileService : IS3FileService
             FileId = fileId,
             ObjectKey = s3Key
         };
+    }
+
+    public async Task<string> GetPresignedDownloadUrlAsync(string s3Key, TimeSpan expiry)
+    {
+        var presignRequest = new GetPreSignedUrlRequest
+        {
+            BucketName = bucketName,
+            Key = s3Key,
+            Verb = HttpVerb.GET,
+            Expires = DateTime.UtcNow.Add(expiry),
+            Protocol = Protocol.HTTP
+        };
+        return await s3Client.GetPreSignedURLAsync(presignRequest);
     }
 
     public async Task<string> UploadFileAsync(string key, Stream fileStream, string contentType)
@@ -146,6 +161,56 @@ public class S3FileService : IS3FileService
         {
             return false;
         }
+    }
+
+    public async Task<string> InitiateMultipartUploadAsync(string s3Key, string contentType)
+    {
+        var request = new InitiateMultipartUploadRequest
+        {
+            BucketName = bucketName,
+            Key = s3Key,
+            ContentType = contentType,
+        };
+        var response = await s3Client.InitiateMultipartUploadAsync(request);
+        return response.UploadId;
+    }
+
+    public Task<string> GetPresignedPartUrlAsync(string s3Key, string uploadId, int partNumber)
+    {
+        var presignRequest = new GetPreSignedUrlRequest
+        {
+            BucketName = bucketName,
+            Key = s3Key,
+            Verb = HttpVerb.PUT,
+            Expires = DateTime.UtcNow.AddHours(2),
+            Protocol = Protocol.HTTP,
+            UploadId = uploadId,
+            PartNumber = partNumber,
+        };
+        return s3Client.GetPreSignedURLAsync(presignRequest);
+    }
+
+    public async Task CompleteMultipartUploadAsync(string s3Key, string uploadId, IReadOnlyList<S3MultipartPart> parts)
+    {
+        var request = new CompleteMultipartUploadRequest
+        {
+            BucketName = bucketName,
+            Key = s3Key,
+            UploadId = uploadId,
+            PartETags = parts.Select(p => new PartETag(p.PartNumber, p.ETag.Trim('"'))).ToList(),
+        };
+        await s3Client.CompleteMultipartUploadAsync(request);
+    }
+
+    public async Task AbortMultipartUploadAsync(string s3Key, string uploadId)
+    {
+        var request = new AbortMultipartUploadRequest
+        {
+            BucketName = bucketName,
+            Key = s3Key,
+            UploadId = uploadId,
+        };
+        await s3Client.AbortMultipartUploadAsync(request);
     }
 
     private string GetMimeType(IFormFile file)

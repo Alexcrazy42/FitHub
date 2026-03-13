@@ -409,6 +409,10 @@ namespace FitHub.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("file_name");
 
+                    b.Property<string>("MultipartUploadId")
+                        .HasColumnType("text")
+                        .HasColumnName("multipart_upload_id");
+
                     b.Property<string>("S3Key")
                         .IsRequired()
                         .HasColumnType("text")
@@ -1249,6 +1253,126 @@ namespace FitHub.Data.Migrations
                     b.ToTable("visitor", (string)null);
                 });
 
+            modelBuilder.Entity("FitHub.Domain.Videos.Video", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<int?>("DurationSeconds")
+                        .HasColumnType("integer")
+                        .HasColumnName("duration_seconds");
+
+                    b.Property<string>("FailureReason")
+                        .HasColumnType("text")
+                        .HasColumnName("failure_reason");
+
+                    b.Property<string>("OriginalCachedUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("original_cached_url");
+
+                    b.Property<Guid>("OriginalFileId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("original_file_id");
+
+                    b.Property<DateTimeOffset?>("OriginalUrlExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("original_url_expires_at");
+
+                    b.Property<string>("PosterCachedUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("poster_cached_url");
+
+                    b.Property<string>("PosterS3Key")
+                        .HasColumnType("text")
+                        .HasColumnName("poster_s3key");
+
+                    b.Property<DateTimeOffset?>("PosterUrlExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("poster_url_expires_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("title");
+
+                    b.HasKey("Id")
+                        .HasName("pk_video");
+
+                    b.HasIndex("OriginalFileId")
+                        .HasDatabaseName("ix_video_original_file_id");
+
+                    b.ToTable("video", (string)null);
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Videos.VideoResolution", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("BitrateKbps")
+                        .HasColumnType("integer")
+                        .HasColumnName("bitrate_kbps");
+
+                    b.Property<string>("CachedUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("cached_url");
+
+                    b.Property<long>("FileSizeBytes")
+                        .HasColumnType("bigint")
+                        .HasColumnName("file_size_bytes");
+
+                    b.Property<int>("HeightPx")
+                        .HasColumnType("integer")
+                        .HasColumnName("height_px");
+
+                    b.Property<string>("Quality")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("quality");
+
+                    b.Property<string>("S3Key")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("s3key");
+
+                    b.Property<DateTimeOffset?>("UrlExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("url_expires_at");
+
+                    b.Property<Guid>("VideoId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("video_id");
+
+                    b.Property<int>("WidthPx")
+                        .HasColumnType("integer")
+                        .HasColumnName("width_px");
+
+                    b.HasKey("Id")
+                        .HasName("pk_video_resolution");
+
+                    b.HasIndex("VideoId")
+                        .HasDatabaseName("ix_video_resolution_video_id");
+
+                    b.ToTable("video_resolution", (string)null);
+                });
+
             modelBuilder.Entity("GroupTrainingVisitor", b =>
                 {
                     b.Property<Guid>("GroupTrainingsId")
@@ -1756,6 +1880,30 @@ namespace FitHub.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("FitHub.Domain.Videos.Video", b =>
+                {
+                    b.HasOne("FitHub.Domain.Files.FileEntity", "OriginalFile")
+                        .WithMany()
+                        .HasForeignKey("OriginalFileId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_video_file_entity_original_file_id");
+
+                    b.Navigation("OriginalFile");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Videos.VideoResolution", b =>
+                {
+                    b.HasOne("FitHub.Domain.Videos.Video", "Video")
+                        .WithMany("Resolutions")
+                        .HasForeignKey("VideoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_video_resolution_video_video_id");
+
+                    b.Navigation("Video");
+                });
+
             modelBuilder.Entity("GroupTrainingVisitor", b =>
                 {
                     b.HasOne("FitHub.Domain.Trainings.GroupTraining", null)
@@ -1865,6 +2013,11 @@ namespace FitHub.Data.Migrations
                     b.Navigation("Gyms");
 
                     b.Navigation("PersonalTrainings");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Videos.Video", b =>
+                {
+                    b.Navigation("Resolutions");
                 });
 #pragma warning restore 612, 618
         }

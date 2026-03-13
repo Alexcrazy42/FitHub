@@ -1,5 +1,4 @@
 ﻿using FitHub.Contracts.V1.Messaging.Chats;
-using FitHub.Domain.Messaging;
 
 namespace FitHub.Contracts.V1.Messaging.Messages;
 

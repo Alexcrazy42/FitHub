@@ -1,5 +1,6 @@
 ﻿using FitHub.Clients.Chats;
 using FitHub.Clients.Messages;
+using FitHub.Clients.Videos;
 using FitHub.Common.Extensions.Configuration;
 using FitHub.Common.Identity.Client;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +14,8 @@ public static class ServiceRegistry
         services.AddBindedOptions<FitHubClientOptions>();
         services.AddIdentityHttpClient<IChatClient, ChatClient, FitHubClientOptions>();
         services.AddIdentityHttpClient<IMessageClient, MessageClient, FitHubClientOptions>();
+        services.AddIdentityHttpClient<IVideoClient, VideoClient, FitHubClientOptions>()
+            .ConfigureHttpClient(c => c.Timeout = Timeout.InfiniteTimeSpan);
         return services;
     }
 }

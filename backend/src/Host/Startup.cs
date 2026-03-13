@@ -1,8 +1,13 @@
 ﻿using FitHub.Application;
+using FitHub.Application.Videos;
 using FitHub.Common.AspNetCore;
 using FitHub.Common.Extensions.Configuration;
 using FitHub.Common.Logging;
 using FitHub.Data;
+using FitHub.Host.Videos;
+using FitHub.Queue.Contracts.Videos;
+using FitHub.RabbitMQ;
+using FitHub.RabbitMQ.Configuration;
 using FitHub.Web;
 using FitHub.Web.V1;
 
@@ -25,6 +30,9 @@ public sealed class Startup
         services.AddWeb(configuration);
 
         services.AddExceptionAsProblemDetails();
+
+        services.AddRabbitMq<RabbitMqClusterOptions>();
+        services.AddProducer<VideoEncodingMessage, VideoEncodingProducer, RabbitMqClusterOptions>();
 
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(options =>
