@@ -2,7 +2,6 @@ import axios from 'axios';
 import { ApiService } from './ApiService';
 import {
   IInitVideoMultipartUploadResponse,
-  IInitVideoUploadResponse,
   IVideoResolutionUrlResponse,
   IVideoResponse,
 } from '../types/videos';
@@ -19,10 +18,7 @@ export const useVideoApi = (api: ApiService) => ({
   getResolutions: (id: string) =>
     api.get<{ items: IVideoResolutionUrlResponse[] }>(`${BASE}/${id}/resolutions`),
 
-  initUpload: (title: string, fileExtension: string) =>
-    api.post<IInitVideoUploadResponse>(`${BASE}/init-upload`, { title, fileExtension }),
-
-  // not use
+  // deprecated
   uploadToS3: (presignedUrl: string, file: File, onProgress?: (pct: number) => void) =>
     axios.put(presignedUrl, file, {
       headers: { 'Content-Type': file.type },

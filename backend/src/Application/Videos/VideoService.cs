@@ -49,24 +49,6 @@ public class VideoService : IVideoService
         this.logger = logger;
     }
 
-    public async Task<VideoUploadInitResult> InitUploadAsync(string title, string fileExtension, CancellationToken ct)
-    {
-        var videoId = VideoId.New();
-        var ext = fileExtension.TrimStart('.');
-        var s3Key = $"videos/{videoId}/original.{ext}";
-
-        var fileId = FileId.New();
-        var fileEntity = FileEntity.Create(fileId, $"original.{ext}", s3Key, FileStatus.WaitingUpload);
-        var video = Video.Create(videoId, title.Trim(), fileEntity);
-
-        await fileRepository.PendingAddAsync(fileEntity, ct);
-        await videoRepository.PendingAddAsync(video, ct);
-        await unitOfWork.SaveChangesAsync(ct);
-
-        var result = await s3FileService.GetPresignedUrlAsync(fileId.ToString(), s3Key);
-        return new VideoUploadInitResult(video.Id, result.Url);
-    }
-
     private static string GetVideoContentType(string ext) => ext.ToLowerInvariant() switch
     {
         "mp4" => "video/mp4",
@@ -135,32 +117,10 @@ public class VideoService : IVideoService
         await unitOfWork.SaveChangesAsync(ct);
     }
 
-    public async Task<Video> ConfirmUploadAsync(VideoId id, CancellationToken ct)
-    {
-        var video = await GetAsync(id, ct);
-
-        if (video.Status != VideoStatus.Pending)
-        {
-            throw new InvalidOperationException($"Video {id} is not in Pending state.");
-        }
-
-        // без outbox, тк максимум ым можем себе позволить опубликовать и упасть на подтверждении файла
-        await videoQueue.EnqueueAsync(id, ct);
-
-        var file = await fileRepository.GetFirstOrDefaultAsync(f => f.Id == video.OriginalFileId, ct);
-        if (file is not null)
-        {
-            file.SetEntity(video.Id.ToString(), EntityType.Video);
-            file.SetStatus(FileStatus.Active);
-            await unitOfWork.SaveChangesAsync(ct);
-        }
-
-        return video;
-    }
-
     public async Task<Video> GetAsync(VideoId id, CancellationToken ct)
     {
         var video = await videoRepository.GetWithResolutionsAsync(id, ct);
+
         NotFoundException.ThrowIfNull(video, "Видео не найдено");
 
         if (await RefreshVideoMetaUrlsAsync(video, ct))
@@ -174,6 +134,7 @@ public class VideoService : IVideoService
     {
         var result = await videoRepository.GetPagedWithResolutionsAsync(query, ct);
         var dirty = false;
+
         foreach (var video in result.Items)
         {
             dirty |= await RefreshVideoMetaUrlsAsync(video, ct);
@@ -248,7 +209,9 @@ public class VideoService : IVideoService
 
     public async Task DeleteAsync(VideoId id, CancellationToken ct)
     {
-        var video = await GetAsync(id, ct);
+        var video = await videoRepository.GetWithResolutionsAsync(id, ct);
+
+        NotFoundException.ThrowIfNull(video, "Видео не найдено!");
 
         foreach (var res in video.Resolutions)
         {

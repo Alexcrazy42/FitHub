@@ -37,15 +37,6 @@ public class VideoController : ControllerBase
         return video.ToResponse(video.PosterCachedUrl);
     }
 
-    [HttpPost(ApiRoutesV1.VideosInitUpload)]
-    public async Task<InitVideoUploadResponse> InitUpload([FromBody] InitVideoUploadRequest? request, CancellationToken ct)
-    {
-        var title = ValidationException.ThrowIfNull(request?.Title, "Название не может быть пустым");
-        var ext = ValidationException.ThrowIfNull(request.FileExtension, "Расширение файла обязательно");
-        var result = await videoService.InitUploadAsync(title, ext, ct);
-        return new InitVideoUploadResponse(result.VideoId.ToString(), result.PresignedPutUrl);
-    }
-
     [HttpPost(ApiRoutesV1.VideosInitMultipartUpload)]
     public async Task<InitVideoMultipartUploadResponse> InitMultipartUpload([FromBody] InitVideoMultipartUploadRequest? request, CancellationToken ct)
     {
@@ -64,14 +55,6 @@ public class VideoController : ControllerBase
         var parts = ValidationException.ThrowIfNull(request?.Parts, "Parts обязательны");
         var s3Parts = parts.Select(p => new S3MultipartPart(p.PartNumber, p.ETag)).ToList();
         await videoService.CompleteMultipartUploadAsync(videoId, s3Parts, ct);
-        return Accepted();
-    }
-
-    [HttpPost(ApiRoutesV1.VideoConfirmUpload)]
-    public async Task<IActionResult> ConfirmUpload([FromRoute] string id, CancellationToken ct)
-    {
-        var videoId = VideoId.Parse(id);
-        await videoService.ConfirmUploadAsync(videoId, ct);
         return Accepted();
     }
 

@@ -14,9 +14,6 @@ public record VideoMultipartInitResult(VideoId VideoId, IReadOnlyList<MultipartP
 
 public interface IVideoService
 {
-    Task<VideoUploadInitResult> InitUploadAsync(string title, string fileExtension, CancellationToken ct);
-    Task<Video> ConfirmUploadAsync(VideoId id, CancellationToken ct);
-
     Task<VideoMultipartInitResult> InitMultipartUploadAsync(string title, string fileExtension, long fileSizeBytes, CancellationToken ct);
     Task CompleteMultipartUploadAsync(VideoId id, IReadOnlyList<S3MultipartPart> parts, CancellationToken ct);
     Task<Video> GetAsync(VideoId id, CancellationToken ct);
@@ -24,6 +21,8 @@ public interface IVideoService
     Task<IReadOnlyList<VideoResolutionUrl>> GetResolutionUrlsAsync(VideoId id, CancellationToken ct);
     Task DeleteAsync(VideoId id, CancellationToken ct);
 
-    /// <summary>Called by the encoding worker. Downloads, encodes all resolutions, uploads results.</summary>
+    /// <summary>
+    /// Called by the encoding worker. Downloads, encodes all resolutions, uploads results.
+    /// </summary>
     Task ProcessAsync(VideoId id, CancellationToken ct);
 }
