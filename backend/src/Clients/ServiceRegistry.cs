@@ -14,7 +14,8 @@ public static class ServiceRegistry
         services.AddBindedOptions<FitHubClientOptions>();
         services.AddIdentityHttpClient<IChatClient, ChatClient, FitHubClientOptions>();
         services.AddIdentityHttpClient<IMessageClient, MessageClient, FitHubClientOptions>();
-        services.AddIdentityHttpClient<IVideoClient, VideoClient, FitHubClientOptions>();
+        services.AddIdentityHttpClient<IVideoClient, VideoClient, FitHubClientOptions>()
+            .ConfigureHttpClient(c => c.Timeout = Timeout.InfiniteTimeSpan);
         return services;
     }
 }

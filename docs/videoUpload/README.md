@@ -1,184 +1,204 @@
-# Video Upload & Processing Flow
+# Загрузка и обработка видео
 
-End-to-end description of how videos are uploaded, processed, and played back in FitHub.
-
----
-
-## Architecture Overview
-
-```
-Frontend                Backend (Host)          RabbitMQ        Backend (HostJobs)
-   │                         │                     │                    │
-   │─── POST init-upload ───>│                     │                    │
-   │<── { videoId, putUrl } ─│                     │                    │
-   │                         │                     │                    │
-   │─── PUT file to S3 ─────────────────> [Minio]  │                    │
-   │                         │                     │                    │
-   │─── POST confirm-upload ─>│                    │                    │
-   │<── 202 Accepted ────────│                     │                    │
-   │                         │─── enqueue ────────>│                    │
-   │                         │                     │──> VideoEncoding   │
-   │                         │                     │    Consumer ──────>│
-   │                         │<─── POST /process ──────────────────────│
-   │                         │                     │                    │
-   │  (polls every 8s)       │  [FFmpeg encodes]   │                    │
-   │─── GET /videos ────────>│                     │                    │
-   │<── status: Ready ───────│                     │                    │
-   │                         │                     │                    │
-   │─── GET /resolutions ───>│                     │                    │
-   │<── [{ url, quality }] ──│                     │                    │
-   │                         │                     │                    │
-   │  [VideoPlayer plays]    │                     │                    │
-```
+Полное описание того, как видео загружается, кодируется и воспроизводится в FitHub.
 
 ---
 
-## Step 1 — Init Upload
+## Обзор архитектуры
 
-**Frontend** calls `POST /api/v1/videos/init-upload`:
+```
+Frontend                     Backend (Host)          RabbitMQ        Backend (HostJobs)
+   │                               │                     │                    │
+   │── POST init-multipart-upload ─>│                    │                    │
+   │<── { videoId, parts[] } ──────│                     │                    │
+   │                               │                     │                    │
+   │── PUT chunk 1 ─────────────────────────> [Minio]    │                    │
+   │── PUT chunk 2 ─────────────────────────> [Minio]    │                    │  (3 чанка параллельно)
+   │── PUT chunk 3 ─────────────────────────> [Minio]    │                    │
+   │                               │                     │                    │
+   │── POST complete-multipart ────>│                    │                    │
+   │<── 202 Accepted ──────────────│                    │                    │
+   │                               │─── enqueue ────────>│                    │
+   │                               │                     │──> VideoEncoding   │
+   │                               │                     │    Consumer ──────>│
+   │                               │<── POST /process ────────────────────────│
+   │                               │                     │                    │
+   │                               │  [FFmpeg: лучшее    │                    │
+   │                               │   качество первым]  │                    │
+   │                               │  → status: Ready    │                    │
+   │                               │  [FFmpeg: остальные │                    │
+   │                               │   профили]          │                    │
+   │                               │                     │                    │
+   │  (опрос каждые 8с)            │                     │                    │
+   │── GET /videos ───────────────>│                     │                    │
+   │<── status: Ready ─────────────│                     │                    │
+   │                               │                     │                    │
+   │── GET /resolutions ──────────>│                     │                    │
+   │<── [{ url, quality }] ────────│                     │                    │
+   │                               │                     │                    │
+   │  [VideoPlayer играет]         │                     │                    │
+```
+
+---
+
+## Шаг 1 — Инициализация multipart-загрузки
+
+![grid](./images/1_grid.png)
+![form](./images/2_form.png)
+
+**Frontend** (`VideoUploadContext.startUpload`) вызывает `POST /api/v1/videos/init-multipart-upload`:
 
 ```json
-{ "title": "Leg Day Workout", "fileExtension": "mp4" }
+{ "title": "Тренировка ног", "fileExtension": "mp4", "fileSizeBytes": 104857600 }
 ```
 
-**Backend** (`VideoService.InitUploadAsync`):
-1. Creates a `FileEntity` record in DB (status: `Pending`)
-2. Creates a `Video` record in DB (status: `Pending`) linked to the file
-3. Generates a **presigned S3 PUT URL** (15-minute expiry) for the original file key `videos/{videoId}/original.mp4`
-4. Returns:
+**Backend** (`VideoService.InitMultipartUploadAsync`):
+1. Создаёт запись `FileEntity` в БД со статусом `WaitingUpload`
+2. Создаёт запись `Video` в БД со статусом `Pending`, связанную с файлом
+3. Формирует S3-ключ: `videos/{videoId}/original.{ext}`
+4. Открывает multipart-сессию в Minio
+5. Генерирует presigned PUT URL для каждого чанка по 10 МБ: `⌈fileSizeBytes / 10MB⌉` частей
+6. Возвращает:
 
 ```json
-{ "videoId": "video_...", "presignedPutUrl": "http://minio:9000/files/videos/..." }
+{
+  "videoId": "video_...",
+  "parts": [
+    { "partNumber": 1, "url": "http://minio:9000/files/...?partNumber=1&uploadId=..." },
+    { "partNumber": 2, "url": "http://minio:9000/files/...?partNumber=2&uploadId=..." }
+  ]
+}
 ```
-
-Relevant files:
-- `Web/V1/Videos/VideoController.cs` — `InitUpload` action
-- `Application/Videos/VideoService.cs` — `InitUploadAsync`
-- `Application/Files/S3FileService.cs` — `GetPresignedUrlAsync`
 
 ---
 
-## Step 2 — Direct Upload to S3
+## Шаг 2 — Параллельная загрузка чанков в S3
 
-**Frontend** uploads the file **directly to Minio** using the presigned PUT URL — the backend is not involved:
+![background](./images/3_background_upload.png)
+![uploaded](./images/4_uploaded.png)
+
+**Frontend** (`VideoUploadContext`) разбивает файл на чанки по 10 МБ и загружает до **3 частей параллельно** напрямую в Minio — бэкенд не участвует:
 
 ```ts
-await axios.put(presignedPutUrl, file, {
-    headers: { 'Content-Type': file.type },
-    onUploadProgress: (e) => setProgress(Math.round(e.loaded / e.total * 100))
-});
+// CHUNK_SIZE = 10 * 1024 * 1024
+// CONCURRENCY = 3
+uploadPart: (url: string, chunk: Blob) =>
+    axios.put(url, chunk, { headers: { 'Content-Type': 'application/octet-stream' } })
 ```
 
-The file lands in Minio at `videos/{videoId}/original.{ext}`.
+Из заголовка ответа каждого PUT-запроса извлекается `ETag` — он потребуется для подтверждения загрузки.
 
-Relevant files:
-- `frontend/src/api/videoApi.ts` — `uploadToS3`
-- `frontend/src/pages/admin/videos/VideosAdminPage.tsx` — upload modal with progress bar
+Прогресс загрузки (0–90%) отображается в плавающем компоненте `VideoUploadProgress` (правый нижний угол).
 
 ---
 
-## Step 3 — Confirm Upload
+## Шаг 3 — Завершение multipart-загрузки
 
-**Frontend** calls `POST /api/v1/videos/{id}/confirm-upload` after the S3 upload completes.
+**Frontend** вызывает `POST /api/v1/videos/{id}/complete-multipart` с собранными ETags:
 
-**Backend** (`VideoService.ConfirmUploadAsync`):
-1. Loads the `Video` (must be in `Pending` status)
-2. Marks `FileEntity` as `Active`
-3. Publishes a `VideoEncodingMessage` to RabbitMQ:
+```json
+{
+  "parts": [
+    { "partNumber": 1, "eTag": "\"abc123...\"" },
+    { "partNumber": 2, "eTag": "\"def456...\"" }
+  ]
+}
+```
+
+**Backend** (`VideoService.CompleteMultipartUploadAsync`):
+1. Загружает `Video` (статус должен быть `Pending`)
+2. Завершает multipart-сессию в Minio (Minio собирает чанки в один файл)
+3. Помечает `FileEntity` как `Active` и связывает с `Video`
+4. Публикует `VideoEncodingMessage` в RabbitMQ:
    - Exchange: `video.encoding` (direct)
    - Routing key: `video.encoding.process`
    - Payload: `{ "videoId": "video_..." }`
-4. Returns `202 Accepted`
-
-Relevant files:
-- `Web/V1/Videos/VideoController.cs` — `ConfirmUpload` action
-- `Application/Videos/VideoService.cs` — `ConfirmUploadAsync`
-- `Application/Videos/VideoEncodingQueue.cs` — publishes message
-- `Queue.Contracts/Videos/VideoEncodingMessage.cs` — message contract
+5. Возвращает `202 Accepted
 
 ---
 
-## Step 4 — Async Encoding (HostJobs)
+## Шаг 4 — Асинхронное кодирование (HostJobs)
 
-`HostJobs` is a separate Worker Service that consumes messages from RabbitMQ.
+![proccessing](./images/5_processing.png)
+![proccessed](./images/6_processed.png)
 
-**`VideoEncodingConsumer`** receives the message and calls `VideoClient.ProcessAsync(videoId)`, which makes an HTTP POST to `Host` at `/api/v1/videos/{id}/process`.
+`HostJobs` — отдельный Worker Service, который потребляет сообщения из RabbitMQ.
+
+**`VideoEncodingConsumer`** (очередь `video.encoding.queue`) получает сообщение и вызывает `VideoClient.ProcessAsync(videoId)`, который делает HTTP POST на `Host` по адресу `/api/v1/videos/{id}/process`. HTTP-таймаут для этого запроса отключён — кодирование может занять произвольное время.
 
 **Backend** (`VideoService.ProcessAsync`):
 
-1. Loads video, marks it as `Processing`
-2. Downloads original file from S3 to a temp directory:
+1. Помечает видео как `Processing`
+2. Скачивает оригинальный файл из S3 во временную директорию:
    `%TEMP%/fithub_videos/{videoId}/original.{ext}`
-3. Runs `FFProbe.AnalyseAsync` to get duration
-4. Encodes 3 quality profiles with **FFmpeg (libx264/AAC)**:
+3. Запускает `FFProbe.AnalyseAsync` — получает длительность и исходное разрешение
+4. Определяет подходящие профили кодирования (только те, чья высота ≤ исходной)
+5. **Сначала кодирует лучший профиль** (наибольшее подходящее разрешение) → сразу помечает видео как `Ready` и сохраняет постер
 
-| Quality | Resolution  | CRF | Preset  | Audio   | Target Bitrate |
-|---------|-------------|-----|---------|---------|----------------|
-| 360p    | 640×360     | 28  | faster  | 96 kbps | 500 kbps       |
-| 720p    | 1280×720    | 23  | faster  | 128 kbps| 2500 kbps      |
-| 1080p   | 1920×1080   | 20  | medium  | 192 kbps| 5000 kbps      |
+| Качество | Разрешение  | CRF | Preset  | Аудио    | Битрейт       |
+|----------|-------------|-----|---------|----------|---------------|
+| 360p     | 640×360     | 28  | faster  | 96 кбит  | 500 кбит/с    |
+| 720p     | 1280×720    | 23  | faster  | 128 кбит | 2500 кбит/с   |
+| 1080p    | 1920×1080   | 20  | medium  | 192 кбит | 5000 кбит/с   |
 
-Each resolution uses a `scale+pad` filter to preserve the original aspect ratio without cropping.
+Каждое разрешение использует фильтр `scale+pad` — соотношение сторон сохраняется без обрезки.
 
-5. Uploads each encoded file to S3: `videos/{videoId}/360p.mp4`, `720p.mp4`, `1080p.mp4`
-6. Saves a `VideoResolution` record per quality to the DB
-7. Marks video as `Ready` with `durationSeconds`
-8. Deletes the temp directory
+6. Генерирует постер (JPEG на середине видео; для коротких — на 1 секунде)
+7. Кодирует оставшиеся профили — ошибка в одном профиле не сбрасывает статус `Ready`
+8. Загружает закодированные файлы в S3: `videos/{videoId}/360p.mp4`, `720p.mp4`, `1080p.mp4`
+9. Сохраняет запись `VideoResolution` на каждое качество в БД
+10. Удаляет временную директорию
 
-On any error: marks video as `Failed` with the exception message; temp files are cleaned up in `finally`.
-
-Relevant files:
-- `HostJobs/Consumers/Videos/VideoEncodingConsumer.cs`
-- `Clients/Videos/VideoClient.cs`
-- `Application/Videos/VideoService.cs` — `ProcessAsync`
+При критической ошибке (до первого `Ready`): помечает видео как `Failed` с текстом исключения; временные файлы удаляются в `finally`.
 
 ---
 
-## Step 5 — Playback
+## Шаг 5 — Воспроизведение
 
-**Frontend** polls `GET /api/v1/videos` every 8 seconds while any video is in `Pending` or `Processing` status.
+![anotherAccount](./images/7_another_account.png)
+![player](./images/8_player.png)
 
-Once `status === 'Ready'`, the user can click Play. The player calls:
+**Frontend** опрашивает `GET /api/v1/videos` каждые 8 секунд, пока хотя бы одно видео находится в статусе `Pending` или `Processing`.
+
+Как только `status === 'Ready'`, пользователь может нажать Play. Плеер запрашивает:
 
 ```
 GET /api/v1/videos/{id}/resolutions
 ```
 
-Returns presigned **GET URLs** (2-hour expiry) for each encoded file:
+Возвращает presigned **GET URL** для каждого закодированного файла. URL кешируются в БД на **7 дней** и автоматически обновляются, когда до истечения остаётся менее **1 дня**:
 
 ```json
 {
   "items": [
-    { "quality": "Q360P", "qualityLabel": 360, "widthPx": 640, "heightPx": 360, "bitrateKbps": 500, "url": "http://..." },
-    { "quality": "Q720P", "qualityLabel": 720, "widthPx": 1280, "heightPx": 720, "bitrateKbps": 2500, "url": "http://..." },
+    { "quality": "Q360P",  "qualityLabel": 360,  "widthPx": 640,  "heightPx": 360,  "bitrateKbps": 500,  "url": "http://..." },
+    { "quality": "Q720P",  "qualityLabel": 720,  "widthPx": 1280, "heightPx": 720,  "bitrateKbps": 2500, "url": "http://..." },
     { "quality": "Q1080P", "qualityLabel": 1080, "widthPx": 1920, "heightPx": 1080, "bitrateKbps": 5000, "url": "http://..." }
   ]
 }
 ```
 
-**`VideoPlayer`** component implements adaptive bitrate logic:
-- On load, probes bandwidth by downloading a 200 KB test chunk and measuring speed
-- Selects initial quality: `≥4 Mbps → 1080p`, `≥1.5 Mbps → 720p`, otherwise `360p`
-- Every 4 seconds checks buffer:
-  - Buffer > 15 s and not at max quality → upgrades
-  - Buffer < 3 s and not at min quality → downgrades
-- Quality switching preserves playback position and play state
-- Manual quality override via dropdown (shown on hover)
+> Если видео ещё не `Ready`, эндпоинт возвращает presigned URL оригинального файла (`quality: "Original"`).
 
-Relevant files:
-- `frontend/src/components/VideoPlayer/VideoPlayer.tsx`
-- `frontend/src/api/videoApi.ts` — `getResolutions`
-- `Application/Videos/VideoService.cs` — `GetResolutionUrlsAsync`
+**Компонент `VideoPlayer`** реализует адаптивный выбор качества:
+- При загрузке измеряет пропускную способность: скачивает тестовый чанк 200 КБ и замеряет скорость
+- Выбирает начальное качество: `≥ 4 Мбит/с → 1080p`, `≥ 1.5 Мбит/с → 720p`, иначе `360p`
+- Каждые 4 секунды проверяет буфер:
+  - Буфер > 15 с и качество не максимальное → повышает качество
+  - Буфер < 3 с и качество не минимальное → понижает качество
+- Переключение качества сохраняет позицию воспроизведения и состояние паузы
+- Ручной выбор качества через выпадающий список (отображается при наведении)
 
 ---
 
-## S3 Key Structure
+## Структура ключей в S3
 
 ```
-files/                          ← bucket
+files/                         ← бакет
 └── videos/
     └── {videoId}/
-        ├── original.{ext}      ← raw uploaded file (kept after encoding)
+        ├── original.{ext}     ← исходный загруженный файл (сохраняется после кодирования)
+        ├── poster.jpg         ← сгенерированный постер (кадр с середины видео)
         ├── 360p.mp4
         ├── 720p.mp4
         └── 1080p.mp4
@@ -186,35 +206,40 @@ files/                          ← bucket
 
 ---
 
-## Video Status Lifecycle
+## Жизненный цикл статуса видео
 
 ```
 Pending ──► Processing ──► Ready
-   │
-   └────────────────────────► Failed
+   │               │
+   │               └───────────────────► Failed
+   └───────────────────────────────────► Failed
 ```
 
-| Status     | When set                                      |
-|------------|-----------------------------------------------|
-| `Pending`  | On `InitUpload` — video created in DB         |
-| `Processing` | On `ProcessAsync` start — encoding begins   |
-| `Ready`    | On `ProcessAsync` success — resolutions saved |
-| `Failed`   | On `ProcessAsync` exception                   |
+| Статус       | Когда устанавливается                                                  |
+|--------------|------------------------------------------------------------------------|
+| `Pending`    | При `InitMultipartUpload` — видео создано в БД                         |
+| `Processing` | При старте `ProcessAsync` — скачивание и кодирование начались          |
+| `Ready`      | После кодирования лучшего профиля — видео уже доступно для просмотра  |
+| `Failed`     | При исключении до первого успешного профиля                            |
 
 ---
 
-## Database Schema
+## Схема базы данных
 
 ```
 video
-├── id              UUID PK
-├── title           text
-├── original_file_id UUID FK → file_entity(id)  ON DELETE RESTRICT
-├── status          text  (Pending | Processing | Ready | Failed)
-├── duration_seconds int?
-├── poster_s3key    text?   (currently not populated)
-├── failure_reason  text?
-└── created_at      timestamptz
+├── id                UUID PK
+├── title             text
+├── original_file_id  UUID FK → file_entity(id)  ON DELETE RESTRICT
+├── status            text  (Pending | Processing | Ready | Failed)
+├── duration_seconds  int?
+├── poster_s3_key     text?
+├── poster_cached_url text?
+├── poster_url_expires_at  timestamptz?
+├── original_cached_url    text?
+├── original_url_expires_at timestamptz?
+├── failure_reason    text?
+└── created_at        timestamptz
 
 video_resolution
 ├── id              UUID PK
@@ -224,57 +249,7 @@ video_resolution
 ├── file_size_bytes bigint
 ├── width_px        int
 ├── height_px       int
-└── bitrate_kbps    int
+├── bitrate_kbps    int
+├── cached_url      text?
+└── url_expires_at  timestamptz?
 ```
-
----
-
-## API Reference
-
-| Method | URL | Request | Response | Description |
-|--------|-----|---------|----------|-------------|
-| `POST` | `/api/v1/videos/init-upload` | `{ title, fileExtension }` | `{ videoId, presignedPutUrl }` | Start upload session |
-| `PUT`  | `presignedPutUrl` | binary file | — | Upload file to S3 directly |
-| `POST` | `/api/v1/videos/{id}/confirm-upload` | — | 202 | Enqueue for encoding |
-| `GET`  | `/api/v1/videos` | — | `{ items: VideoResponse[] }` | List all videos |
-| `GET`  | `/api/v1/videos/{id}` | — | `VideoResponse` | Get single video |
-| `GET`  | `/api/v1/videos/{id}/resolutions` | — | `{ items: VideoResolutionUrlResponse[] }` | Get playback URLs |
-| `DELETE` | `/api/v1/videos/{id}` | — | 204 | Delete video + S3 files |
-
----
-
-## Configuration
-
-```json
-// appsettings.Development.json
-{
-  "AWS": {
-    "ServiceURL": "http://localhost:9000",
-    "AccessKey": "minio",
-    "SecretKey": "minio123",
-    "BucketName": "files",
-    "NeedToEnsureBucketExists": true
-  },
-  "RabbitMQ": {
-    "Nodes": ["localhost"],
-    "Username": "rabbitmq",
-    "Password": "rabbitmq123",
-    "VirtualHost": "/",
-    "NeedToPrepare": true
-  },
-  "Video": {
-    "FFmpegBinaryFolder": "C:\\ffmpeg\\bin"
-  }
-}
-```
-
-`FFmpegBinaryFolder` — path to the directory containing `ffmpeg.exe` and `ffprobe.exe`.
-Leave empty or omit if FFmpeg is on the system `PATH`.
-
----
-
-## Known Limitations / TODOs
-
-- **Poster generation** is currently disabled (`VideoService.ProcessAsync` has commented-out snapshot code)
-- **`/api/v1/videos/{id}/process` is `[AllowAnonymous]`** — needs token-based protection so only HostJobs can call it
-- **No re-encoding on failure** — a failed video stays `Failed` until manually deleted and re-uploaded

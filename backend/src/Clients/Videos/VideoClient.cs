@@ -15,18 +15,8 @@ internal sealed class VideoClient : IVideoClient
 
     public async Task ProcessAsync(string videoId, CancellationToken ct)
     {
-        var oldTimeout = client.Timeout;
-        client.Timeout = Timeout.InfiniteTimeSpan;
-
-        try
-        {
-            var url = new Uri(baseUri, $"/api/v1/videos/{videoId}/process");
-            var response = await client.PostAsync(url, content: null, ct);
-            response.EnsureSuccessStatusCode();
-        }
-        finally
-        {
-            client.Timeout = oldTimeout;  // восстанавливаем
-        }
+        var url = new Uri(baseUri, $"/api/v1/videos/{videoId}/process");
+        var response = await client.PostAsync(url, content: null, ct);
+        response.EnsureSuccessStatusCode();
     }
 }
