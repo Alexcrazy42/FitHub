@@ -12,9 +12,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\NukeBuild\NukeBuild.csproj" />
-    <ProjectReference Include="..\tests\IntegrationTests\IntegrationTests.csproj" />
-    <ProjectReference Include="..\tests\UnitTests\UnitTests.csproj" />
+    <ProjectReference Include="..\..\Common\NukeBuild\NukeBuild.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Nuke.Build" />
   </ItemGroup>
 
 </Project>

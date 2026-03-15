@@ -4,7 +4,6 @@ using FitHub.Authentication;
 using FitHub.Clients.Chats;
 using FitHub.Clients.Messages;
 using FitHub.TestsCommon;
-using FitHub.Web.V1.Messaging;
 using Moq;
 using Xunit;
 

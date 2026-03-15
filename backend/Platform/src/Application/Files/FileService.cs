@@ -2,7 +2,6 @@
 using FitHub.Common.Entities.Storage;
 using FitHub.Domain.Files;
 using FitHub.Shared.Common;
-using Microsoft.EntityFrameworkCore;
 
 namespace FitHub.Application.Files;
 

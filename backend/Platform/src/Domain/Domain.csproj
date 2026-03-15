@@ -1,0 +1,9 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Common\Entities\Entities.csproj" />
+    <ProjectReference Include="..\..\..\Common\AspNetCore\AspNetCore.csproj" />
+    <ProjectReference Include="..\..\..\Common\Entities\Entities.csproj" />
+    <ProjectReference Include="..\..\..\Common\Json\Json.csproj" />
+    <ProjectReference Include="..\Shared\Shared.csproj" />
+  </ItemGroup>
+</Project>

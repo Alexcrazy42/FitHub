@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <ProjectReference Include="..\Contracts\Contracts.csproj" />
-    <ProjectReference Include="..\Extensions\Extensions.csproj" />
-    <ProjectReference Include="..\Http\Http.csproj" />
-    <ProjectReference Include="..\Identity.Client\Identity.Client.csproj" />
-    <ProjectReference Include="..\Utilities\Utilities.csproj" />
+    <ProjectReference Include="..\..\..\Common\Extensions\Extensions.csproj" />
+    <ProjectReference Include="..\..\..\Common\Http\Http.csproj" />
+    <ProjectReference Include="..\..\..\Common\Identity.Client\Identity.Client.csproj" />
+    <ProjectReference Include="..\..\..\Common\Utilities\Utilities.csproj" />
   </ItemGroup>
 
   <ItemGroup>
