@@ -18,7 +18,7 @@
 
 
 ## Tech stack
-- Монолит с элементами микросервисов
+- Микросервисная архитектурна
 - Clean Architecture (Presentation, Infrastucture, Core)
 - в домене прослеживается DDD (Аггрегаты, Value Objects; инварианты внутри Entity, а не размазаны по сервисам)
 - .NET 9
