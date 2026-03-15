@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Hosting" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\Common\AspNetCore\AspNetCore.csproj" />
+      <ProjectReference Include="..\Clients\Clients.csproj" />
+      <ProjectReference Include="..\Data\Data.csproj" />
+      <ProjectReference Include="..\Host\Host.csproj" />
+      <ProjectReference Include="..\..\..\Common\Logging\Logging.csproj" />
+      <ProjectReference Include="..\Queue.Contracts\Queue.Contracts.csproj" />
+      <ProjectReference Include="..\..\..\Common\RabbitMQ\RabbitMQ.csproj" />
+      <ProjectReference Include="..\Web\Web.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Consumers\" />
+    </ItemGroup>
+</Project>

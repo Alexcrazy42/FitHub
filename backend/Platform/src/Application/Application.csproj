@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Common\Authentication\Authentication.csproj" />
+    <ProjectReference Include="..\..\..\Common\Entities\Entities.csproj" />
+    <ProjectReference Include="..\..\..\Common\AspNetCore\AspNetCore.csproj" />
+    <ProjectReference Include="..\..\..\Common\RabbitMQ\RabbitMQ.csproj" />
+    <ProjectReference Include="..\Contracts\Contracts.csproj" />
+    <ProjectReference Include="..\Domain\Domain.csproj" />
+    <ProjectReference Include="..\Queue.Contracts\Queue.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" />
+    <PackageReference Include="AWSSDK.S3" />
+    <PackageReference Include="BCrypt.Net-Next" />
+    <PackageReference Include="FFMpegCore" />
+    <PackageReference Include="FluentValidation.AspNetCore" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+</Project>
