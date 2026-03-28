@@ -50,9 +50,146 @@
 2. Гибридная архитектура: статические (колонки) + динамические (JSONB)  
 3. Фасеты обновляются после каждого фильтра
 4. Typed Request/Response через discriminated unions + NSwag
+5. Набор универсальных динамических фильтров, которые можно расширять
 ```
 
-## Схема БД (финальная)
+## Типы фильтроы
+
+// TODO: понять как считать фасет
+// TODO: понять как показывать как фильтр активен, а какой нет (в самих фильтрах, и в chips/tags над фильтрами + бэк отдает isSelectedByUser)
+// TODO: спортмастер: фасеты, subqueryReference
+
+1. Radiobutton (одиночный выбор)
+
+```json
+{
+  "dbName": "product_type",
+  "visualName": "Тип товара",
+  "options": [
+    {
+      "id": 1,
+      "name": "Кроссовки",
+      "count": 123,
+      "disabled": false // или это спокойно можно вывести как Count = 0
+    }
+  ],
+
+  // либо
+  "path": "/v1/product-types" // он вернет options с пагинацией и тд (вряд ли понадобится, тк обычно значений там немного)
+}
+```
+
+2. Checkbox (множественный выбор)
+
+Схема аналогично Radiobutton
+
+3. Slider/range
+
+```json
+{
+  dbName: "price",
+  "name": "Цена",
+  min: 1, 
+  max: 10,
+  step: 1,
+  unit: "Рубли"
+}
+```
+
+4. Dropdown/select
+
+Схема аналогична Radiobutton
+
+5. SearchInput
+
+```json
+{
+  "dbName": "name",
+  "name": "Имя",
+  "minLength": 1,
+  "maxLength": 10,
+  "type": "string" // date .....
+}
+```
+
+6. Toggle/switct
+
+```json
+{
+  dbName: "tovar_so_skidkoi",
+  "name": "Товар со скидкой"
+}
+```
+
+Фасеты доступны только для типов фильтров с options: dropdown/select, checkbox, radiobutton
+для SearchInput, Slider это впринципе бессмысленно организовывать
+для toggle это можно сделать только если заменить его на radibutton
+
+### Итого
+
+1. Response для составления фильтров
+
+```json
+{
+  "filters": [ // в порядке добавления
+    {
+      "type": "radiobutton", // или любой другой
+      "value": {
+        // описание
+      }
+    }
+  ]
+}
+```
+
+2. Request на бэкенд
+
+```json
+{
+  "filters": [
+    {
+      "type": "radiobutton"
+      "dbName": "db_name",
+      "value": "id из options"
+    },
+    {
+      "type": "checkbox"
+      "dbName": "db_name",
+      "value": ["id из options"]
+    },
+    {
+      "type": "slider"
+      "dbName": "db_name",
+      "min": 1,
+      "max": 2
+    },
+    {
+      "type": "Dropdown",
+      "dbName": "db_name",
+      // аналогично checkbox
+    },
+    {
+      "type": "searchInput",
+      "dbName": "db_name",
+      "value": "text"
+    },
+    {
+      "type": "Toggle",
+      "dbName": "db_name",
+      "value": true
+    }
+  ]
+}
+```
+
+3. Response для фасетов
+
+```json
+
+```
+
+
+## Схема БД
 
 ```sql
 -- 1. Категории (дерево Adjacency List)
