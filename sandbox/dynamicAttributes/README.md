@@ -53,6 +53,10 @@
 5. Набор универсальных динамических фильтров, которые можно расширять
 ```
 
+## Материалы
+
+- https://btubbs.com/postgres-search-with-facets-and-location-awareness.html
+
 ## Типы фильтроы
 
 // TODO: понять как считать фасет

@@ -1,12 +1,10 @@
 using Backend.Data;
-using Backend.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Добавляем DbContext
 var connectionString = builder.Configuration.GetConnectionString("Default") 
-    ?? "Host=localhost;Port=5432;Database=ecommerce;Username=postgres;Password=password";
+    ?? throw new Exception("Default connection string is null");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString, npgsqlOptions =>
@@ -15,14 +13,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         npgsqlOptions.EnableRetryOnFailure();
     }));
 
-// Регистрируем сервисы
-builder.Services.AddScoped<FacetService>();
-builder.Services.AddScoped<CategoryRepository>();
 
-// Добавляем контроллеры
+builder.Services.AddScoped<LogRepository>();
+
 builder.Services.AddControllers();
 
-// Добавляем NSwag для OpenAPI/Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApiDocument(options =>
 {
