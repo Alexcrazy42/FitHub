@@ -578,11 +578,37 @@ DeliveryFailed
 
 ## Потеря связи и аномалии GPS
 
+PlatformService обязан контролировать каждую доставку до финального статуса. Доставка не может зависнуть только потому, что тестовое courier-приложение, симулятор или будущий courier browser перестал присылать координаты/heartbeat.
+
 Если `LastLocationAt` старше заданного порога:
 
 ```text
 30-60 секунд -> degraded UI: "геопозиция временно не обновляется"
 2-5 минут   -> Delivery.Status = LostContact или Courier.Status = Offline
+```
+
+Минимальная модель контроля:
+
+- у `Delivery` хранить `LastCourierSignalAt`, `LastLocationAt`, `LastStateChangedAt`, `WatchdogCheckedAt`, `AutoDecisionReason`;
+- сигналом считать location update, heartbeat, accept/reject, picked up, delivered, failed и другие courier events;
+- `DeliveryWatchdogJob` периодически проверяет активные доставки;
+- при первом пропуске сигнала писать `DeliveryEvent: CourierOffline` и отправлять `GymAdmin` уведомление: "Мы заметили, что курьер временно не обновляет геопозицию. Мы проверяем доставку и обновим статус автоматически.";
+- до pickup: пытаться переназначить курьера, если текущий курьер молчит дольше порога;
+- после pickup: переводить в `LostContact`, уведомлять `CmsAdmin` и `GymAdmin`, затем по финальному таймауту принимать решение `DeliveryFailed` или `ManualReviewRequired`;
+- если доставка признана проваленной и товар не доставлен, запускать компенсацию через BankManager: release/refund/reversal по текущему состоянию оплаты;
+- каждое автоматическое решение должно быть идемпотентным и писать `DeliveryEvent`, чтобы повторный запуск watchdog не делал возврат денег дважды.
+
+Пример auto-decision flow:
+
+```text
+InTransit + no courier signal
+  -> LostContact
+  -> notify GymAdmin: "Мы заметили..."
+  -> notify CmsAdmin
+  -> wait configured timeout
+  -> DeliveryFailed
+  -> BankManager refund/reversal
+  -> notify GymAdmin: "Доставка не завершилась, деньги возвращены"
 ```
 
 Аномалии, которые стоит фильтровать:
@@ -636,6 +662,7 @@ DeliveryFailed
 - координаты зала в `Gym`;
 - `Delivery` создаётся после `ReadyForPickup`;
 - автоматическое назначение ближайшего `Available` курьера;
+- `DeliveryWatchdogJob`, который не оставляет доставку в подвешенном состоянии при отсутствии сигналов от курьера;
 - courier browser с кнопками и browser geolocation;
 - HTTP endpoint для координат курьера;
 - Redis current location;

@@ -1,4 +1,5 @@
 ﻿import { FireOutlined, HomeOutlined, RocketOutlined, SmileOutlined, ToolOutlined, UserOutlined, VideoCameraOutlined, WechatOutlined } from "@ant-design/icons";
+import { ShopOutlined } from "@ant-design/icons";
 import { MenuItem } from "./MenuItem";
 import { Gyms } from "../pages/admin/gyms/Gyms";
 import { Equipments } from "../pages/admin/equipments/Equipments";
@@ -8,7 +9,7 @@ import AdminDashboard from "../pages/admin/AdminDashboard";
 import { ChatLayout } from "../pages/chat/components/ChatLayout";
 import { StickersPage } from "../pages/admin/stickers/StickersPage";
 import { VideosAdminPage } from "../pages/admin/videos/VideosAdminPage";
-import { Badge } from "antd";
+import { MarketplaceProductsAdminPage } from "../pages/marketplace/admin/MarketplaceProductsAdminPage";
 
 export const adminMenuConfig: MenuItem[] = [
   {
@@ -59,6 +60,13 @@ export const adminMenuConfig: MenuItem[] = [
     icon: <VideoCameraOutlined />,
     path: '/admin/videos',
     element: <VideosAdminPage />,
+  },
+  {
+    key: 'marketplace',
+    label: 'Магазин',
+    icon: <ShopOutlined />,
+    path: '/admin/marketplace/products',
+    element: <MarketplaceProductsAdminPage />,
   },
   {
     key: 'chat',
