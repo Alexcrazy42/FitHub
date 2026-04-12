@@ -41,4 +41,11 @@ public class TestController : ControllerBase
         var res = JsonDocument.Parse(updatedJson);
         return res;
     }
+
+    [HttpPost("[action]")]
+    public Dictionary<string, JsonElement?> Dict([FromBody] Dictionary<string, JsonElement?> dict)
+    {
+        var value = dict.GetValueOrDefault("additionalProp3");
+        return dict;
+    }
 }

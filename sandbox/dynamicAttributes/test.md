@@ -3,10 +3,14 @@
 ## Материалы
 
 1. https://habr.com/ru/companies/ppr/articles/978100/ - sql planner
+    - Еженедельный мониторинг pg_stat_statements спасает часы отладки
+    - параметры: запуск gather, mem на хранение в памяти при hash join
 
 2. https://habr.com/ru/companies/ozontech/articles/667600/ как делают поиск озон
 
 3. https://habr.com/ru/companies/oleg-bunin/articles/767066/ как сделать свой интернет магазин
+    архитектура перекрестка
+    эластик и другие технологии
 
 ## Таблицы
 
@@ -14,19 +18,13 @@ product_category (id, name)
 
 product (id, price, payload)
 
-attribute_definition (id, productCategoryId, code, name, unit, filterable, facetable)
+attribute_definition (id, productCategoryId, code, name, filterable, facetable)
 
 attribute_options (id, attributeDefinitionId, optionText)
 
-product_attribute_index (productId, attributeDefinitionId, valueText?, valueNum?, valueBool?, attributeOptionId?)
+product_attribute_index (productId, attributeDefinitionId, attributeOptionId?)
 
-## Важные замечания
-
-1. attribute_definition.unit - num, text, bool, select, radioButton (если select или radioButton, то нужно смотреть в attribute_options)
-
-2. между одним attribute_definition - ИЛИ, между разными attribute_definition - И
-
-## Запросы
+## DDL
 
 ```sql
 -- DDL
@@ -38,16 +36,14 @@ create table product_category (
 create table product (
     id bigserial primary key,
     productCategoryId bigint not null references product_category(id),
-    price numeric(12,2) not null,
-    payload jsonb not null default '{}'::jsonb
+    price numeric(12,2) not null
+    -- other fields
 );
 
 create table attribute_definition (
     id bigserial primary key,
     productCategoryId bigint not null references product_category(id),
-    code text not null,
     name text not null,
-    unit text not null, -- num, text, bool, select, radioButton
     filterable boolean not null default true,
     facetable boolean not null default true,
     unique (productCategoryId, code)
@@ -63,10 +59,7 @@ create table attribute_options (
 create table product_attribute_index (
     productId bigint not null references product(id) on delete cascade,
     attributeDefinitionId bigint not null references attribute_definition(id) on delete cascade,
-    valueText text null,
-    valueNum numeric null,
-    valueBool boolean null,
-    attributeOptionId bigint null references attribute_options(id),
+    attributeOptionId bigint not null references attribute_options(id),
     primary key (productId, attributeDefinitionId)
 );
 
@@ -78,242 +71,7 @@ create index ix_attr_def_category_filterable on attribute_definition(productCate
 create index ix_attr_opt_def on attribute_options(attributeDefinitionId);
 
 create index ix_pai_attr_opt on product_attribute_index(attributeDefinitionId, attributeOptionId, productId);
-create index ix_pai_attr_text on product_attribute_index(attributeDefinitionId, valueText, productId);
-create index ix_pai_attr_num on product_attribute_index(attributeDefinitionId, valueNum, productId);
 create index ix_pai_product on product_attribute_index(productId);
-
--- seed data
-insert into product_category(name) values
-('Clothing'),
-('Shoes');
-
-insert into attribute_definition(productCategoryId, code, name, unit, filterable, facetable) values
-(1, 'color', 'Color', 'select', true, true),
-(1, 'size', 'Size', 'select', true, true),
-(1, 'sleeve_length', 'Sleeve length', 'select', true, true),
-(1, 'material', 'Material', 'select', true, true),
-(2, 'color', 'Color', 'select', true, true),
-(2, 'size', 'Size', 'num', true, true),
-(2, 'season', 'Season', 'select', true, true),
-(2, 'heel_height', 'Heel height', 'num', true, true);
-
-insert into attribute_options(attributeDefinitionId, optionText) values
-(1, 'black'), (1, 'white'), (1, 'blue'),
-(2, 'S'), (2, 'M'), (2, 'L'),
-(3, 'short'), (3, 'long'),
-(4, 'cotton'), (4, 'polyester'),
-(5, 'black'), (5, 'white'), (5, 'brown'),
-(7, 'summer'), (7, 'winter'),
-(7, 'all-season');
-
-insert into product(productCategoryId, price, payload) values
-(1, 19.99, '{"title":"T-shirt basic"}'),
-(1, 29.99, '{"title":"Hoodie"}'),
-(1, 24.50, '{"title":"Shirt slim"}'),
-(1, 49.90, '{"title":"Jacket"}'),
-(1, 15.00, '{"title":"T-shirt premium"}'),
-(2, 79.99, '{"title":"Sneakers"}'),
-(2, 129.99, '{"title":"Boots"}'),
-(2, 59.99, '{"title":"Loafers"}'),
-(2, 89.50, '{"title":"Running shoes"}'),
-(2, 149.00, '{"title":"Heels"}');
-
-insert into product_attribute_index(productId, attributeDefinitionId, attributeOptionId, valueText, valueNum, valueBool) values
--- clothing products
-(1, 1, 1, 'black', null, null), (1, 2, 4, 'S', null, null), (1, 3, 7, 'short', null, null), (1, 4, 9, 'cotton', null, null),
-(2, 1, 3, 'blue', null, null), (2, 2, 5, 'M', null, null), (2, 3, 8, 'long', null, null), (2, 4, 10, 'polyester', null, null),
-(3, 1, 2, 'white', null, null), (3, 2, 5, 'M', null, null), (3, 3, 8, 'long', null, null), (3, 4, 9, 'cotton', null, null),
-(4, 1, 1, 'black', null, null), (4, 2, 6, 'L', null, null), (4, 3, 8, 'long', null, null), (4, 4, 10, 'polyester', null, null),
-(5, 1, 2, 'white', null, null), (5, 2, 4, 'S', null, null), (5, 3, 7, 'short', null, null), (5, 4, 9, 'cotton', null, null),
--- shoes products
-(6, 5, 11, 'black', null, null), (6, 6, null, null, 42, null), (6, 7, 14, 'summer', null, null), (6, 8, null, null, 2.5, null),
-(7, 5, 13, 'brown', null, null), (7, 6, null, null, 44, null), (7, 7, 15, 'winter', null, null), (7, 8, null, null, 4.0, null),
-(8, 5, 12, 'white', null, null), (8, 6, null, null, 41, null), (8, 7, 16, 'all-season', null, null), (8, 8, null, null, 1.5, null),
-(9, 5, 11, 'black', null, null), (9, 6, null, null, 43, null), (9, 7, 14, 'summer', null, null), (9, 8, null, null, 3.0, null),
-(10, 5, 12, 'white', null, null), (10, 6, null, null, 39, null), (10, 7, 15, 'winter', null, null), (10, 8, null, null, 7.5, null);
-
--- sample queries
-
--- Q1: matching products for filters
---explain analyze
-with selected_filters as (
-    select 3::bigint as attributeDefinitionId, 32::bigint as attributeOptionId
-    union all
-    select 203::bigint, 632::bigint
-),
-matched_products as (
-    select pai.productId
-    from  selected_filters sf
-    join product_attribute_index pai
-      on sf.attributeDefinitionId = pai.attributeDefinitionId
- 		and sf.attributeOptionId = pai.attributeOptionId
-    group by pai.productId
-    having count(*) = (select count(*) from selected_filters)
-)
-select *
-from product p
-join matched_products mp on mp.productId = p.id
-where p.productCategoryId = 3
-  and p.price between 0 and 10000
-order by p.price asc;
-
-
--- Q2: facets for clothing filters color=black (and no show not available facets)
-with selected_filters as (
-    select 3::bigint as attributeDefinitionId, 32::bigint as attributeOptionId
-    union all
-    select 203::bigint, 632::bigint
-),
-allowed_attrs as (
-    select id, name
-    from attribute_definition
-    where 1 = 1
-    and productCategoryId = 3
-      and filterable = true
-      and facetable = true
-),
-matched_products as (
-    select pai.productId
-    from selected_filters sf
-    join product_attribute_index pai
-      on sf.attributeDefinitionId = pai.attributeDefinitionId
-     and sf.attributeOptionId = pai.attributeOptionId
-    group by pai.productId
-    having count(*) = (select count(*) from selected_filters)
-)
-select
-    ad.id as attributeDefinitionId,
-    ad.name as attributeName,
-    ao.id as attributeOptionId,
-    ao.optionText,
-    count(distinct mp.productId) as cnt
-from matched_products mp
-join product_attribute_index pai
-  on pai.productId = mp.productId
-join allowed_attrs ad
-  on ad.id = pai.attributeDefinitionId
-join attribute_options ao
-  on ao.id = pai.attributeOptionId
-group by ad.id, ad.name, ao.id, ao.optionText
-order by ad.id, cnt desc;
-
-
--- Q4: Q3 but show all facets even with 0 count (for 0 count - show 0 and not join to matching_products)
-with selected_filters as (
-    select 3::bigint as attributeDefinitionId, 32::bigint as attributeOptionId
-    union all
-    select 203::bigint, 632::bigint
-),
-matching_products as (
-    select p.id
-    from product p
-    where p.productCategoryId = 3
-      and p.price between 0 and 10000
-      and not exists (
-          select 1
-          from selected_filters sf
-          where not exists (
-              select 1
-              from product_attribute_index pai
-              where pai.productId = p.id
-                and pai.attributeDefinitionId = sf.attributeDefinitionId
-                and pai.attributeOptionId = sf.attributeOptionId
-          )
-      )
-),
-all_facet_values as (
-    select
-        ad.id as attributeDefinitionId,
-        ad.name as attributeName,
-        ao.id as attributeOptionId,
-        ao.optionText
-    from attribute_definition ad
-    join attribute_options ao
-      on ao.attributeDefinitionId = ad.id
-    where ad.productCategoryId = 3
-      and ad.filterable = true
-      and ad.facetable = true
-)
-select
-    af.attributeDefinitionId,
-    af.attributeName,
-    af.attributeOptionId,
-    af.optionText,
-    count(distinct mp.id) as cnt
-from all_facet_values af
-left join product_attribute_index pai
-  on pai.attributeDefinitionId = af.attributeDefinitionId
- and pai.attributeOptionId = af.attributeOptionId
-left join matching_products mp
-  on mp.id = pai.productId
-group by
-    af.attributeDefinitionId,
-    af.attributeName,
-    af.attributeOptionId,
-    af.optionText
-order by
-    af.attributeDefinitionId,
-    af.attributeOptionId;
-
-
-explain analyze
-with selected_filters as (
-    select 1::bigint as attributeDefinitionId, 1::bigint as attributeOptionId
-    union all
-    select 2::bigint, 6::bigint
-),
-matching_products as (
-    select p.id
-    from product p
-    where p.productCategoryId = 1
-      and p.price between 0 and 1000
-      and not exists (
-          select 1
-          from selected_filters sf
-          where not exists (
-              select 1
-              from product_attribute_index pai
-              where pai.productId = p.id
-                and pai.attributeDefinitionId = sf.attributeDefinitionId
-                and pai.attributeOptionId = sf.attributeOptionId
-          )
-      )
-),
-all_facet_values as (
-    select
-        ad.id as attributeDefinitionId,
-        ad.name as attributeName,
-        ao.id as attributeOptionId,
-        ao.optionText
-    from attribute_definition ad
-    join attribute_options ao
-      on ao.attributeDefinitionId = ad.id
-    where ad.productCategoryId = 1
-      and ad.filterable = true
-      and ad.facetable = true
-)
-select
-    af.attributeDefinitionId,
-    af.attributeName,
-    af.attributeOptionId,
-    af.optionText,
-    count(distinct mp.id) as cnt
-from all_facet_values af
-left join product_attribute_index pai
-  on pai.attributeDefinitionId = af.attributeDefinitionId
- and pai.attributeOptionId = af.attributeOptionId
-left join matching_products mp
-  on mp.id = pai.productId
-group by
-    af.attributeDefinitionId,
-    af.attributeName,
-    af.attributeOptionId,
-    af.optionText
-order by
-    af.attributeDefinitionId,
-    af.attributeOptionId;
-
-
 
 ## Большое количество данных
 
@@ -415,10 +173,8 @@ analyze attribute_definition;
 analyze attribute_options;
 analyze product;
 analyze product_attribute_index;
-```
 
 
-```
 SELECT pg_size_pretty(pg_total_relation_size('public."product_attribute_index"'));
 
 SELECT pg_size_pretty(pg_table_size('public."product_attribute_index"'));
@@ -435,3 +191,152 @@ JOIN pg_class i ON i.oid = ix.indexrelid
 JOIN pg_attribute a ON a.attrelid = t.oid AND a.attnum = ANY(ix.indkey)
 WHERE t.relname = 'product_attribute_index';
 ```
+
+
+-- sample queries
+
+-- Q1: matching products for filters
+--explain analyze
+explain analyze
+WITH selected_filters AS (
+    SELECT 3::bigint AS attributeDefinitionId, 32::bigint AS attributeOptionId
+    UNION ALL
+    SELECT 3::bigint, 33::bigint
+    UNION ALL
+    SELECT 203::bigint, 632::bigint
+),
+selected_groups AS (
+    SELECT
+        attributeDefinitionId,
+        array_agg(attributeOptionId) AS option_ids,
+        count(*) AS options_cnt
+    FROM selected_filters
+    GROUP BY attributeDefinitionId
+),
+matched_products AS (
+    SELECT pai.productId
+    FROM product_attribute_index pai
+    JOIN selected_groups sg
+      ON sg.attributeDefinitionId = pai.attributeDefinitionId
+     AND pai.attributeOptionId = ANY(sg.option_ids)
+    GROUP BY pai.productId
+    HAVING count(DISTINCT pai.attributeDefinitionId) = (SELECT count(*) FROM selected_groups)
+)
+SELECT *
+FROM product p
+JOIN matched_products mp ON mp.productId = p.id
+where 1 = 1
+and p.productCategoryId = 3
+  AND p.price BETWEEN 0 AND 10000
+ORDER BY p.price ASC;
+
+
+-- Q2: facets for clothing filters color=black (and no show not available facets)
+explain analyze
+WITH selected_filters AS (
+    SELECT 3::bigint AS attributeDefinitionId, 32::bigint AS attributeOptionId
+    UNION ALL
+    SELECT 3::bigint, 33::bigint
+    UNION ALL
+    SELECT 203::bigint, 632::bigint
+),
+selected_groups AS (
+    SELECT
+        attributeDefinitionId,
+        array_agg(attributeOptionId) AS option_ids,
+        count(*) AS options_cnt
+    FROM selected_filters
+    GROUP BY attributeDefinitionId
+),
+allowed_attrs as (
+    select id, name
+    from attribute_definition
+    where 1 = 1
+    and productCategoryId = 3
+      and filterable = true
+      and facetable = true
+),
+matched_products as (
+    SELECT pai.productId
+    FROM product_attribute_index pai
+    JOIN selected_groups sg
+      ON sg.attributeDefinitionId = pai.attributeDefinitionId
+     AND pai.attributeOptionId = ANY(sg.option_ids)
+    GROUP BY pai.productId
+    HAVING count(DISTINCT pai.attributeDefinitionId) = (SELECT count(*) FROM selected_groups)
+)
+select
+    ad.id as attributeDefinitionId,
+    ad.name as attributeName,
+    ao.id as attributeOptionId,
+    ao.optionText,
+    count(distinct mp.productId) as cnt
+from matched_products mp
+join product_attribute_index pai
+  on pai.productId = mp.productId
+join allowed_attrs ad
+  on ad.id = pai.attributeDefinitionId
+join attribute_options ao
+  on ao.id = pai.attributeOptionId
+group by ad.id, ad.name, ao.id, ao.optionText
+order by ad.id, cnt desc;
+
+
+-- Q3: Q2 but show all facets even with 0 count (for 0 count - show 0 and not join to matching_products)
+WITH selected_filters AS (
+    SELECT 3::bigint AS attributeDefinitionId, 32::bigint AS attributeOptionId
+    UNION ALL
+    SELECT 3::bigint, 33::bigint
+    UNION ALL
+    SELECT 203::bigint, 632::bigint
+),
+selected_groups AS (
+    SELECT
+        attributeDefinitionId,
+        array_agg(attributeOptionId) AS option_ids,
+        count(*) AS options_cnt
+    FROM selected_filters
+    GROUP BY attributeDefinitionId
+),
+matched_products as (
+    SELECT pai.productId
+    FROM product_attribute_index pai
+    JOIN selected_groups sg
+      ON sg.attributeDefinitionId = pai.attributeDefinitionId
+     AND pai.attributeOptionId = ANY(sg.option_ids)
+    GROUP BY pai.productId
+    HAVING count(DISTINCT pai.attributeDefinitionId) = (SELECT count(*) FROM selected_groups)
+),
+all_facet_values as (
+    select
+        ad.id as attributeDefinitionId,
+        ad.name as attributeName,
+        ao.id as attributeOptionId,
+        ao.optionText
+    from attribute_definition ad
+    join attribute_options ao
+      on ao.attributeDefinitionId = ad.id
+    where ad.productCategoryId = 3
+      and ad.filterable = true
+      and ad.facetable = true
+)
+select
+    af.attributeDefinitionId,
+    af.attributeName,
+    af.attributeOptionId,
+    af.optionText,
+    count(distinct mp.productId) as cnt
+from all_facet_values af
+left join product_attribute_index pai
+  on pai.attributeDefinitionId = af.attributeDefinitionId
+ and pai.attributeOptionId = af.attributeOptionId
+left join matched_products mp
+  on mp.productId = pai.productId
+group by
+    af.attributeDefinitionId,
+    af.attributeName,
+    af.attributeOptionId,
+    af.optionText
+order by
+    af.attributeDefinitionId,
+    af.attributeOptionId;
