@@ -4,6 +4,7 @@ using FitHub.Common.AspNetCore;
 using FitHub.Common.Extensions.Configuration;
 using FitHub.Common.Logging;
 using FitHub.Data;
+using FitHub.Host.Workers.Marketplace;
 using FitHub.Host.Videos;
 using FitHub.Queue.Contracts.Videos;
 using FitHub.RabbitMQ;
@@ -33,6 +34,7 @@ public sealed class Startup
 
         services.AddRabbitMq<RabbitMqClusterOptions>();
         services.AddProducer<VideoEncodingMessage, VideoEncodingProducer, RabbitMqClusterOptions>();
+        services.AddHostedService<StockReservationReleaseWorker>();
 
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(options =>

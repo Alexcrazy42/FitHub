@@ -1,4 +1,4 @@
-using FitHub.Common.Entities;
+﻿using FitHub.Common.Entities;
 
 namespace FitHub.Domain.Marketplace;
 

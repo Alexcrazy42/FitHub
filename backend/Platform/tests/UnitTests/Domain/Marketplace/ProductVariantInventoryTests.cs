@@ -1,4 +1,4 @@
-using FitHub.Domain.Marketplace;
+﻿using FitHub.Domain.Marketplace;
 using Shouldly;
 using Xunit;
 
@@ -30,5 +30,19 @@ public class ProductVariantInventoryTests
         inventory.QuantityReserved.ShouldBe(0);
         inventory.AvailableQuantity.ShouldBe(1);
         inventory.Version.ShouldBe(0);
+    }
+
+    [Fact(DisplayName = "Inventory releases reserved quantity")]
+    public void TryReleaseReserved_ShouldReturnReservedQuantityToAvailable()
+    {
+        var inventory = ProductVariantInventory.Create(ProductVariantId.New(), quantityOnHand: 2);
+        inventory.TryReserve(2).ShouldBeTrue();
+
+        var released = inventory.TryReleaseReserved(1);
+
+        released.ShouldBeTrue();
+        inventory.QuantityReserved.ShouldBe(1);
+        inventory.AvailableQuantity.ShouldBe(1);
+        inventory.Version.ShouldBe(2);
     }
 }

@@ -1,4 +1,5 @@
-﻿import { useNavigate } from 'react-router-dom';
+import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ApiService } from './ApiService';
 
 export const API_URL = import.meta.env?.VITE_API_URL
@@ -11,13 +12,13 @@ export const API_URL_CLEAN = import.meta.env?.VITE_API_URL
 
 export const useApiService = () => {
     const navigate = useNavigate();
-    
-    const apiService = new ApiService(
+
+    const apiService = useMemo(() => new ApiService(
         API_URL,
         () => navigate('/login'),
         () => navigate('/access-denied')
-    );
-    
+    ), [navigate]);
+
     return apiService;
 };
 

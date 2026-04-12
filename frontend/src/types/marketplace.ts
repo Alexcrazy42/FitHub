@@ -32,6 +32,7 @@ export interface MarketplaceProductVariant {
   price: MarketplaceMoney;
   compareAtPrice: MarketplaceMoney | null;
   isActive: boolean;
+  isAvailable: boolean;
   stock: MarketplaceStock | null;
   attributes: MarketplaceVariantAttribute[];
 }
@@ -65,6 +66,14 @@ export interface MarketplaceFacetValue {
   selected: boolean;
 }
 
+export interface MarketplaceCategoryFacetValue {
+  categoryId: string;
+  name: string;
+  slug: string;
+  count: number;
+  selected: boolean;
+}
+
 export interface MarketplaceFacet {
   attributeDefinitionId: string;
   code: string;
@@ -78,6 +87,7 @@ export interface MarketplaceCatalogSearchRequest {
   searchText?: string | null;
   minPrice?: number | null;
   maxPrice?: number | null;
+  inStock?: boolean | null;
   facets?: Record<string, string[]> | null;
   sort?: string | null;
   pageNumber: number;
@@ -87,6 +97,7 @@ export interface MarketplaceCatalogSearchRequest {
 export interface MarketplaceCatalogSearchResponse {
   items: MarketplaceProductListItem[];
   productCount: number;
+  categories: MarketplaceCategoryFacetValue[];
   facets: MarketplaceFacet[];
 }
 
@@ -102,6 +113,18 @@ export interface CheckoutReservation {
   quantity: number;
   status: string;
   expiresAt: string;
+  item: CheckoutReservationItem | null;
+}
+
+export interface CheckoutReservationItem {
+  productId: string;
+  productName: string;
+  brandName: string | null;
+  sku: string;
+  variantName: string | null;
+  price: MarketplaceMoney;
+  image: MarketplaceProductImage | null;
+  attributes: MarketplaceVariantAttribute[];
 }
 
 export interface MarketplaceError {

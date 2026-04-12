@@ -7,7 +7,7 @@ import {
   MarketplaceProductDetails,
 } from '../../types/marketplace';
 
-export const useMarketplaceApi = (apiService: ApiService) => {
+export const createMarketplaceApi = (apiService: ApiService) => {
   const searchProducts = (
     request: MarketplaceCatalogSearchRequest
   ): Promise<ApiResponse<MarketplaceCatalogSearchResponse>> => {
@@ -27,9 +27,16 @@ export const useMarketplaceApi = (apiService: ApiService) => {
     return apiService.post<CheckoutReservation>('/v1/marketplace/checkout/reservations', request);
   };
 
+  const getReservation = (reservationId: string): Promise<ApiResponse<CheckoutReservation>> => {
+    return apiService.get<CheckoutReservation>(`/v1/marketplace/checkout/reservations/${reservationId}`);
+  };
+
   return {
     searchProducts,
     getProduct,
     createReservation,
+    getReservation,
   };
 };
+
+export const useMarketplaceApi = createMarketplaceApi;

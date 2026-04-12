@@ -1,4 +1,4 @@
-using FitHub.Authentication;
+﻿using FitHub.Authentication;
 using FitHub.Common.Entities;
 using FitHub.Common.Entities.Identity;
 

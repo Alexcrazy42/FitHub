@@ -1,4 +1,4 @@
-namespace FitHub.Contracts.V1.Marketplace;
+﻿namespace FitHub.Contracts.V1.Marketplace;
 
 public record MarketplaceMoneyResponse(decimal Amount, string Currency);
 
@@ -18,6 +18,7 @@ public record MarketplaceProductVariantResponse(
     MarketplaceMoneyResponse Price,
     MarketplaceMoneyResponse? CompareAtPrice,
     bool IsActive,
+    bool IsAvailable,
     MarketplaceStockResponse? Stock,
     IReadOnlyList<MarketplaceVariantAttributeResponse> Attributes);
 
@@ -61,11 +62,19 @@ public record MarketplaceFacetValueResponse(
     int Count,
     bool Selected);
 
+public record MarketplaceCategoryFacetValueResponse(
+    string CategoryId,
+    string Name,
+    string Slug,
+    int Count,
+    bool Selected);
+
 public record MarketplaceCatalogSearchRequest(
     string? CategoryId,
     string? SearchText,
     decimal? MinPrice,
     decimal? MaxPrice,
+    bool? InStock,
     IReadOnlyDictionary<string, IReadOnlyList<string>>? Facets,
     string? Sort,
     int PageNumber = 1,
@@ -74,6 +83,7 @@ public record MarketplaceCatalogSearchRequest(
 public record MarketplaceCatalogSearchResponse(
     IReadOnlyList<MarketplaceProductListItemResponse> Items,
     int ProductCount,
+    IReadOnlyList<MarketplaceCategoryFacetValueResponse> Categories,
     IReadOnlyList<MarketplaceFacetResponse> Facets);
 
 public record CreateCheckoutReservationRequest(
@@ -86,7 +96,18 @@ public record CheckoutReservationResponse(
     string ProductVariantId,
     int Quantity,
     string Status,
-    DateTimeOffset ExpiresAt);
+    DateTimeOffset ExpiresAt,
+    CheckoutReservationItemResponse? Item);
+
+public record CheckoutReservationItemResponse(
+    string ProductId,
+    string ProductName,
+    string? BrandName,
+    string Sku,
+    string? VariantName,
+    MarketplaceMoneyResponse Price,
+    MarketplaceProductImageResponse? Image,
+    IReadOnlyList<MarketplaceVariantAttributeResponse> Attributes);
 
 public record MarketplaceErrorResponse(
     string Code,

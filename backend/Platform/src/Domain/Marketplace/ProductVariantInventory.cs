@@ -1,4 +1,4 @@
-using FitHub.Common.Entities;
+﻿using FitHub.Common.Entities;
 
 namespace FitHub.Domain.Marketplace;
 
@@ -27,6 +27,18 @@ public class ProductVariantInventory : IEntity<ProductVariantInventoryId>
         }
 
         QuantityReserved += quantity;
+        Version++;
+        return true;
+    }
+
+    public bool TryReleaseReserved(int quantity)
+    {
+        if (quantity <= 0 || QuantityReserved < quantity)
+        {
+            return false;
+        }
+
+        QuantityReserved -= quantity;
         Version++;
         return true;
     }

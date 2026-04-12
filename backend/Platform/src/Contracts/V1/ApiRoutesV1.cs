@@ -287,6 +287,24 @@ public class ApiRoutesV1
 
     #endregion
 
+    #region Marketplace
+
+    public const string Marketplace = Root + "/marketplace";
+
+    public const string MarketplaceCatalogProducts = Marketplace + "/catalog/products";
+
+    public const string MarketplaceCatalogProductsSearch = MarketplaceCatalogProducts + "/search";
+
+    public const string MarketplaceCatalogProductById = MarketplaceCatalogProducts + "/{id}";
+
+    public const string MarketplaceCheckout = Marketplace + "/checkout";
+
+    public const string MarketplaceCheckoutReservations = MarketplaceCheckout + "/reservations";
+
+    public const string MarketplaceCheckoutReservationById = MarketplaceCheckoutReservations + "/{id}";
+
+    #endregion
+
 
     private static string ReplaceUrlSegment(string urlTemplate, string name, string value)
     {
