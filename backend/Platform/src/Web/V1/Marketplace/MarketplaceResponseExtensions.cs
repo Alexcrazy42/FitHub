@@ -142,6 +142,16 @@ public static class MarketplaceResponseExtensions
             reservation.ProductVariant?.ToCheckoutItemResponse());
     }
 
+    public static MarketplacePaymentIntentResponse ToResponse(this MarketplacePaymentResult result)
+    {
+        return new MarketplacePaymentIntentResponse(
+            result.Reservation.ToResponse(),
+            result.PaymentIntentId,
+            result.PaymentStatus,
+            new MarketplaceMoneyResponse(result.Amount, result.Currency),
+            result.FailureReason);
+    }
+
     private static CheckoutReservationItemResponse? ToCheckoutItemResponse(this ProductVariant variant)
     {
         if (variant.Product is null)

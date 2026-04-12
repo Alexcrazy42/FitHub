@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using AutoFixture.Kernel;
 
-namespace FitHub.TestsCommon;
+namespace FitHub.Common.TestsCommon;
 
 public sealed class NonPublicConstructorBuilder : ISpecimenBuilder
 {

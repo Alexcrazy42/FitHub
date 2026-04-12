@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Moq;
 
-namespace FitHub.TestsCommon;
+namespace FitHub.Common.TestsCommon;
 
 public static class LoggerMockFactory
 {

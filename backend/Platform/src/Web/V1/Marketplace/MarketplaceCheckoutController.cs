@@ -1,4 +1,4 @@
-using FitHub.Application.Marketplace;
+﻿using FitHub.Application.Marketplace;
 using FitHub.Common.AspNetCore.Auth;
 using FitHub.Common.Entities;
 using FitHub.Contracts.V1;

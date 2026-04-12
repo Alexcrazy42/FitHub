@@ -109,6 +109,25 @@ public record CheckoutReservationItemResponse(
     MarketplaceProductImageResponse? Image,
     IReadOnlyList<MarketplaceVariantAttributeResponse> Attributes);
 
+public record MarketplacePaymentIntentResponse(
+    CheckoutReservationResponse Reservation,
+    string? PaymentIntentId,
+    string PaymentStatus,
+    MarketplaceMoneyResponse Amount,
+    string? FailureReason);
+
+public record ApplyBankPaymentStatusRequest(
+    string ReservationId,
+    string PaymentIntentId,
+    string Status,
+    decimal Amount,
+    string Currency,
+    string? FailureReason);
+
+public record PublishOutboxMessagesResponse(int PublishedCount, int FailedCount);
+
+public record ReleaseExpiredStockReservationsResponse(int ReleasedCount);
+
 public record MarketplaceErrorResponse(
     string Code,
     string Message,

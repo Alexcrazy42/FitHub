@@ -303,6 +303,16 @@ public class ApiRoutesV1
 
     public const string MarketplaceCheckoutReservationById = MarketplaceCheckoutReservations + "/{id}";
 
+    public const string MarketplaceCheckoutReservationPaymentIntent = MarketplaceCheckoutReservationById + "/payment-intent";
+
+    public const string MarketplaceJobs = Marketplace + "/jobs";
+
+    public const string MarketplaceJobsReleaseExpiredReservations = MarketplaceJobs + "/stock-reservations/release-expired";
+
+    public const string MarketplaceJobsApplyBankPaymentStatus = MarketplaceJobs + "/payments/apply-bank-status";
+
+    public const string MarketplaceJobsPublishOutbox = MarketplaceJobs + "/outbox/publish";
+
     #endregion
 
 

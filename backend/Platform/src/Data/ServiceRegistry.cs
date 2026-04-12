@@ -1,8 +1,10 @@
 ﻿using System.Reflection;
+using FitHub.Application.Outbox;
 using FitHub.Common.Entities.Storage;
 using FitHub.Common.EntityFramework;
 using FitHub.Common.EntityFramework.Interceptors;
 using FitHub.Common.Extensions.Configuration;
+using FitHub.Data.Outbox;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,6 +26,7 @@ public static class ServiceRegistry
 
         services.AddRepositories();
         services.AddNoIdRepositories();
+        services.AddTransient<IOutboxRepository, RabbitOutboxRepository>();
     }
 
     private static IServiceCollection AddRepositories(this IServiceCollection services)

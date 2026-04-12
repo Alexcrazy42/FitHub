@@ -1,6 +1,7 @@
 ﻿using FitHub.Common.EntityFramework;
 using FitHub.Domain.Marketplace;
 using FitHub.Domain.Messaging;
+using FitHub.Domain.Outbox;
 using FitHub.Domain.Trainings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -40,6 +41,10 @@ public sealed class DataContext : DbContext
     public DbSet<ProductVariantAttribute> ProductVariantAttributes => Set<ProductVariantAttribute>();
 
     public DbSet<StockReservation> StockReservations => Set<StockReservation>();
+
+    public DbSet<MarketplacePayment> MarketplacePayments => Set<MarketplacePayment>();
+
+    public DbSet<RabbitOutboxMessage> RabbitOutboxMessages => Set<RabbitOutboxMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -127,6 +127,14 @@ export interface CheckoutReservationItem {
   attributes: MarketplaceVariantAttribute[];
 }
 
+export interface MarketplacePaymentIntent {
+  reservation: CheckoutReservation;
+  paymentIntentId: string | null;
+  paymentStatus: string;
+  amount: MarketplaceMoney;
+  failureReason: string | null;
+}
+
 export interface MarketplaceError {
   code: string;
   message: string;

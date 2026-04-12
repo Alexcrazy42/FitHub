@@ -18,7 +18,7 @@ import {
 import { ShoppingCartOutlined } from '@ant-design/icons';
 import { useApiService } from '../../../api/useApiService';
 import { createMarketplaceApi } from '../../../api/services/marketplaceService';
-import { CheckoutReservation } from '../../../types/marketplace';
+import { CheckoutReservation, MarketplacePaymentIntent } from '../../../types/marketplace';
 
 const { Paragraph, Text, Title } = Typography;
 
@@ -48,9 +48,12 @@ export const MarketplaceCheckoutDraftPage: React.FC = () => {
   const marketplaceApi = useMemo(() => createMarketplaceApi(apiService), [apiService]);
 
   const [reservation, setReservation] = useState<CheckoutReservation | null>(null);
+  const [payment, setPayment] = useState<MarketplacePaymentIntent | null>(null);
   const [remainingSeconds, setRemainingSeconds] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [paymentPending, setPaymentPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   useEffect(() => {
     let isCurrent = true;
@@ -137,6 +140,28 @@ export const MarketplaceCheckoutDraftPage: React.FC = () => {
   const isExpired = reservation.status !== 'Active' || remainingSeconds <= 0;
   const item = reservation.item;
   const totalAmount = item ? item.price.amount * reservation.quantity : 0;
+  const paymentStatus = payment?.paymentStatus ?? (isExpired ? 'Expired' : 'AwaitingPayment');
+
+  const handleCreatePaymentIntent = async () => {
+    if (!reservation || isExpired || paymentPending) {
+      return;
+    }
+
+    setPaymentPending(true);
+    setPaymentError(null);
+
+    const response = await marketplaceApi.createPaymentIntent(reservation.reservationId);
+
+    setPaymentPending(false);
+
+    if (!response.success || !response.data) {
+      setPaymentError(response.error?.detail ?? 'Не удалось подготовить оплату.');
+      return;
+    }
+
+    setPayment(response.data);
+    setReservation(response.data.reservation);
+  };
 
   return (
     <div className="container mx-auto p-6">
@@ -160,6 +185,10 @@ export const MarketplaceCheckoutDraftPage: React.FC = () => {
             message="Резерв активен"
             description="Можно переходить к оплате, пока таймер не закончился."
           />
+        )}
+
+        {paymentError && (
+          <Alert type="error" showIcon message={paymentError} />
         )}
 
         <Row gutter={[24, 24]} align="stretch">
@@ -225,6 +254,9 @@ export const MarketplaceCheckoutDraftPage: React.FC = () => {
                 <Space direction="vertical" size="small" className="w-full">
                   <Statistic title="Осталось времени" value={formatTimer(remainingSeconds)} />
                   <Tag color={isExpired ? 'default' : 'green'}>{isExpired ? 'Резерв истек' : 'Резерв активен'}</Tag>
+                  <Tag color={paymentStatus === 'Paid' ? 'green' : paymentStatus === 'Failed' ? 'red' : 'blue'}>
+                    Оплата: {paymentStatus}
+                  </Tag>
                 </Space>
 
                 <Divider className="!my-0" />
@@ -244,14 +276,42 @@ export const MarketplaceCheckoutDraftPage: React.FC = () => {
 
                 <Divider className="!my-0" />
 
-                <Paragraph type="secondary" className="!mb-0">
-                  После оплаты мы закрепим заказ и передадим его на следующий шаг обработки.
-                </Paragraph>
-
                 <Space direction="vertical" size="small" className="w-full">
-                  <Button type="primary" size="large" disabled={isExpired} block>
-                    Перейти к оплате
-                  </Button>
+                  {!payment && (
+                    <Button
+                      type="primary"
+                      size="large"
+                      loading={paymentPending}
+                      disabled={isExpired || paymentPending}
+                      onClick={handleCreatePaymentIntent}
+                      block
+                    >
+                      Подготовить оплату
+                    </Button>
+                  )}
+                  {payment && payment.paymentStatus !== 'Paid' && payment.paymentStatus !== 'Failed' && (
+                    <Button
+                      type="primary"
+                      size="large"
+                      loading={paymentPending}
+                      disabled={isExpired || paymentPending}
+                      onClick={handleCreatePaymentIntent}
+                      block
+                    >
+                      Обновить статус оплаты
+                    </Button>
+                  )}
+                  {payment?.paymentStatus === 'Paid' && (
+                    <Alert type="success" showIcon message="Оплата подтверждена" />
+                  )}
+                  {payment?.paymentStatus === 'Failed' && (
+                    <Alert
+                      type="warning"
+                      showIcon
+                      message="Оплата отклонена"
+                      description={payment.failureReason ?? 'Создайте новый резерв, чтобы попробовать снова.'}
+                    />
+                  )}
                   <Button onClick={() => navigate('/gym-admin/marketplace/catalog')} block>
                     Вернуться в каталог
                   </Button>

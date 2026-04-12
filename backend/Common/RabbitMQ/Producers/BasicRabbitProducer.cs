@@ -33,15 +33,26 @@ public class BasicRabbitProducer<TOptions> : IBasicProducer<TOptions>
 
     public async Task BasicPublishAsync(string exchangeName, object message, string routingKey, CancellationToken ct = default)
     {
-        var channel = await channelFactory.Value;
         var body = Encoding.UTF8.GetBytes(CommonJsonSerializer.Serialize(message));
+        await BasicPublishBodyAsync(exchangeName, body, routingKey, ct);
+    }
 
+    public async Task BasicPublishRawJsonAsync(string exchangeName, string payload, string routingKey, CancellationToken ct = default)
+    {
+        var body = Encoding.UTF8.GetBytes(payload);
+        await BasicPublishBodyAsync(exchangeName, body, routingKey, ct);
+    }
+
+    private async Task BasicPublishBodyAsync(string exchangeName, byte[] body, string routingKey, CancellationToken ct)
+    {
+        var channel = await channelFactory.Value;
         var publishTimeout = TimeSpan.FromSeconds(5);
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         cts.CancelAfter(publishTimeout);
 
         try
         {
+            await channel.ExchangeDeclareAsync(exchangeName, ExchangeType.Direct, durable: true, autoDelete: false, cancellationToken: cts.Token);
             await channel.BasicPublishAsync(exchangeName, routingKey, body: body, cancellationToken: cts.Token);
         }
         catch (OperationCanceledException)

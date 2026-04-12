@@ -3,4 +3,7 @@
     <AssemblyName>$(CompanyName).BankManager.$(MSBuildProjectName)</AssemblyName>
     <RootNamespace>$(CompanyName).BankManager.$(MSBuildProjectName)</RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Common\Entities\Entities.csproj" />
+  </ItemGroup>
 </Project>

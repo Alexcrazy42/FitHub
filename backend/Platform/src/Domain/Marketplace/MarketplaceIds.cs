@@ -81,3 +81,11 @@ public class StockReservationId : GuidIdentifier<StockReservationId>, IIdentifie
     public static string EntityTypeName => "Stock reservation";
     public static string Prefix => FormatPrefix("fithub", "stock-reservation");
 }
+
+public class MarketplacePaymentId : GuidIdentifier<MarketplacePaymentId>, IIdentifierDescription
+{
+    public MarketplacePaymentId(Guid value) : base(value) { }
+
+    public static string EntityTypeName => "Marketplace payment";
+    public static string Prefix => FormatPrefix("fithub", "marketplace-payment");
+}

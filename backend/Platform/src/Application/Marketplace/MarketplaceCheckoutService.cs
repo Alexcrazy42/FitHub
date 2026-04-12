@@ -1,4 +1,4 @@
-using FitHub.Common.Entities;
+﻿using FitHub.Common.Entities;
 using FitHub.Common.Entities.Storage;
 using FitHub.Domain.Marketplace;
 

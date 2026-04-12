@@ -1,6 +1,6 @@
-using FitHub.Application.Marketplace;
+﻿using FitHub.Clients.Marketplace;
 
-namespace FitHub.Host.Workers.Marketplace;
+namespace FitHub.HostJobs.Workers.Marketplace;
 
 public class StockReservationReleaseWorker : BackgroundService
 {
@@ -24,12 +24,12 @@ public class StockReservationReleaseWorker : BackgroundService
             try
             {
                 using var scope = provider.CreateScope();
-                var checkoutService = scope.ServiceProvider.GetRequiredService<IMarketplaceCheckoutService>();
-                var releasedCount = await checkoutService.ReleaseExpiredReservationsAsync(DateTimeOffset.UtcNow, stoppingToken);
+                var marketplaceJobsClient = scope.ServiceProvider.GetRequiredService<IMarketplaceJobsClient>();
+                var result = await marketplaceJobsClient.ReleaseExpiredReservationsAsync(stoppingToken);
 
-                if (releasedCount > 0)
+                if (result.ReleasedCount > 0)
                 {
-                    logger.LogInformation("{WorkerName} released expired marketplace reservations: {ReleasedCount}", GetType().Name, releasedCount);
+                    logger.LogInformation("{WorkerName} released expired marketplace reservations: {ReleasedCount}", GetType().Name, result.ReleasedCount);
                 }
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)

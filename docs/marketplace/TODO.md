@@ -162,32 +162,33 @@
 
 ## Этап 6. BankManager и оплата
 
-019d813d-835e-7933-a79b-6e6bd5960e52
-
 ### Backend
 
-- [ ] Создать сущности BankAccount, PaymentIntent, PaymentOperation, BankWebhookEvent и RabbitOutboxMessage.
-- [ ] Реализовать создание PaymentIntent из checkout reservation.
-- [ ] Реализовать обработку успешной и неуспешной оплаты.
-- [ ] Добавить идемпотентную обработку events от BankManager.
-- [ ] Добавить outbox для событий PlatformService -> BankManager.
-- [ ] Добавить outbox для событий BankManager -> PlatformService.
-- [ ] Реализовать отмену/компенсацию оплаты, если резерв истек до ответа банка.
-- [ ] Добавить тесты на success, failure, duplicate webhook, expired reservation.
+- [x] Создать сущности BankAccount, PaymentIntent, PaymentOperation, BankWebhookEvent и RabbitOutboxMessage.
+- [x] Реализовать создание PaymentIntent из checkout reservation.
+- [x] Реализовать обработку успешной и неуспешной оплаты.
+- [x] Добавить идемпотентную обработку events от BankManager.
+- [x] Добавить outbox для событий PlatformService -> BankManager.
+- [x] Добавить outbox для событий BankManager -> PlatformService.
+- [x] Реализовать отмену/компенсацию оплаты, если резерв истек до ответа банка.
+- [ ] Добавить тесты на success, failure, duplicate webhook, expired reservation. Success, failure и duplicate webhook покрыты; expired reservation нужен отдельным тестом PlatformService.
 
 ### Frontend
 
-- [ ] Добавить шаг оплаты в checkout.
-- [ ] Показывать статусы: awaiting payment, processing, paid, failed, expired.
-- [ ] Добавить retry для неуспешной оплаты, если бизнес-правила это разрешают.
-- [ ] Обновлять состояние checkout после ответа backend.
-- [ ] Не показывать заказ как созданный до подтвержденной оплаты.
+- [x] Добавить шаг оплаты в checkout.
+- [x] Показывать статусы: awaiting payment, processing, paid, failed, expired.
+- [x] Добавить retry для неуспешной оплаты, если бизнес-правила это разрешают. Сейчас retry не разрешен: failed payment освобождает резерв, пользователь создает новый резерв.
+- [x] Обновлять состояние checkout после ответа backend.
+- [x] Не показывать заказ как созданный до подтвержденной оплаты.
 
 ### Готово, когда
 
-- [ ] Оплаченная резервация переходит в paid.
-- [ ] Неуспешная оплата освобождает или оставляет резерв строго по выбранному правилу.
-- [ ] Дубликаты событий оплаты не ломают состояние.
+- [x] Оплаченная резервация переходит в paid.
+- [x] Неуспешная оплата освобождает резерв строго по выбранному правилу.
+- [x] Дубликаты событий оплаты не ломают состояние.
+
+019d813d-835e-7933-a79b-6e6bd5960e52
+не работает пред шаг
 
 ## Этап 7. Создание заказа
 

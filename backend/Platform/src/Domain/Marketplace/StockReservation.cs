@@ -52,6 +52,14 @@ public class StockReservation : IEntity<StockReservationId>
         }
     }
 
+    public void MarkPaid()
+    {
+        if (Status == StockReservationStatus.Active)
+        {
+            Status = StockReservationStatus.Paid;
+        }
+    }
+
     public static StockReservation Create(
         ProductVariantId productVariantId,
         int quantity,

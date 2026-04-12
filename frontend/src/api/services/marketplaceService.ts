@@ -4,6 +4,7 @@ import {
   CreateCheckoutReservationRequest,
   MarketplaceCatalogSearchRequest,
   MarketplaceCatalogSearchResponse,
+  MarketplacePaymentIntent,
   MarketplaceProductDetails,
 } from '../../types/marketplace';
 
@@ -31,11 +32,18 @@ export const createMarketplaceApi = (apiService: ApiService) => {
     return apiService.get<CheckoutReservation>(`/v1/marketplace/checkout/reservations/${reservationId}`);
   };
 
+  const createPaymentIntent = (reservationId: string): Promise<ApiResponse<MarketplacePaymentIntent>> => {
+    return apiService.post<MarketplacePaymentIntent>(
+      `/v1/marketplace/checkout/reservations/${reservationId}/payment-intent`
+    );
+  };
+
   return {
     searchProducts,
     getProduct,
     createReservation,
     getReservation,
+    createPaymentIntent,
   };
 };
 
