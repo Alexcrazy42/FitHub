@@ -23,3 +23,5 @@ public record PaymentIntentResponse(
     DateTimeOffset UpdatedAt);
 
 public record PublishOutboxMessagesResponse(int PublishedCount, int FailedCount);
+
+public record CompletePendingPaymentIntentsResponse(int CompletedCount);

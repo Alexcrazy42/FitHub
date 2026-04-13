@@ -56,6 +56,17 @@ public class BankManagerPaymentClient : IBankManagerPaymentClient
             : new PublishOutboxMessagesResult(response.PublishedCount, response.FailedCount);
     }
 
+    public async Task<CompletePendingPaymentIntentsResult> CompletePendingPaymentIntentsAsync(CancellationToken ct)
+    {
+        var response = await client.PostAsync<CompletePendingPaymentIntentsResponse>(
+            new Uri(baseUri, "/api/v1/bank/jobs/payment-intents/complete-pending"),
+            ct);
+
+        return response is null
+            ? new CompletePendingPaymentIntentsResult(0)
+            : new CompletePendingPaymentIntentsResult(response.CompletedCount);
+    }
+
     private static BankManagerPaymentIntentResult ToResult(PaymentIntentResponse? response)
     {
         if (response is null)

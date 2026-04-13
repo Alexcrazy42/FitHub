@@ -149,7 +149,96 @@ public static class MarketplaceResponseExtensions
             result.PaymentIntentId,
             result.PaymentStatus,
             new MarketplaceMoneyResponse(result.Amount, result.Currency),
-            result.FailureReason);
+            result.FailureReason,
+            result.Order?.ToResponse());
+    }
+
+    public static MarketplaceOrderResponse ToResponse(this MarketplaceOrder order)
+    {
+        return new MarketplaceOrderResponse(
+            order.Id.ToString(),
+            order.ReservationId.ToString(),
+            order.PaymentId.ToString(),
+            order.Status.ToString(),
+            new MarketplaceMoneyResponse(order.TotalAmount, order.Currency),
+            order.CreatedAt,
+            order.Items.Select(ToResponse).ToList(),
+            order.StatusHistory
+                .OrderBy(x => x.CreatedAt)
+                .Select(ToResponse)
+                .ToList());
+    }
+
+    private static MarketplaceOrderItemResponse ToResponse(MarketplaceOrderItem item)
+    {
+        return new MarketplaceOrderItemResponse(
+            item.Id.ToString(),
+            item.ProductId.ToString(),
+            item.ProductVariantId.ToString(),
+            item.ProductName,
+            item.BrandName,
+            item.Sku,
+            item.VariantName,
+            new MarketplaceMoneyResponse(item.UnitPriceAmount, item.Currency),
+            item.Quantity,
+            new MarketplaceMoneyResponse(item.TotalAmount, item.Currency),
+            item.ImageFileId is null
+                ? null
+                : new MarketplaceProductImageResponse(
+                    item.ImageFileId,
+                    $"/api/v1/files/{item.ImageFileId}",
+                    item.ProductName,
+                    0,
+                    true),
+            item.AttributeSummary);
+    }
+
+    private static MarketplaceOrderStatusHistoryResponse ToResponse(MarketplaceOrderStatusHistory history)
+    {
+        return new MarketplaceOrderStatusHistoryResponse(
+            history.Status.ToString(),
+            history.CreatedAt,
+            history.Reason);
+    }
+
+    public static DeliveryResponse ToResponse(this Delivery delivery)
+    {
+        return new DeliveryResponse(
+            delivery.Id.ToString(),
+            delivery.OrderId.ToString(),
+            delivery.Status.ToString(),
+            delivery.CourierId?.ToString(),
+            delivery.Courier?.Name,
+            delivery.PickupAddress,
+            delivery.DropoffAddress,
+            delivery.CreatedAt,
+            delivery.LastStateChangedAt,
+            delivery.CourierAssignmentExpiresAt,
+            delivery.Events
+                .OrderBy(x => x.CreatedAt)
+                .Select(ToResponse)
+                .ToList(),
+            delivery.TrackingPoints
+                .OrderBy(x => x.CreatedAt)
+                .Select(ToResponse)
+                .ToList(),
+            delivery.Order?.ToResponse());
+    }
+
+    private static DeliveryEventResponse ToResponse(DeliveryEvent deliveryEvent)
+    {
+        return new DeliveryEventResponse(
+            deliveryEvent.Status.ToString(),
+            deliveryEvent.CreatedAt,
+            deliveryEvent.Message);
+    }
+
+    private static DeliveryTrackingPointResponse ToResponse(DeliveryTrackingPoint point)
+    {
+        return new DeliveryTrackingPointResponse(
+            point.Latitude,
+            point.Longitude,
+            point.CreatedAt);
     }
 
     private static CheckoutReservationItemResponse? ToCheckoutItemResponse(this ProductVariant variant)

@@ -9,4 +9,10 @@ public interface IMarketplaceJobsClient
     Task ApplyBankPaymentStatusAsync(ApplyBankPaymentStatusRequest request, CancellationToken ct);
 
     Task<PublishOutboxMessagesResponse> PublishOutboxAsync(CancellationToken ct);
+
+    Task<AutoAssignDeliveriesResponse> AutoAssignDeliveriesAsync(CancellationToken ct);
+
+    Task<EnsureCouriersResponse> EnsureCouriersAsync(EnsureCouriersRequest request, CancellationToken ct);
+
+    Task<CourierAssignmentDecisionResponse> ApplyCourierAssignmentDecisionAsync(CourierAssignmentDecisionRequest request, CancellationToken ct);
 }

@@ -1,4 +1,5 @@
-﻿using FitHub.Common.Entities;
+﻿using FitHub.Authentication;
+using FitHub.Common.Entities;
 using FitHub.Common.Entities.Storage;
 using FitHub.Domain.Marketplace;
 
@@ -10,13 +11,16 @@ public class MarketplaceCheckoutService : IMarketplaceCheckoutService
 
     private readonly IStockReservationRepository reservationRepository;
     private readonly IUnitOfWork unitOfWork;
+    private readonly ICurrentIdentityUserIdAccessor currentUserIdAccessor;
 
     public MarketplaceCheckoutService(
         IStockReservationRepository reservationRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        ICurrentIdentityUserIdAccessor currentUserIdAccessor)
     {
         this.reservationRepository = reservationRepository;
         this.unitOfWork = unitOfWork;
+        this.currentUserIdAccessor = currentUserIdAccessor;
     }
 
     public async Task<StockReservation> CreateReservationAsync(CreateCheckoutReservationCommand command, CancellationToken ct)
@@ -64,7 +68,8 @@ public class MarketplaceCheckoutService : IMarketplaceCheckoutService
             variant.Id,
             command.Quantity,
             now.Add(ReservationTtl),
-            command.IdempotencyKey);
+            command.IdempotencyKey,
+            currentUserIdAccessor.GetCurrentUserId());
 
         await reservationRepository.PendingAddAsync(reservation, ct);
 

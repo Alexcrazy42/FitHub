@@ -44,6 +44,20 @@ public sealed class DataContext : DbContext
 
     public DbSet<MarketplacePayment> MarketplacePayments => Set<MarketplacePayment>();
 
+    public DbSet<MarketplaceOrder> MarketplaceOrders => Set<MarketplaceOrder>();
+
+    public DbSet<MarketplaceOrderItem> MarketplaceOrderItems => Set<MarketplaceOrderItem>();
+
+    public DbSet<MarketplaceOrderStatusHistory> MarketplaceOrderStatusHistory => Set<MarketplaceOrderStatusHistory>();
+
+    public DbSet<Courier> Couriers => Set<Courier>();
+
+    public DbSet<Delivery> Deliveries => Set<Delivery>();
+
+    public DbSet<DeliveryTrackingPoint> DeliveryTrackingPoints => Set<DeliveryTrackingPoint>();
+
+    public DbSet<DeliveryEvent> DeliveryEvents => Set<DeliveryEvent>();
+
     public DbSet<RabbitOutboxMessage> RabbitOutboxMessages => Set<RabbitOutboxMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

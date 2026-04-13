@@ -1,9 +1,12 @@
 import { ApiService, ApiResponse } from '../ApiService';
+import { ListResponse } from '../../types/common';
 import {
   CheckoutReservation,
   CreateCheckoutReservationRequest,
+  Delivery,
   MarketplaceCatalogSearchRequest,
   MarketplaceCatalogSearchResponse,
+  MarketplaceOrder,
   MarketplacePaymentIntent,
   MarketplaceProductDetails,
 } from '../../types/marketplace';
@@ -38,12 +41,42 @@ export const createMarketplaceApi = (apiService: ApiService) => {
     );
   };
 
+  const getOrder = (orderId: string): Promise<ApiResponse<MarketplaceOrder>> => {
+    return apiService.get<MarketplaceOrder>(`/v1/marketplace/orders/${orderId}`);
+  };
+
+  const getMyOrders = (
+    pageNumber: number,
+    pageSize: number
+  ): Promise<ApiResponse<ListResponse<MarketplaceOrder>>> => {
+    return apiService.get<ListResponse<MarketplaceOrder>>(
+      `/v1/marketplace/orders/my?PageNumber=${pageNumber}&PageSize=${pageSize}`
+    );
+  };
+
+  const getOrderDelivery = (orderId: string): Promise<ApiResponse<Delivery>> => {
+    return apiService.get<Delivery>(`/v1/marketplace/orders/${orderId}/delivery`);
+  };
+
+  const getDeliveries = (
+    pageNumber: number,
+    pageSize: number
+  ): Promise<ApiResponse<ListResponse<Delivery>>> => {
+    return apiService.get<ListResponse<Delivery>>(
+      `/v1/marketplace/deliveries?PageNumber=${pageNumber}&PageSize=${pageSize}`
+    );
+  };
+
   return {
     searchProducts,
     getProduct,
     createReservation,
     getReservation,
     createPaymentIntent,
+    getOrder,
+    getMyOrders,
+    getOrderDelivery,
+    getDeliveries,
   };
 };
 

@@ -9,4 +9,8 @@ public interface IPaymentIntentService
     Task<PaymentIntent?> GetAsync(PaymentIntentId id, CancellationToken ct);
 
     Task<PaymentIntent> CompleteAsync(CompletePaymentIntentCommand command, CancellationToken ct);
+
+    Task<CompletePendingPaymentIntentsResult> CompletePendingAsync(DateTimeOffset createdBefore, int batchSize, CancellationToken ct);
 }
+
+public record CompletePendingPaymentIntentsResult(int CompletedCount);

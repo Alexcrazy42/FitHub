@@ -8,6 +8,8 @@ public interface IPaymentIntentRepository
 
     Task<PaymentIntent?> GetByIdempotencyKeyAsync(string idempotencyKey, CancellationToken ct);
 
+    Task<IReadOnlyList<PaymentIntent>> GetAwaitingPaymentCreatedBeforeAsync(DateTimeOffset createdBefore, int batchSize, CancellationToken ct);
+
     Task<BankWebhookEvent?> GetWebhookEventAsync(string externalEventId, CancellationToken ct);
 
     Task AddPaymentIntentAsync(PaymentIntent intent, CancellationToken ct);

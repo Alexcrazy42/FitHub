@@ -113,6 +113,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "BankManager\te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTests", "BankManager\tests\IntegrationTests\IntegrationTests.csproj", "{857C640B-714E-455B-99C9-D27D29AAABCD}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Simulation", "Simulation", "{F9D93673-B0E3-497F-82BD-5A7F8A928A16}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CourierSimulationJobs", "Platform\src\Simulation\CourierSimulationJobs\CourierSimulationJobs.csproj", "{3CB06418-809B-46D1-A0FD-D70FEC88D94E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -165,6 +169,8 @@ Global
 		{7CF9F90E-8A4B-4E53-A619-A8D56EE04094} = {672705C3-63A0-4EA8-B8F0-9F5E00A08FF4}
 		{8AFF9301-0B3F-4B69-BB8B-AF6459F7F1A7} = {44AF0372-B0F2-4F1B-855B-0AEB7BFB9C58}
 		{857C640B-714E-455B-99C9-D27D29AAABCD} = {44AF0372-B0F2-4F1B-855B-0AEB7BFB9C58}
+		{F9D93673-B0E3-497F-82BD-5A7F8A928A16} = {52ACBFAA-6DE2-4E64-987B-4298C56509A1}
+		{3CB06418-809B-46D1-A0FD-D70FEC88D94E} = {F9D93673-B0E3-497F-82BD-5A7F8A928A16}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{2F976AA6-F651-4D41-AB35-D7ACF151BF23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -330,5 +336,9 @@ Global
 		{857C640B-714E-455B-99C9-D27D29AAABCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{857C640B-714E-455B-99C9-D27D29AAABCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{857C640B-714E-455B-99C9-D27D29AAABCD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3CB06418-809B-46D1-A0FD-D70FEC88D94E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3CB06418-809B-46D1-A0FD-D70FEC88D94E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3CB06418-809B-46D1-A0FD-D70FEC88D94E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3CB06418-809B-46D1-A0FD-D70FEC88D94E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

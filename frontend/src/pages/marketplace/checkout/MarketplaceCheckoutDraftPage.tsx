@@ -11,11 +11,12 @@ import {
   Row,
   Skeleton,
   Space,
+  Spin,
   Statistic,
   Tag,
   Typography,
 } from 'antd';
-import { ShoppingCartOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { useApiService } from '../../../api/useApiService';
 import { createMarketplaceApi } from '../../../api/services/marketplaceService';
 import { CheckoutReservation, MarketplacePaymentIntent } from '../../../types/marketplace';
@@ -52,6 +53,8 @@ export const MarketplaceCheckoutDraftPage: React.FC = () => {
   const [remainingSeconds, setRemainingSeconds] = useState(0);
   const [loading, setLoading] = useState(false);
   const [paymentPending, setPaymentPending] = useState(false);
+  const [paymentChecking, setPaymentChecking] = useState(false);
+  const [successOrderId, setSuccessOrderId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
 
@@ -104,6 +107,65 @@ export const MarketplaceCheckoutDraftPage: React.FC = () => {
     return () => window.clearInterval(intervalId);
   }, [reservation]);
 
+  useEffect(() => {
+    if (!payment || !reservationId || successOrderId) {
+      return;
+    }
+
+    if (payment.paymentStatus === 'Paid' && payment.order) {
+      setSuccessOrderId(payment.order.orderId);
+      return;
+    }
+
+    if (payment.paymentStatus === 'Failed' || payment.paymentStatus === 'Expired') {
+      return;
+    }
+
+    let isCurrent = true;
+
+    const pollPayment = async () => {
+      setPaymentChecking(true);
+      const response = await marketplaceApi.createPaymentIntent(reservationId);
+
+      if (!isCurrent) {
+        return;
+      }
+
+      setPaymentChecking(false);
+
+      if (!response.success || !response.data) {
+        setPaymentError(response.error?.detail ?? 'Не удалось обновить статус оплаты.');
+        return;
+      }
+
+      setPayment(response.data);
+      setReservation(response.data.reservation);
+
+      if (response.data.order) {
+        setSuccessOrderId(response.data.order.orderId);
+      }
+    };
+
+    const intervalId = window.setInterval(pollPayment, 3000);
+
+    return () => {
+      isCurrent = false;
+      window.clearInterval(intervalId);
+    };
+  }, [marketplaceApi, payment, reservationId, successOrderId]);
+
+  useEffect(() => {
+    if (!successOrderId) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      navigate(`/gym-admin/marketplace/orders/${successOrderId}`);
+    }, 1800);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [navigate, successOrderId]);
+
   if (loading) {
     return (
       <div className="container mx-auto p-6">
@@ -120,6 +182,39 @@ export const MarketplaceCheckoutDraftPage: React.FC = () => {
           title="Резерв недоступен"
           subTitle={error}
           extra={<Button onClick={() => navigate('/gym-admin/marketplace/catalog')}>Вернуться в каталог</Button>}
+        />
+      </div>
+    );
+  }
+
+  if (successOrderId) {
+    return (
+      <div className="container mx-auto p-6">
+        <style>
+          {`
+            .marketplace-success-icon {
+              animation: marketplace-success-pop 700ms ease-out both, marketplace-success-glow 1300ms ease-in-out infinite;
+              color: #16a34a;
+              font-size: 76px;
+            }
+
+            @keyframes marketplace-success-pop {
+              0% { transform: scale(0.4); opacity: 0; }
+              70% { transform: scale(1.12); opacity: 1; }
+              100% { transform: scale(1); opacity: 1; }
+            }
+
+            @keyframes marketplace-success-glow {
+              0%, 100% { filter: drop-shadow(0 0 0 rgba(22, 163, 74, 0)); }
+              50% { filter: drop-shadow(0 0 18px rgba(22, 163, 74, 0.45)); }
+            }
+          `}
+        </style>
+        <Result
+          icon={<CheckCircleOutlined className="marketplace-success-icon" />}
+          status="success"
+          title="Оплата подтверждена"
+          subTitle="Заказ создан. Открываем статус заказа."
         />
       </div>
     );
@@ -161,6 +256,10 @@ export const MarketplaceCheckoutDraftPage: React.FC = () => {
 
     setPayment(response.data);
     setReservation(response.data.reservation);
+
+    if (response.data.order) {
+      setSuccessOrderId(response.data.order.orderId);
+    }
   };
 
   return (
@@ -290,16 +389,13 @@ export const MarketplaceCheckoutDraftPage: React.FC = () => {
                     </Button>
                   )}
                   {payment && payment.paymentStatus !== 'Paid' && payment.paymentStatus !== 'Failed' && (
-                    <Button
-                      type="primary"
-                      size="large"
-                      loading={paymentPending}
-                      disabled={isExpired || paymentPending}
-                      onClick={handleCreatePaymentIntent}
-                      block
-                    >
-                      Обновить статус оплаты
-                    </Button>
+                    <Alert
+                      type="info"
+                      showIcon
+                      icon={<Spin size="small" />}
+                      message="Оплата обрабатывается"
+                      description={paymentChecking ? 'Проверяем статус оплаты.' : 'Статус обновится автоматически.'}
+                    />
                   )}
                   {payment?.paymentStatus === 'Paid' && (
                     <Alert type="success" showIcon message="Оплата подтверждена" />

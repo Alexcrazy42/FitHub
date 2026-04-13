@@ -523,6 +523,196 @@ namespace FitHub.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("FitHub.Domain.Marketplace.Courier", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_available");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("name");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_couriers");
+
+                    b.HasIndex("IsAvailable")
+                        .HasDatabaseName("ix_couriers_is_available");
+
+                    b.ToTable("couriers", (string)null);
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.Delivery", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset?>("CourierAssignmentExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("courier_assignment_expires_at");
+
+                    b.Property<Guid?>("CourierId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("courier_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("DropoffAddress")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("dropoff_address");
+
+                    b.Property<string>("LastAutomaticDecisionReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("last_automatic_decision_reason");
+
+                    b.Property<DateTimeOffset?>("LastCourierSignalAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_courier_signal_at");
+
+                    b.Property<DateTimeOffset?>("LastLocationAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_location_at");
+
+                    b.Property<DateTimeOffset>("LastStateChangedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_state_changed_at");
+
+                    b.Property<Guid>("OrderId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.Property<string>("PickupAddress")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("pickup_address");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<DateTimeOffset?>("WatchdogCheckedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("watchdog_checked_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_deliveries");
+
+                    b.HasIndex("CourierAssignmentExpiresAt")
+                        .HasDatabaseName("ix_deliveries_courier_assignment_expires_at");
+
+                    b.HasIndex("CourierId")
+                        .HasDatabaseName("ix_deliveries_courier_id");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_deliveries_order_id");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("ix_deliveries_status");
+
+                    b.ToTable("deliveries", (string)null);
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.DeliveryEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("DeliveryId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("delivery_id");
+
+                    b.Property<string>("Message")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("message");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id")
+                        .HasName("pk_delivery_events");
+
+                    b.HasIndex("DeliveryId", "CreatedAt")
+                        .HasDatabaseName("ix_delivery_events_delivery_id_created_at");
+
+                    b.ToTable("delivery_events", (string)null);
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.DeliveryTrackingPoint", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("DeliveryId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("delivery_id");
+
+                    b.Property<decimal>("Latitude")
+                        .HasPrecision(9, 6)
+                        .HasColumnType("numeric(9,6)")
+                        .HasColumnName("latitude");
+
+                    b.Property<decimal>("Longitude")
+                        .HasPrecision(9, 6)
+                        .HasColumnType("numeric(9,6)")
+                        .HasColumnName("longitude");
+
+                    b.HasKey("Id")
+                        .HasName("pk_delivery_tracking_points");
+
+                    b.HasIndex("DeliveryId", "CreatedAt")
+                        .HasDatabaseName("ix_delivery_tracking_points_delivery_id_created_at");
+
+                    b.ToTable("delivery_tracking_points", (string)null);
+                });
+
             modelBuilder.Entity("FitHub.Domain.Marketplace.MarketplaceBrand", b =>
                 {
                     b.Property<Guid>("Id")
@@ -558,6 +748,179 @@ namespace FitHub.Data.Migrations
                             Name = "FitHub",
                             Slug = "fithub"
                         });
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.MarketplaceOrder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency");
+
+                    b.Property<Guid>("PaymentId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("payment_id");
+
+                    b.Property<Guid>("ReservationId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("reservation_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("status");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("numeric")
+                        .HasColumnName("total_amount");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint")
+                        .HasColumnName("version");
+
+                    b.HasKey("Id")
+                        .HasName("pk_marketplace_orders");
+
+                    b.HasIndex("PaymentId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_marketplace_orders_payment_id");
+
+                    b.HasIndex("ReservationId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_marketplace_orders_reservation_id");
+
+                    b.ToTable("marketplace_orders", (string)null);
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.MarketplaceOrderItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AttributeSummary")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("attribute_summary");
+
+                    b.Property<string>("BrandName")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("brand_name");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency");
+
+                    b.Property<string>("ImageFileId")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("image_file_id");
+
+                    b.Property<Guid>("OrderId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.Property<Guid>("ProductId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("product_name");
+
+                    b.Property<Guid>("ProductVariantId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_variant_id");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<string>("Sku")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("sku");
+
+                    b.Property<decimal>("UnitPriceAmount")
+                        .HasColumnType("numeric")
+                        .HasColumnName("unit_price_amount");
+
+                    b.Property<string>("VariantName")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("variant_name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_marketplace_order_items");
+
+                    b.HasIndex("OrderId")
+                        .HasDatabaseName("ix_marketplace_order_items_order_id");
+
+                    b.ToTable("marketplace_order_items", (string)null);
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.MarketplaceOrderStatusHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("OrderId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("reason");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id")
+                        .HasName("pk_marketplace_order_status_history");
+
+                    b.HasIndex("OrderId")
+                        .HasDatabaseName("ix_marketplace_order_status_history_order_id");
+
+                    b.ToTable("marketplace_order_status_history", (string)null);
                 });
 
             modelBuilder.Entity("FitHub.Domain.Marketplace.MarketplacePayment", b =>
@@ -2211,6 +2574,95 @@ namespace FitHub.Data.Migrations
                     b.Navigation("AttributeDefinition");
                 });
 
+            modelBuilder.Entity("FitHub.Domain.Marketplace.Delivery", b =>
+                {
+                    b.HasOne("FitHub.Domain.Marketplace.Courier", "Courier")
+                        .WithMany()
+                        .HasForeignKey("CourierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_deliveries_couriers_courier_id");
+
+                    b.HasOne("FitHub.Domain.Marketplace.MarketplaceOrder", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_deliveries_marketplace_orders_order_id");
+
+                    b.Navigation("Courier");
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.DeliveryEvent", b =>
+                {
+                    b.HasOne("FitHub.Domain.Marketplace.Delivery", "Delivery")
+                        .WithMany("Events")
+                        .HasForeignKey("DeliveryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_delivery_events_deliveries_delivery_id");
+
+                    b.Navigation("Delivery");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.DeliveryTrackingPoint", b =>
+                {
+                    b.HasOne("FitHub.Domain.Marketplace.Delivery", "Delivery")
+                        .WithMany("TrackingPoints")
+                        .HasForeignKey("DeliveryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_delivery_tracking_points_deliveries_delivery_id");
+
+                    b.Navigation("Delivery");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.MarketplaceOrder", b =>
+                {
+                    b.HasOne("FitHub.Domain.Marketplace.MarketplacePayment", "Payment")
+                        .WithMany()
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_marketplace_orders_marketplace_payments_payment_id");
+
+                    b.HasOne("FitHub.Domain.Marketplace.StockReservation", "Reservation")
+                        .WithMany()
+                        .HasForeignKey("ReservationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_marketplace_orders_stock_reservations_reservation_id");
+
+                    b.Navigation("Payment");
+
+                    b.Navigation("Reservation");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.MarketplaceOrderItem", b =>
+                {
+                    b.HasOne("FitHub.Domain.Marketplace.MarketplaceOrder", "Order")
+                        .WithMany("Items")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_marketplace_order_items_marketplace_orders_order_id");
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.MarketplaceOrderStatusHistory", b =>
+                {
+                    b.HasOne("FitHub.Domain.Marketplace.MarketplaceOrder", "Order")
+                        .WithMany("StatusHistory")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_marketplace_order_status_history_marketplace_orders_order_id");
+
+                    b.Navigation("Order");
+                });
+
             modelBuilder.Entity("FitHub.Domain.Marketplace.MarketplacePayment", b =>
                 {
                     b.HasOne("FitHub.Domain.Marketplace.StockReservation", "Reservation")
@@ -2787,6 +3239,20 @@ namespace FitHub.Data.Migrations
             modelBuilder.Entity("FitHub.Domain.Marketplace.AttributeDefinition", b =>
                 {
                     b.Navigation("Options");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.Delivery", b =>
+                {
+                    b.Navigation("Events");
+
+                    b.Navigation("TrackingPoints");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.MarketplaceOrder", b =>
+                {
+                    b.Navigation("Items");
+
+                    b.Navigation("StatusHistory");
                 });
 
             modelBuilder.Entity("FitHub.Domain.Marketplace.Product", b =>

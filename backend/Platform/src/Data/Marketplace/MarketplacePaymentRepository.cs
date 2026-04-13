@@ -17,6 +17,23 @@ public class MarketplacePaymentRepository : DefaultPendingRepository<Marketplace
             .Include(x => x.Reservation)
                 .ThenInclude(x => x!.ProductVariant)
                     .ThenInclude(x => x!.Inventory)
+            .Include(x => x.Reservation)
+                .ThenInclude(x => x!.ProductVariant)
+                    .ThenInclude(x => x!.Product)
+                        .ThenInclude(x => x!.Brand)
+            .Include(x => x.Reservation)
+                .ThenInclude(x => x!.ProductVariant)
+                    .ThenInclude(x => x!.Product)
+                        .ThenInclude(x => x!.Images)
+            .Include(x => x.Reservation)
+                .ThenInclude(x => x!.ProductVariant)
+                    .ThenInclude(x => x!.Attributes)
+                        .ThenInclude(x => x.AttributeDefinition)
+            .Include(x => x.Reservation)
+                .ThenInclude(x => x!.ProductVariant)
+                    .ThenInclude(x => x!.Attributes)
+                        .ThenInclude(x => x.AttributeOption)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(x => x.ReservationId == reservationId, ct);
     }
 }

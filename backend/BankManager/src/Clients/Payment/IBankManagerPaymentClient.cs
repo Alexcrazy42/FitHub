@@ -17,4 +17,6 @@ public interface IBankManagerPaymentClient
         CancellationToken ct);
 
     Task<PublishOutboxMessagesResult> PublishOutboxAsync(CancellationToken ct);
+
+    Task<CompletePendingPaymentIntentsResult> CompletePendingPaymentIntentsAsync(CancellationToken ct);
 }

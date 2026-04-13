@@ -12,17 +12,23 @@ public class MarketplacePaymentService : IMarketplacePaymentService
 {
     private readonly IStockReservationRepository reservationRepository;
     private readonly IMarketplacePaymentRepository paymentRepository;
+    private readonly IMarketplaceOrderRepository orderRepository;
+    private readonly IDeliveryRepository deliveryRepository;
     private readonly IOutboxRepository outboxRepository;
     private readonly IUnitOfWork unitOfWork;
 
     public MarketplacePaymentService(
         IStockReservationRepository reservationRepository,
         IMarketplacePaymentRepository paymentRepository,
+        IMarketplaceOrderRepository orderRepository,
+        IDeliveryRepository deliveryRepository,
         IOutboxRepository outboxRepository,
         IUnitOfWork unitOfWork)
     {
         this.reservationRepository = reservationRepository;
         this.paymentRepository = paymentRepository;
+        this.orderRepository = orderRepository;
+        this.deliveryRepository = deliveryRepository;
         this.outboxRepository = outboxRepository;
         this.unitOfWork = unitOfWork;
     }
@@ -34,7 +40,9 @@ public class MarketplacePaymentService : IMarketplacePaymentService
 
         if (existingPayment is not null)
         {
-            return ToResult(existingPayment.Reservation ?? reservation, existingPayment);
+            var existingOrder = await orderRepository.GetByPaymentIdAsync(existingPayment.Id, ct)
+                                ?? await orderRepository.GetByReservationIdAsync(reservation.Id, ct);
+            return ToResult(existingPayment.Reservation ?? reservation, existingPayment, existingOrder);
         }
 
         if (reservation.Status != StockReservationStatus.Active)
@@ -113,6 +121,7 @@ public class MarketplacePaymentService : IMarketplacePaymentService
         if (payment.Status == MarketplacePaymentStatus.Paid)
         {
             reservation.MarkPaid();
+            await EnsureOrderCreatedAsync(reservation, payment, ct);
         }
         else if (payment.Status == MarketplacePaymentStatus.Failed)
         {
@@ -134,7 +143,10 @@ public class MarketplacePaymentService : IMarketplacePaymentService
         return reservation;
     }
 
-    private static MarketplacePaymentResult ToResult(StockReservation reservation, MarketplacePayment payment)
+    private static MarketplacePaymentResult ToResult(
+        StockReservation reservation,
+        MarketplacePayment payment,
+        MarketplaceOrder? order = null)
     {
         return new MarketplacePaymentResult(
             reservation,
@@ -142,7 +154,39 @@ public class MarketplacePaymentService : IMarketplacePaymentService
             payment.Status.ToString(),
             payment.Amount,
             payment.Currency,
-            payment.FailureReason);
+            payment.FailureReason,
+            order);
+    }
+
+    private async Task<MarketplaceOrder> EnsureOrderCreatedAsync(StockReservation reservation, MarketplacePayment payment, CancellationToken ct)
+    {
+        var existingOrder = await orderRepository.GetByPaymentIdAsync(payment.Id, ct)
+                            ?? await orderRepository.GetByReservationIdAsync(reservation.Id, ct);
+
+        if (existingOrder is not null)
+        {
+            await EnsureDeliveryCreatedAsync(existingOrder, ct);
+            return existingOrder;
+        }
+
+        var order = MarketplaceOrder.CreateFromPaidReservation(reservation, payment);
+        await orderRepository.PendingAddAsync(order, ct);
+        await EnsureDeliveryCreatedAsync(order, ct);
+        return order;
+    }
+
+    private async Task<Delivery> EnsureDeliveryCreatedAsync(MarketplaceOrder order, CancellationToken ct)
+    {
+        var existingDelivery = await deliveryRepository.GetByOrderIdAsync(order.Id, ct);
+
+        if (existingDelivery is not null)
+        {
+            return existingDelivery;
+        }
+
+        var delivery = Delivery.CreateForOrder(order.Id);
+        await deliveryRepository.PendingAddAsync(delivery, ct);
+        return delivery;
     }
 
     private static void ReleaseReservation(StockReservation reservation, bool expired)

@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
 using FitHub.Application.Marketplace;
+using FitHub.Authentication;
 using FitHub.Common.Entities;
 using FitHub.Common.Entities.Storage;
 using FitHub.Domain.Marketplace;
@@ -19,7 +20,7 @@ public class MarketplaceCheckoutServiceTests
         {
             Variant = variant
         };
-        var service = new MarketplaceCheckoutService(repository, new FakeUnitOfWork());
+        var service = new MarketplaceCheckoutService(repository, new FakeUnitOfWork(), new FakeCurrentIdentityUserIdAccessor());
 
         var reservation = await service.CreateReservationAsync(
             new CreateCheckoutReservationCommand(variant.Id, 1, "cart-last-item"),
@@ -46,7 +47,7 @@ public class MarketplaceCheckoutServiceTests
             Variant = variant,
             ReservationByIdempotencyKey = existingReservation
         };
-        var service = new MarketplaceCheckoutService(repository, new FakeUnitOfWork());
+        var service = new MarketplaceCheckoutService(repository, new FakeUnitOfWork(), new FakeCurrentIdentityUserIdAccessor());
 
         var reservation = await service.CreateReservationAsync(
             new CreateCheckoutReservationCommand(variant.Id, 1, "same-key"),
@@ -74,7 +75,7 @@ public class MarketplaceCheckoutServiceTests
         {
             ExpiredReservations = [reservation]
         };
-        var service = new MarketplaceCheckoutService(repository, new FakeUnitOfWork());
+        var service = new MarketplaceCheckoutService(repository, new FakeUnitOfWork(), new FakeCurrentIdentityUserIdAccessor());
 
         await service.ReleaseExpiredReservationsAsync(DateTimeOffset.UtcNow, CancellationToken.None);
 
@@ -91,7 +92,7 @@ public class MarketplaceCheckoutServiceTests
         {
             Variant = variant
         };
-        var service = new MarketplaceCheckoutService(repository, new FakeUnitOfWork());
+        var service = new MarketplaceCheckoutService(repository, new FakeUnitOfWork(), new FakeCurrentIdentityUserIdAccessor());
 
         var exception = await Should.ThrowAsync<ValidationException>(() =>
             service.CreateReservationAsync(
@@ -123,6 +124,14 @@ public class MarketplaceCheckoutServiceTests
         public Task<int> SaveChangesAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(1);
+        }
+    }
+
+    private sealed class FakeCurrentIdentityUserIdAccessor : ICurrentIdentityUserIdAccessor
+    {
+        public IdentityUserId GetCurrentUserId()
+        {
+            return IdentityUserId.Parse(Guid.Parse("119ad0f7-1d2b-78c0-bf3b-3f7c88bd5b99").ToString());
         }
     }
 

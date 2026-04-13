@@ -133,10 +133,71 @@ export interface MarketplacePaymentIntent {
   paymentStatus: string;
   amount: MarketplaceMoney;
   failureReason: string | null;
+  order: MarketplaceOrder | null;
 }
 
 export interface MarketplaceError {
   code: string;
   message: string;
   details?: Record<string, string> | null;
+}
+
+export interface MarketplaceOrder {
+  orderId: string;
+  reservationId: string;
+  paymentId: string;
+  status: string;
+  total: MarketplaceMoney;
+  createdAt: string;
+  items: MarketplaceOrderItem[];
+  statusHistory: MarketplaceOrderStatusHistory[];
+}
+
+export interface MarketplaceOrderItem {
+  orderItemId: string;
+  productId: string;
+  productVariantId: string;
+  productName: string;
+  brandName: string | null;
+  sku: string;
+  variantName: string | null;
+  unitPrice: MarketplaceMoney;
+  quantity: number;
+  total: MarketplaceMoney;
+  image: MarketplaceProductImage | null;
+  attributeSummary: string | null;
+}
+
+export interface MarketplaceOrderStatusHistory {
+  status: string;
+  createdAt: string;
+  reason: string | null;
+}
+
+export interface Delivery {
+  deliveryId: string;
+  orderId: string;
+  status: string;
+  courierId: string | null;
+  courierName: string | null;
+  pickupAddress: string | null;
+  dropoffAddress: string | null;
+  createdAt: string;
+  lastStateChangedAt: string;
+  courierAssignmentExpiresAt: string | null;
+  events: DeliveryEvent[];
+  trackingPoints: DeliveryTrackingPoint[];
+  order: MarketplaceOrder | null;
+}
+
+export interface DeliveryEvent {
+  status: string;
+  createdAt: string;
+  message: string | null;
+}
+
+export interface DeliveryTrackingPoint {
+  latitude: number;
+  longitude: number;
+  createdAt: string;
 }

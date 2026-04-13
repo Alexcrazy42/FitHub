@@ -89,3 +89,59 @@ public class MarketplacePaymentId : GuidIdentifier<MarketplacePaymentId>, IIdent
     public static string EntityTypeName => "Marketplace payment";
     public static string Prefix => FormatPrefix("fithub", "marketplace-payment");
 }
+
+public class MarketplaceOrderId : GuidIdentifier<MarketplaceOrderId>, IIdentifierDescription
+{
+    public MarketplaceOrderId(Guid value) : base(value) { }
+
+    public static string EntityTypeName => "Marketplace order";
+    public static string Prefix => FormatPrefix("fithub", "marketplace-order");
+}
+
+public class MarketplaceOrderItemId : GuidIdentifier<MarketplaceOrderItemId>, IIdentifierDescription
+{
+    public MarketplaceOrderItemId(Guid value) : base(value) { }
+
+    public static string EntityTypeName => "Marketplace order item";
+    public static string Prefix => FormatPrefix("fithub", "marketplace-order-item");
+}
+
+public class MarketplaceOrderStatusHistoryId : GuidIdentifier<MarketplaceOrderStatusHistoryId>, IIdentifierDescription
+{
+    public MarketplaceOrderStatusHistoryId(Guid value) : base(value) { }
+
+    public static string EntityTypeName => "Marketplace order status history";
+    public static string Prefix => FormatPrefix("fithub", "marketplace-order-status-history");
+}
+
+public class CourierId : GuidIdentifier<CourierId>, IIdentifierDescription
+{
+    public CourierId(Guid value) : base(value) { }
+
+    public static string EntityTypeName => "Courier";
+    public static string Prefix => FormatPrefix("fithub", "courier");
+}
+
+public class DeliveryId : GuidIdentifier<DeliveryId>, IIdentifierDescription
+{
+    public DeliveryId(Guid value) : base(value) { }
+
+    public static string EntityTypeName => "Delivery";
+    public static string Prefix => FormatPrefix("fithub", "delivery");
+}
+
+public class DeliveryTrackingPointId : GuidIdentifier<DeliveryTrackingPointId>, IIdentifierDescription
+{
+    public DeliveryTrackingPointId(Guid value) : base(value) { }
+
+    public static string EntityTypeName => "Delivery tracking point";
+    public static string Prefix => FormatPrefix("fithub", "delivery-tracking-point");
+}
+
+public class DeliveryEventId : GuidIdentifier<DeliveryEventId>, IIdentifierDescription
+{
+    public DeliveryEventId(Guid value) : base(value) { }
+
+    public static string EntityTypeName => "Delivery event";
+    public static string Prefix => FormatPrefix("fithub", "delivery-event");
+}

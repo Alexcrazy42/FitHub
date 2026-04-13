@@ -10,6 +10,7 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddBankManagerClients();
 builder.Services.AddRabbitMq<RabbitMqClusterOptions>();
 builder.Services.AddConsumerAsBackgroundService<PaymentIntentRequestedMessage, PaymentIntentRequestedConsumer, RabbitMqClusterOptions>();
+builder.Services.AddHostedService<PaymentIntentAutoCompleteWorker>();
 builder.Services.AddHostedService<RabbitOutboxPublisherWorker>();
 
 var host = builder.Build();

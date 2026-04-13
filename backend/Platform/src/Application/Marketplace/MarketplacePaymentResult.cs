@@ -8,4 +8,5 @@ public record MarketplacePaymentResult(
     string PaymentStatus,
     decimal Amount,
     string Currency,
-    string? FailureReason);
+    string? FailureReason,
+    MarketplaceOrder? Order = null);

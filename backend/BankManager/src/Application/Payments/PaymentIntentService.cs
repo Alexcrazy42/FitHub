@@ -76,6 +76,38 @@ public class PaymentIntentService : IPaymentIntentService
         return intent;
     }
 
+    public async Task<CompletePendingPaymentIntentsResult> CompletePendingAsync(
+        DateTimeOffset createdBefore,
+        int batchSize,
+        CancellationToken ct)
+    {
+        var intents = await repository.GetAwaitingPaymentCreatedBeforeAsync(createdBefore, batchSize, ct);
+
+        foreach (var intent in intents)
+        {
+            var externalEventId = $"auto-paid:{intent.Id}";
+            var existingWebhook = await repository.GetWebhookEventAsync(externalEventId, ct);
+
+            if (existingWebhook is not null)
+            {
+                continue;
+            }
+
+            intent.MarkPaid(externalEventId);
+            await repository.AddWebhookEventAsync(
+                BankWebhookEvent.Create(externalEventId, intent.Id, PaymentIntentStatus.Paid),
+                ct);
+            await repository.AddOutboxMessageAsync(CreateOutboxMessage(intent), ct);
+        }
+
+        if (intents.Count > 0)
+        {
+            await unitOfWork.SaveChangesAsync(ct);
+        }
+
+        return new CompletePendingPaymentIntentsResult(intents.Count);
+    }
+
     private static RabbitOutboxMessage CreateOutboxMessage(PaymentIntent intent)
     {
         var message = new PaymentStatusChangedMessage(

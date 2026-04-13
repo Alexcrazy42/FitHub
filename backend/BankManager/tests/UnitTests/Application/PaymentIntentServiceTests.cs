@@ -89,6 +89,24 @@ public class PaymentIntentServiceTests
         intent.Operations.Count.ShouldBe(1);
     }
 
+    [Fact(DisplayName = "Pending payment intents can be auto-completed as paid")]
+    public async Task CompletePendingAsync_ShouldMarkAwaitingIntentAsPaid()
+    {
+        var intent = PaymentIntent.Create("reservation-1", 100m, "RUB", "key-1");
+        var repository = new FakePaymentIntentRepository
+        {
+            AwaitingPaymentIntents = [intent]
+        };
+        var service = new PaymentIntentService(repository, new FakeUnitOfWork());
+
+        var result = await service.CompletePendingAsync(DateTimeOffset.UtcNow, 50, CancellationToken.None);
+
+        result.CompletedCount.ShouldBe(1);
+        intent.Status.ShouldBe(PaymentIntentStatus.Paid);
+        repository.AddedWebhookEvents.Single().ExternalEventId.ShouldBe($"auto-paid:{intent.Id}");
+        repository.AddedOutboxMessages.Single().RoutingKey.ShouldBe(PaymentStatusChangedMessage.DefaultRoutingKey);
+    }
+
     private sealed class FakeUnitOfWork : IBankManagerUnitOfWork
     {
         public Task<int> SaveChangesAsync(CancellationToken ct)
@@ -105,6 +123,8 @@ public class PaymentIntentServiceTests
 
         public BankWebhookEvent? WebhookEvent { get; init; }
 
+        public IReadOnlyList<PaymentIntent> AwaitingPaymentIntents { get; init; } = [];
+
         public List<PaymentIntent> AddedPaymentIntents { get; } = [];
 
         public List<BankWebhookEvent> AddedWebhookEvents { get; } = [];
@@ -119,6 +139,14 @@ public class PaymentIntentServiceTests
         public Task<PaymentIntent?> GetByIdempotencyKeyAsync(string idempotencyKey, CancellationToken ct)
         {
             return Task.FromResult(IntentByIdempotencyKey?.IdempotencyKey == idempotencyKey ? IntentByIdempotencyKey : null);
+        }
+
+        public Task<IReadOnlyList<PaymentIntent>> GetAwaitingPaymentCreatedBeforeAsync(
+            DateTimeOffset createdBefore,
+            int batchSize,
+            CancellationToken ct)
+        {
+            return Task.FromResult<IReadOnlyList<PaymentIntent>>(AwaitingPaymentIntents.Take(batchSize).ToList());
         }
 
         public Task<BankWebhookEvent?> GetWebhookEventAsync(string externalEventId, CancellationToken ct)

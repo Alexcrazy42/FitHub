@@ -41,4 +41,35 @@ internal sealed class MarketplaceJobsClient : IMarketplaceJobsClient
 
         return response ?? new PublishOutboxMessagesResponse(0, 0);
     }
+
+    public async Task<AutoAssignDeliveriesResponse> AutoAssignDeliveriesAsync(CancellationToken ct)
+    {
+        var response = await client.PostAsync<AutoAssignDeliveriesResponse>(
+            new Uri(baseUri, ApiRoutesV1.MarketplaceJobsAutoAssignDeliveries),
+            ct);
+
+        return response ?? new AutoAssignDeliveriesResponse(0, 0);
+    }
+
+    public async Task<CourierAssignmentDecisionResponse> ApplyCourierAssignmentDecisionAsync(
+        CourierAssignmentDecisionRequest request,
+        CancellationToken ct)
+    {
+        var response = await client.PostAsJsonAsync<CourierAssignmentDecisionRequest, CourierAssignmentDecisionResponse>(
+            new Uri(baseUri, ApiRoutesV1.MarketplaceJobsCourierAssignmentDecision),
+            request,
+            ct);
+
+        return response ?? new CourierAssignmentDecisionResponse(request.DeliveryId, "Unknown", request.CourierId);
+    }
+
+    public async Task<EnsureCouriersResponse> EnsureCouriersAsync(EnsureCouriersRequest request, CancellationToken ct)
+    {
+        var response = await client.PostAsJsonAsync<EnsureCouriersRequest, EnsureCouriersResponse>(
+            new Uri(baseUri, ApiRoutesV1.MarketplaceJobsEnsureCouriers),
+            request,
+            ct);
+
+        return response ?? new EnsureCouriersResponse(0);
+    }
 }

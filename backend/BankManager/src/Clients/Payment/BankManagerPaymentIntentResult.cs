@@ -9,3 +9,5 @@ public record BankManagerPaymentIntentResult(
     string? FailureReason);
 
 public record PublishOutboxMessagesResult(int PublishedCount, int FailedCount);
+
+public record CompletePendingPaymentIntentsResult(int CompletedCount);

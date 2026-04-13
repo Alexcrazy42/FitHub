@@ -27,6 +27,19 @@ public class PaymentIntentRepository : IPaymentIntentRepository
             .FirstOrDefaultAsync(x => x.IdempotencyKey == idempotencyKey, ct);
     }
 
+    public async Task<IReadOnlyList<PaymentIntent>> GetAwaitingPaymentCreatedBeforeAsync(
+        DateTimeOffset createdBefore,
+        int batchSize,
+        CancellationToken ct)
+    {
+        return await context.PaymentIntents
+            .Include(x => x.Operations)
+            .Where(x => x.Status == PaymentIntentStatus.AwaitingPayment && x.CreatedAt <= createdBefore)
+            .OrderBy(x => x.CreatedAt)
+            .Take(batchSize)
+            .ToListAsync(ct);
+    }
+
     public Task<BankWebhookEvent?> GetWebhookEventAsync(string externalEventId, CancellationToken ct)
     {
         return context.BankWebhookEvents.FirstOrDefaultAsync(x => x.ExternalEventId == externalEventId, ct);

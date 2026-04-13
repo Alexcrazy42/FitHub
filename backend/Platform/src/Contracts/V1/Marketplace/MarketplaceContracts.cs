@@ -114,7 +114,79 @@ public record MarketplacePaymentIntentResponse(
     string? PaymentIntentId,
     string PaymentStatus,
     MarketplaceMoneyResponse Amount,
-    string? FailureReason);
+    string? FailureReason,
+    MarketplaceOrderResponse? Order);
+
+public record MarketplaceOrderResponse(
+    string OrderId,
+    string ReservationId,
+    string PaymentId,
+    string Status,
+    MarketplaceMoneyResponse Total,
+    DateTimeOffset CreatedAt,
+    IReadOnlyList<MarketplaceOrderItemResponse> Items,
+    IReadOnlyList<MarketplaceOrderStatusHistoryResponse> StatusHistory);
+
+public record MarketplaceOrderItemResponse(
+    string OrderItemId,
+    string ProductId,
+    string ProductVariantId,
+    string ProductName,
+    string? BrandName,
+    string Sku,
+    string? VariantName,
+    MarketplaceMoneyResponse UnitPrice,
+    int Quantity,
+    MarketplaceMoneyResponse Total,
+    MarketplaceProductImageResponse? Image,
+    string? AttributeSummary);
+
+public record MarketplaceOrderStatusHistoryResponse(
+    string Status,
+    DateTimeOffset CreatedAt,
+    string? Reason);
+
+public record DeliveryResponse(
+    string DeliveryId,
+    string OrderId,
+    string Status,
+    string? CourierId,
+    string? CourierName,
+    string? PickupAddress,
+    string? DropoffAddress,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset LastStateChangedAt,
+    DateTimeOffset? CourierAssignmentExpiresAt,
+    IReadOnlyList<DeliveryEventResponse> Events,
+    IReadOnlyList<DeliveryTrackingPointResponse> TrackingPoints,
+    MarketplaceOrderResponse? Order);
+
+public record AutoAssignDeliveriesResponse(int AssignedCount, int ReleasedExpiredAssignmentsCount);
+
+public record EnsureCouriersRequest(IReadOnlyList<string> Names);
+
+public record EnsureCouriersResponse(int CreatedCount);
+
+public record CourierAssignmentDecisionRequest(
+    string DeliveryId,
+    string CourierId,
+    string Decision,
+    string? Reason);
+
+public record CourierAssignmentDecisionResponse(
+    string DeliveryId,
+    string Status,
+    string? CourierId);
+
+public record DeliveryEventResponse(
+    string Status,
+    DateTimeOffset CreatedAt,
+    string? Message);
+
+public record DeliveryTrackingPointResponse(
+    decimal Latitude,
+    decimal Longitude,
+    DateTimeOffset CreatedAt);
 
 public record ApplyBankPaymentStatusRequest(
     string ReservationId,

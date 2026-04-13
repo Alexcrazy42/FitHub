@@ -18,6 +18,7 @@ public static class ServiceRegistry
         services.AddConsumerAsBackgroundService<VideoEncodingMessage, VideoEncodingConsumer, RabbitMqClusterOptions>();
         services.AddConsumerAsBackgroundService<PaymentStatusChangedMessage, PaymentStatusChangedConsumer, RabbitMqClusterOptions>();
         services.AddHostedService<StockReservationReleaseWorker>();
+        services.AddHostedService<DeliveryAutoAssignmentWorker>();
         services.AddHostedService<RabbitOutboxPublisherWorker>();
 
         services.AddFitHubClients();
