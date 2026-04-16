@@ -1,5 +1,6 @@
 ﻿using FitHub.Clients.Marketplace;
 using FitHub.Contracts.V1.Marketplace;
+using FitHub.CourierSimulationJobs;
 using Microsoft.Extensions.Options;
 
 namespace FitHub.Simulation.CourierSimulationJobs.Workers;

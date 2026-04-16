@@ -36,6 +36,7 @@ public class DeliveryAssignmentService : IDeliveryAssignmentService
             return 0;
         }
 
+        // TODO: тут надо взять самого ближайшего курьера под deliveries
         var availableCouriers = await courierRepository.GetAvailableForAssignmentAsync(pendingDeliveries.Count, ct);
         var assignedCount = 0;
         var now = DateTimeOffset.UtcNow;

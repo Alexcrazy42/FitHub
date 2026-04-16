@@ -23,8 +23,8 @@ public class MessageController : ControllerBase
     }
 
     [HttpGet(ApiRoutesV1.Messages)]
-    public async Task<ListResponse<MessageResponse>> GetMessagesAsync([FromQuery] GetMessagesRequest? request,
-        [FromQuery] PagedRequest? paged,
+    public async Task<ListResponse<MessageResponse>> GetMessagesAsync([FromQuery] GetMessagesRequest request,
+        [FromQuery] PagedRequest paged,
         CancellationToken ct)
     {
         var messageQuery = request.ToQuery();

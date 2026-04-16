@@ -22,11 +22,10 @@ public class MarketplaceCheckoutController : ControllerBase
 
     [HttpPost(ApiRoutesV1.MarketplaceCheckoutReservations)]
     public async Task<CheckoutReservationResponse> CreateReservationAsync(
-        [FromBody] CreateCheckoutReservationRequest? request,
+        [FromBody] CreateCheckoutReservationRequest request,
         CancellationToken ct)
     {
         await accessService.EnsureHasAnyPolicyAsync(AuthorizationPolicies.GymAdminOnly);
-        request = ValidationException.ThrowIfNull(request, "request cannot be null");
 
         var reservation = await checkoutService.CreateReservationAsync(new CreateCheckoutReservationCommand(
             ProductVariantId.Parse(request.ProductVariantId),

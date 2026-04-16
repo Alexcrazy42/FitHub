@@ -9,4 +9,8 @@ public class CommonException : Exception
         : base(message, innerException)
     {
     }
+
+    public CommonException() : base()
+    {
+    }
 }

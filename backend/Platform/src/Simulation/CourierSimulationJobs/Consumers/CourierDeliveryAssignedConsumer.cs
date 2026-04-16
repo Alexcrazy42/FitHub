@@ -1,5 +1,6 @@
 ﻿using FitHub.Clients.Marketplace;
 using FitHub.Contracts.V1.Marketplace;
+using FitHub.CourierSimulationJobs;
 using FitHub.Queue.Contracts.Marketplace;
 using FitHub.RabbitMQ.Consumers;
 using Microsoft.Extensions.Options;
@@ -32,9 +33,7 @@ public sealed class CourierDeliveryAssignedConsumer : IRabbitMqConsumerHandler<C
             await Task.Delay(delay, ct);
         }
 
-        var decision = options.Value.AssignmentDecision.Equals("reject", StringComparison.OrdinalIgnoreCase)
-            ? "reject"
-            : "accept";
+        var decision = new[] { "reject", "accept" }[Random.Shared.Next(1, 100) > 50 ? 0 : 1];
 
         var response = await marketplaceJobsClient.ApplyCourierAssignmentDecisionAsync(
             new CourierAssignmentDecisionRequest(

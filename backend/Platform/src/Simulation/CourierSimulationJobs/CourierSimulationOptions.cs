@@ -1,4 +1,4 @@
-﻿namespace FitHub.Simulation.CourierSimulationJobs;
+﻿namespace FitHub.CourierSimulationJobs;
 
 public class CourierSimulationOptions
 {

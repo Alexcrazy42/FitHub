@@ -16,6 +16,10 @@ public class UnexpectedException : CommonException
     {
     }
 
+    public UnexpectedException() : base()
+    {
+    }
+
     public static T ThrowIfNull<T>([NotNull] T? value, string message)
         where T : class
         => value ?? throw new UnexpectedException(message);

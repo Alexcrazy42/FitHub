@@ -42,10 +42,8 @@ public class MarketplaceJobsController : ControllerBase
     }
 
     [HttpPost(ApiRoutesV1.MarketplaceJobsApplyBankPaymentStatus)]
-    public async Task ApplyBankPaymentStatusAsync([FromBody] ApplyBankPaymentStatusRequest? request, CancellationToken ct)
+    public async Task ApplyBankPaymentStatusAsync([FromBody] ApplyBankPaymentStatusRequest request, CancellationToken ct)
     {
-        request = ValidationException.ThrowIfNull(request, "request cannot be null");
-
         await paymentService.ApplyBankPaymentStatusAsync(
             StockReservationId.Parse(request.ReservationId),
             request.PaymentIntentId,
@@ -79,20 +77,17 @@ public class MarketplaceJobsController : ControllerBase
     }
 
     [HttpPost(ApiRoutesV1.MarketplaceJobsEnsureCouriers)]
-    public async Task<EnsureCouriersResponse> EnsureCouriersAsync([FromBody] EnsureCouriersRequest? request, CancellationToken ct)
+    public async Task<EnsureCouriersResponse> EnsureCouriersAsync([FromBody] EnsureCouriersRequest request, CancellationToken ct)
     {
-        request = ValidationException.ThrowIfNull(request, "request cannot be null");
         var createdCount = await deliveryAssignmentService.EnsureCouriersAsync(request.Names, ct);
         return new EnsureCouriersResponse(createdCount);
     }
 
     [HttpPost(ApiRoutesV1.MarketplaceJobsCourierAssignmentDecision)]
     public async Task<CourierAssignmentDecisionResponse> ApplyCourierAssignmentDecisionAsync(
-        [FromBody] CourierAssignmentDecisionRequest? request,
+        [FromBody] CourierAssignmentDecisionRequest request,
         CancellationToken ct)
     {
-        request = ValidationException.ThrowIfNull(request, "request cannot be null");
-
         var deliveryId = DeliveryId.Parse(request.DeliveryId);
         var courierId = CourierId.Parse(request.CourierId);
         var delivery = request.Decision.Equals("reject", StringComparison.OrdinalIgnoreCase)

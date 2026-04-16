@@ -94,14 +94,14 @@ public class MarketplaceCheckoutService : IMarketplaceCheckoutService
     {
         var reservations = await reservationRepository.GetExpiredActiveReservationsAsync(now, ct);
 
-        foreach (var reservation in reservations)
-        {
-            ReleaseReservation(reservation);
-        }
-
         if (reservations.Count == 0)
         {
             return 0;
+        }
+
+        foreach (var reservation in reservations)
+        {
+            ReleaseReservation(reservation);
         }
 
         try

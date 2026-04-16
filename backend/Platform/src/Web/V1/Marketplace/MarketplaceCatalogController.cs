@@ -22,11 +22,10 @@ public class MarketplaceCatalogController : ControllerBase
 
     [HttpPost(ApiRoutesV1.MarketplaceCatalogProductsSearch)]
     public async Task<MarketplaceCatalogSearchResponse> SearchProductsAsync(
-        [FromBody] MarketplaceCatalogSearchRequest? request,
+        [FromBody] MarketplaceCatalogSearchRequest request,
         CancellationToken ct)
     {
         await accessService.EnsureHasAnyPolicyAsync(AuthorizationPolicies.CmsAdminOnly, AuthorizationPolicies.GymAdminOnly);
-        request = ValidationException.ThrowIfNull(request, "request cannot be null");
 
         var result = await catalogService.SearchProductsAsync(request.ToCommand(), ct);
 
