@@ -1,6 +1,6 @@
 ﻿using FitHub.Common.Entities;
 
-namespace FitHub.Domain.Marketplace;
+namespace FitHub.Domain.Marketplace.Deliveries;
 
 public class Delivery : IEntity<DeliveryId>
 {
@@ -23,6 +23,7 @@ public class Delivery : IEntity<DeliveryId>
     public CourierId? CourierId { get; private set; }
     public Courier? Courier { get; private set; }
     public DeliveryStatus Status { get; private set; }
+
     public string? PickupAddress { get; private set; }
     public string? DropoffAddress { get; private set; }
     public DateTimeOffset CreatedAt { get; }

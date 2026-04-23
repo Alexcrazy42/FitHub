@@ -1,4 +1,5 @@
 ﻿using FitHub.Application.Marketplace;
+using FitHub.Application.Marketplace.Deliveries;
 using FitHub.Application.Outbox;
 using FitHub.Common.Entities;
 using FitHub.Contracts.V1;

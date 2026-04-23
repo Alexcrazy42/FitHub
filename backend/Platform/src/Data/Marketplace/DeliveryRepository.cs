@@ -1,8 +1,10 @@
 ﻿using FitHub.Application.Common;
 using FitHub.Application.Marketplace;
+using FitHub.Application.Marketplace.Deliveries;
 using FitHub.Authentication;
 using FitHub.Common.EntityFramework;
 using FitHub.Domain.Marketplace;
+using FitHub.Domain.Marketplace.Deliveries;
 using Microsoft.EntityFrameworkCore;
 
 namespace FitHub.Data.Marketplace;

@@ -1,5 +1,6 @@
 ﻿using FitHub.Common.Entities;
 using FitHub.Domain.Marketplace;
+using FitHub.Domain.Marketplace.Deliveries;
 using Shouldly;
 using Xunit;
 

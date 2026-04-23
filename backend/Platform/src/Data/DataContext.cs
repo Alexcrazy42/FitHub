@@ -1,5 +1,6 @@
 ﻿using FitHub.Common.EntityFramework;
 using FitHub.Domain.Marketplace;
+using FitHub.Domain.Marketplace.Deliveries;
 using FitHub.Domain.Messaging;
 using FitHub.Domain.Outbox;
 using FitHub.Domain.Trainings;

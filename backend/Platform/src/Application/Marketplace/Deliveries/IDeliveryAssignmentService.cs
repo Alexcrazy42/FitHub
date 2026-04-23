@@ -1,6 +1,7 @@
 ﻿using FitHub.Domain.Marketplace;
+using FitHub.Domain.Marketplace.Deliveries;
 
-namespace FitHub.Application.Marketplace;
+namespace FitHub.Application.Marketplace.Deliveries;
 
 public interface IDeliveryAssignmentService
 {

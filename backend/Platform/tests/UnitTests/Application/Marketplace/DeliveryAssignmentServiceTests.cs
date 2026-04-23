@@ -1,10 +1,12 @@
 ﻿using System.Linq.Expressions;
 using FitHub.Application.Common;
 using FitHub.Application.Marketplace;
+using FitHub.Application.Marketplace.Deliveries;
 using FitHub.Application.Outbox;
 using FitHub.Authentication;
 using FitHub.Common.Entities.Storage;
 using FitHub.Domain.Marketplace;
+using FitHub.Domain.Marketplace.Deliveries;
 using FitHub.Domain.Outbox;
 using Shouldly;
 using Xunit;

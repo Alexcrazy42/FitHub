@@ -1,4 +1,4 @@
-﻿namespace FitHub.Domain.Marketplace;
+﻿namespace FitHub.Domain.Marketplace.Deliveries;
 
 public enum DeliveryStatus
 {

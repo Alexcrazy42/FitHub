@@ -1,4 +1,5 @@
 ﻿using FitHub.Domain.Marketplace;
+using FitHub.Domain.Marketplace.Deliveries;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

@@ -3,10 +3,11 @@ using FitHub.Common.Entities;
 using FitHub.Common.Entities.Storage;
 using FitHub.Common.Json;
 using FitHub.Domain.Marketplace;
+using FitHub.Domain.Marketplace.Deliveries;
 using FitHub.Domain.Outbox;
 using FitHub.Queue.Contracts.Marketplace;
 
-namespace FitHub.Application.Marketplace;
+namespace FitHub.Application.Marketplace.Deliveries;
 
 public class DeliveryAssignmentService : IDeliveryAssignmentService
 {

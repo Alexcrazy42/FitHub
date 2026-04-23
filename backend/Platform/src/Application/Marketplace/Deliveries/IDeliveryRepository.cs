@@ -2,8 +2,9 @@
 using FitHub.Authentication;
 using FitHub.Common.Entities.Storage;
 using FitHub.Domain.Marketplace;
+using FitHub.Domain.Marketplace.Deliveries;
 
-namespace FitHub.Application.Marketplace;
+namespace FitHub.Application.Marketplace.Deliveries;
 
 public interface IDeliveryRepository : IPendingRepository<Delivery, DeliveryId>
 {

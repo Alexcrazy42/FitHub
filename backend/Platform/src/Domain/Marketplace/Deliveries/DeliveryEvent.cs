@@ -1,6 +1,6 @@
 ﻿using FitHub.Common.Entities;
 
-namespace FitHub.Domain.Marketplace;
+namespace FitHub.Domain.Marketplace.Deliveries;
 
 public class DeliveryEvent : IEntity<DeliveryEventId>
 {

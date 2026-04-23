@@ -54,12 +54,11 @@ public class MarketplaceProductRepository : DefaultPendingRepository<Product, Pr
                 continue;
             }
 
-            var filterOptionIds = optionIds;
             dbQuery = dbQuery.Where(x => x.Variants.Any(v =>
                 v.IsActive &&
                 v.Attributes.Any(a =>
                     a.AttributeDefinitionId == attributeDefinitionId &&
-                    filterOptionIds.Contains(a.AttributeOptionId))));
+                    optionIds.Contains(a.AttributeOptionId))));
         }
 
         var totalItems = await dbQuery.CountAsync(ct);
@@ -74,6 +73,8 @@ public class MarketplaceProductRepository : DefaultPendingRepository<Product, Pr
             .AsSplitQuery()
             .Skip((command.PagedQuery.PageNumber - 1) * command.PagedQuery.PageSize)
             .Take(command.PagedQuery.PageSize);
+
+        var sqlQuery = dbQuery.ToQueryString();
 
         var items = await dbQuery.ToListAsync(ct);
         var products = PagedResult<Product>.Create(

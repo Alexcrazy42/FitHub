@@ -1,9 +1,11 @@
-﻿using FitHub.Application.Outbox;
+﻿using FitHub.Application.Marketplace.Deliveries;
+using FitHub.Application.Outbox;
 using FitHub.BankManager.Rabbit.Contracts.Payments;
 using FitHub.Common.Entities;
 using FitHub.Common.Entities.Storage;
 using FitHub.Common.Json;
 using FitHub.Domain.Marketplace;
+using FitHub.Domain.Marketplace.Deliveries;
 using FitHub.Domain.Outbox;
 
 namespace FitHub.Application.Marketplace;

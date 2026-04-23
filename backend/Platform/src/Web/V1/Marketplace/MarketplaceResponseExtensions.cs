@@ -1,6 +1,7 @@
 ﻿using FitHub.Application.Marketplace;
 using FitHub.Contracts.V1.Marketplace;
 using FitHub.Domain.Marketplace;
+using FitHub.Domain.Marketplace.Deliveries;
 
 namespace FitHub.Web.V1.Marketplace;
 
