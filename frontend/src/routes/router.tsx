@@ -18,6 +18,9 @@ import { Main } from '../pages/Main';
 import { gymAdminMenuConfig } from './gymAdminMenuConfig';
 import UserProfilePage from '../pages/profile/UserProfilePage';
 import MyAccountPage from '../pages/account/MyAccountPage';
+import { ProductDetailsPage } from '../pages/marketplace/product/ProductDetailsPage';
+import { MarketplaceCheckoutDraftPage } from '../pages/marketplace/checkout/MarketplaceCheckoutDraftPage';
+import { MarketplaceOrderStatusPage } from '../pages/marketplace/order/MarketplaceOrderStatusPage';
 
 
 const getAdminRoutePath = (fullPath: string): string => {
@@ -113,7 +116,10 @@ export const routes: RouteObject[] = [
             path: '/gym-admin/*',
             element: <ProtectedRoute allowedRoles={['GymAdmin']} />,
             children: [
-              ...extractRoutesFromMenu(gymAdminMenuConfig, UserType.GymAdmin)
+              ...extractRoutesFromMenu(gymAdminMenuConfig, UserType.GymAdmin),
+              { path: 'marketplace/products/:productId', element: <ProductDetailsPage /> },
+              { path: 'marketplace/checkout/:reservationId', element: <MarketplaceCheckoutDraftPage /> },
+              { path: 'marketplace/orders/:orderId', element: <MarketplaceOrderStatusPage /> }
             ]
           }
         ],

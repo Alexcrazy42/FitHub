@@ -430,6 +430,966 @@ namespace FitHub.Data.Migrations
                     b.ToTable("file_entity", (string)null);
                 });
 
+            modelBuilder.Entity("FitHub.Domain.Marketplace.AttributeDefinition", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("code");
+
+                    b.Property<bool>("IsFilterable")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_filterable");
+
+                    b.Property<bool>("IsPurchaseOption")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_purchase_option");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("name");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.HasKey("Id")
+                        .HasName("pk_attribute_definitions");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_attribute_definitions_code");
+
+                    b.ToTable("attribute_definitions", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("019ad0f7-1d2b-78c0-bf3b-3f7c88bd5b06"),
+                            Code = "size",
+                            IsFilterable = true,
+                            IsPurchaseOption = true,
+                            Name = "Size",
+                            SortOrder = 0
+                        });
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.AttributeOption", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AttributeDefinitionId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("attribute_definition_id");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("value");
+
+                    b.HasKey("Id")
+                        .HasName("pk_attribute_options");
+
+                    b.HasIndex("AttributeDefinitionId", "Value")
+                        .IsUnique()
+                        .HasDatabaseName("ix_attribute_options_attribute_definition_id_value");
+
+                    b.ToTable("attribute_options", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("019ad0f7-1d2b-78c0-bf3b-3f7c88bd5b07"),
+                            AttributeDefinitionId = new Guid("019ad0f7-1d2b-78c0-bf3b-3f7c88bd5b06"),
+                            SortOrder = 0,
+                            Value = "M"
+                        });
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.Courier", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_available");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("name");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_couriers");
+
+                    b.HasIndex("IsAvailable")
+                        .HasDatabaseName("ix_couriers_is_available");
+
+                    b.ToTable("couriers", (string)null);
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.Delivery", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset?>("CourierAssignmentExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("courier_assignment_expires_at");
+
+                    b.Property<Guid?>("CourierId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("courier_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("DropoffAddress")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("dropoff_address");
+
+                    b.Property<string>("LastAutomaticDecisionReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("last_automatic_decision_reason");
+
+                    b.Property<DateTimeOffset?>("LastCourierSignalAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_courier_signal_at");
+
+                    b.Property<DateTimeOffset?>("LastLocationAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_location_at");
+
+                    b.Property<DateTimeOffset>("LastStateChangedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_state_changed_at");
+
+                    b.Property<Guid>("OrderId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.Property<string>("PickupAddress")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("pickup_address");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<DateTimeOffset?>("WatchdogCheckedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("watchdog_checked_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_deliveries");
+
+                    b.HasIndex("CourierAssignmentExpiresAt")
+                        .HasDatabaseName("ix_deliveries_courier_assignment_expires_at");
+
+                    b.HasIndex("CourierId")
+                        .HasDatabaseName("ix_deliveries_courier_id");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_deliveries_order_id");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("ix_deliveries_status");
+
+                    b.ToTable("deliveries", (string)null);
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.DeliveryEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("DeliveryId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("delivery_id");
+
+                    b.Property<string>("Message")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("message");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id")
+                        .HasName("pk_delivery_events");
+
+                    b.HasIndex("DeliveryId", "CreatedAt")
+                        .HasDatabaseName("ix_delivery_events_delivery_id_created_at");
+
+                    b.ToTable("delivery_events", (string)null);
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.DeliveryTrackingPoint", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("DeliveryId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("delivery_id");
+
+                    b.Property<decimal>("Latitude")
+                        .HasPrecision(9, 6)
+                        .HasColumnType("numeric(9,6)")
+                        .HasColumnName("latitude");
+
+                    b.Property<decimal>("Longitude")
+                        .HasPrecision(9, 6)
+                        .HasColumnType("numeric(9,6)")
+                        .HasColumnName("longitude");
+
+                    b.HasKey("Id")
+                        .HasName("pk_delivery_tracking_points");
+
+                    b.HasIndex("DeliveryId", "CreatedAt")
+                        .HasDatabaseName("ix_delivery_tracking_points_delivery_id_created_at");
+
+                    b.ToTable("delivery_tracking_points", (string)null);
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.MarketplaceBrand", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("slug");
+
+                    b.HasKey("Id")
+                        .HasName("pk_marketplace_brands");
+
+                    b.HasIndex("Slug")
+                        .IsUnique()
+                        .HasDatabaseName("ix_marketplace_brands_slug");
+
+                    b.ToTable("marketplace_brands", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("019ad0f7-1d2b-78c0-bf3b-3f7c88bd5b02"),
+                            Name = "FitHub",
+                            Slug = "fithub"
+                        });
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.MarketplaceOrder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency");
+
+                    b.Property<Guid>("PaymentId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("payment_id");
+
+                    b.Property<Guid>("ReservationId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("reservation_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("status");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("numeric")
+                        .HasColumnName("total_amount");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint")
+                        .HasColumnName("version");
+
+                    b.HasKey("Id")
+                        .HasName("pk_marketplace_orders");
+
+                    b.HasIndex("PaymentId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_marketplace_orders_payment_id");
+
+                    b.HasIndex("ReservationId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_marketplace_orders_reservation_id");
+
+                    b.ToTable("marketplace_orders", (string)null);
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.MarketplaceOrderItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AttributeSummary")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("attribute_summary");
+
+                    b.Property<string>("BrandName")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("brand_name");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency");
+
+                    b.Property<string>("ImageFileId")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("image_file_id");
+
+                    b.Property<Guid>("OrderId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.Property<Guid>("ProductId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("product_name");
+
+                    b.Property<Guid>("ProductVariantId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_variant_id");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<string>("Sku")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("sku");
+
+                    b.Property<decimal>("UnitPriceAmount")
+                        .HasColumnType("numeric")
+                        .HasColumnName("unit_price_amount");
+
+                    b.Property<string>("VariantName")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("variant_name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_marketplace_order_items");
+
+                    b.HasIndex("OrderId")
+                        .HasDatabaseName("ix_marketplace_order_items_order_id");
+
+                    b.ToTable("marketplace_order_items", (string)null);
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.MarketplaceOrderStatusHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("OrderId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("reason");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id")
+                        .HasName("pk_marketplace_order_status_history");
+
+                    b.HasIndex("OrderId")
+                        .HasDatabaseName("ix_marketplace_order_status_history_order_id");
+
+                    b.ToTable("marketplace_order_status_history", (string)null);
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.MarketplacePayment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric")
+                        .HasColumnName("amount");
+
+                    b.Property<string>("BankPaymentIntentId")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("bank_payment_intent_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency");
+
+                    b.Property<string>("FailureReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("failure_reason");
+
+                    b.Property<string>("IdempotencyKey")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("idempotency_key");
+
+                    b.Property<Guid>("ReservationId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("reservation_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint")
+                        .HasColumnName("version");
+
+                    b.HasKey("Id")
+                        .HasName("pk_marketplace_payments");
+
+                    b.HasIndex("IdempotencyKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_marketplace_payments_idempotency_key");
+
+                    b.HasIndex("ReservationId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_marketplace_payments_reservation_id");
+
+                    b.ToTable("marketplace_payments", (string)null);
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.Product", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("BrandId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("brand_id");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("category_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("slug");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint")
+                        .HasColumnName("version");
+
+                    b.HasKey("Id")
+                        .HasName("pk_products");
+
+                    b.HasIndex("BrandId")
+                        .HasDatabaseName("ix_products_brand_id");
+
+                    b.HasIndex("Slug")
+                        .IsUnique()
+                        .HasDatabaseName("ix_products_slug");
+
+                    b.HasIndex("CategoryId", "IsActive")
+                        .HasDatabaseName("ix_products_category_id_is_active");
+
+                    b.ToTable("products", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("019ad0f7-1d2b-78c0-bf3b-3f7c88bd5b03"),
+                            BrandId = new Guid("019ad0f7-1d2b-78c0-bf3b-3f7c88bd5b02"),
+                            CategoryId = new Guid("019ad0f7-1d2b-78c0-bf3b-3f7c88bd5b01"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 4, 12, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Demo marketplace product for local development.",
+                            IsActive = true,
+                            Name = "FitHub Training Mat",
+                            Slug = "fithub-training-mat",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 4, 12, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Version = 0L
+                        });
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.ProductCategory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid?>("ParentId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("parent_id");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("slug");
+
+                    b.HasKey("Id")
+                        .HasName("pk_product_categories");
+
+                    b.HasIndex("ParentId")
+                        .HasDatabaseName("ix_product_categories_parent_id");
+
+                    b.HasIndex("Slug")
+                        .IsUnique()
+                        .HasDatabaseName("ix_product_categories_slug");
+
+                    b.ToTable("product_categories", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("019ad0f7-1d2b-78c0-bf3b-3f7c88bd5b01"),
+                            IsActive = true,
+                            Name = "Accessories",
+                            Slug = "accessories"
+                        });
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.ProductImage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AltText")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("alt_text");
+
+                    b.Property<Guid>("FileId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("file_id");
+
+                    b.Property<bool>("IsMain")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_main");
+
+                    b.Property<Guid>("ProductId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.HasKey("Id")
+                        .HasName("pk_product_images");
+
+                    b.HasIndex("FileId")
+                        .HasDatabaseName("ix_product_images_file_id");
+
+                    b.HasIndex("ProductId", "SortOrder")
+                        .HasDatabaseName("ix_product_images_product_id_sort_order");
+
+                    b.ToTable("product_images", (string)null);
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.ProductVariant", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal?>("CompareAtPriceAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("compare_at_price_amount");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("name");
+
+                    b.Property<decimal>("PriceAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("price_amount");
+
+                    b.Property<Guid>("ProductId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<string>("Sku")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("sku");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint")
+                        .HasColumnName("version");
+
+                    b.HasKey("Id")
+                        .HasName("pk_product_variants");
+
+                    b.HasIndex("ProductId", "IsActive")
+                        .HasDatabaseName("ix_product_variants_product_id_is_active");
+
+                    b.HasIndex("ProductId", "Sku")
+                        .IsUnique()
+                        .HasDatabaseName("ix_product_variants_product_id_sku");
+
+                    b.ToTable("product_variants", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("019ad0f7-1d2b-78c0-bf3b-3f7c88bd5b04"),
+                            Currency = "RUB",
+                            IsActive = true,
+                            Name = "Medium",
+                            PriceAmount = 2490m,
+                            ProductId = new Guid("019ad0f7-1d2b-78c0-bf3b-3f7c88bd5b03"),
+                            Sku = "FITHUB-MAT-M",
+                            Version = 0L
+                        });
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.ProductVariantAttribute", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AttributeDefinitionId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("attribute_definition_id");
+
+                    b.Property<Guid>("AttributeOptionId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("attribute_option_id");
+
+                    b.Property<Guid>("ProductVariantId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_variant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_product_variant_attributes");
+
+                    b.HasIndex("AttributeDefinitionId")
+                        .HasDatabaseName("ix_product_variant_attributes_attribute_definition_id");
+
+                    b.HasIndex("AttributeOptionId")
+                        .HasDatabaseName("ix_product_variant_attributes_attribute_option_id");
+
+                    b.HasIndex("ProductVariantId", "AttributeDefinitionId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_product_variant_attributes_product_variant_id_attribute_def");
+
+                    b.ToTable("product_variant_attributes", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("019ad0f7-1d2b-78c0-bf3b-3f7c88bd5b08"),
+                            AttributeDefinitionId = new Guid("019ad0f7-1d2b-78c0-bf3b-3f7c88bd5b06"),
+                            AttributeOptionId = new Guid("019ad0f7-1d2b-78c0-bf3b-3f7c88bd5b07"),
+                            ProductVariantId = new Guid("019ad0f7-1d2b-78c0-bf3b-3f7c88bd5b04")
+                        });
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.ProductVariantInventory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ProductVariantId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_variant_id");
+
+                    b.Property<int>("QuantityOnHand")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity_on_hand");
+
+                    b.Property<int>("QuantityReserved")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity_reserved");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint")
+                        .HasColumnName("version");
+
+                    b.HasKey("Id")
+                        .HasName("pk_product_variant_inventories");
+
+                    b.HasIndex("ProductVariantId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_product_variant_inventories_product_variant_id");
+
+                    b.ToTable("product_variant_inventories", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("019ad0f7-1d2b-78c0-bf3b-3f7c88bd5b05"),
+                            ProductVariantId = new Guid("019ad0f7-1d2b-78c0-bf3b-3f7c88bd5b04"),
+                            QuantityOnHand = 25,
+                            QuantityReserved = 0,
+                            Version = 0L
+                        });
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.StockReservation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by_user_id");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<string>("IdempotencyKey")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("idempotency_key");
+
+                    b.Property<Guid>("ProductVariantId")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_variant_id");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id")
+                        .HasName("pk_stock_reservations");
+
+                    b.HasIndex("CreatedByUserId")
+                        .HasDatabaseName("ix_stock_reservations_created_by_user_id");
+
+                    b.HasIndex("IdempotencyKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_stock_reservations_idempotency_key");
+
+                    b.HasIndex("ProductVariantId", "Status", "ExpiresAt")
+                        .HasDatabaseName("ix_stock_reservations_product_variant_id_status_expires_at");
+
+                    b.ToTable("stock_reservations", (string)null);
+                });
+
             modelBuilder.Entity("FitHub.Domain.Messaging.Chat", b =>
                 {
                     b.Property<Guid>("Id")
@@ -888,6 +1848,59 @@ namespace FitHub.Data.Migrations
                         .HasName("pk_email_notification");
 
                     b.ToTable("email_notification", (string)null);
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Outbox.RabbitOutboxMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Error")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("error");
+
+                    b.Property<string>("ExchangeName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("exchange_name");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("payload");
+
+                    b.Property<DateTimeOffset?>("PublishedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("published_at");
+
+                    b.Property<string>("RoutingKey")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("routing_key");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id")
+                        .HasName("pk_rabbit_outbox_messages");
+
+                    b.HasIndex("Status", "CreatedAt")
+                        .HasDatabaseName("ix_rabbit_outbox_messages_status_created_at");
+
+                    b.ToTable("rabbit_outbox_messages", (string)null);
                 });
 
             modelBuilder.Entity("FitHub.Domain.Trainings.BaseGroupTraining", b =>
@@ -1549,6 +2562,245 @@ namespace FitHub.Data.Migrations
                     b.Navigation("Visitor");
                 });
 
+            modelBuilder.Entity("FitHub.Domain.Marketplace.AttributeOption", b =>
+                {
+                    b.HasOne("FitHub.Domain.Marketplace.AttributeDefinition", "AttributeDefinition")
+                        .WithMany("Options")
+                        .HasForeignKey("AttributeDefinitionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_attribute_options_attribute_definitions_attribute_definitio");
+
+                    b.Navigation("AttributeDefinition");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.Delivery", b =>
+                {
+                    b.HasOne("FitHub.Domain.Marketplace.Courier", "Courier")
+                        .WithMany()
+                        .HasForeignKey("CourierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_deliveries_couriers_courier_id");
+
+                    b.HasOne("FitHub.Domain.Marketplace.MarketplaceOrder", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_deliveries_marketplace_orders_order_id");
+
+                    b.Navigation("Courier");
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.DeliveryEvent", b =>
+                {
+                    b.HasOne("FitHub.Domain.Marketplace.Delivery", "Delivery")
+                        .WithMany("Events")
+                        .HasForeignKey("DeliveryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_delivery_events_deliveries_delivery_id");
+
+                    b.Navigation("Delivery");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.DeliveryTrackingPoint", b =>
+                {
+                    b.HasOne("FitHub.Domain.Marketplace.Delivery", "Delivery")
+                        .WithMany("TrackingPoints")
+                        .HasForeignKey("DeliveryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_delivery_tracking_points_deliveries_delivery_id");
+
+                    b.Navigation("Delivery");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.MarketplaceOrder", b =>
+                {
+                    b.HasOne("FitHub.Domain.Marketplace.MarketplacePayment", "Payment")
+                        .WithMany()
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_marketplace_orders_marketplace_payments_payment_id");
+
+                    b.HasOne("FitHub.Domain.Marketplace.StockReservation", "Reservation")
+                        .WithMany()
+                        .HasForeignKey("ReservationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_marketplace_orders_stock_reservations_reservation_id");
+
+                    b.Navigation("Payment");
+
+                    b.Navigation("Reservation");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.MarketplaceOrderItem", b =>
+                {
+                    b.HasOne("FitHub.Domain.Marketplace.MarketplaceOrder", "Order")
+                        .WithMany("Items")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_marketplace_order_items_marketplace_orders_order_id");
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.MarketplaceOrderStatusHistory", b =>
+                {
+                    b.HasOne("FitHub.Domain.Marketplace.MarketplaceOrder", "Order")
+                        .WithMany("StatusHistory")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_marketplace_order_status_history_marketplace_orders_order_id");
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.MarketplacePayment", b =>
+                {
+                    b.HasOne("FitHub.Domain.Marketplace.StockReservation", "Reservation")
+                        .WithMany()
+                        .HasForeignKey("ReservationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_marketplace_payments_stock_reservations_reservation_id");
+
+                    b.Navigation("Reservation");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.Product", b =>
+                {
+                    b.HasOne("FitHub.Domain.Marketplace.MarketplaceBrand", "Brand")
+                        .WithMany()
+                        .HasForeignKey("BrandId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_products_marketplace_brands_brand_id");
+
+                    b.HasOne("FitHub.Domain.Marketplace.ProductCategory", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_products_product_categories_category_id");
+
+                    b.Navigation("Brand");
+
+                    b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.ProductCategory", b =>
+                {
+                    b.HasOne("FitHub.Domain.Marketplace.ProductCategory", "Parent")
+                        .WithMany()
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_product_categories_product_categories_parent_id");
+
+                    b.Navigation("Parent");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.ProductImage", b =>
+                {
+                    b.HasOne("FitHub.Domain.Files.FileEntity", "File")
+                        .WithMany()
+                        .HasForeignKey("FileId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_product_images_file_entity_file_id");
+
+                    b.HasOne("FitHub.Domain.Marketplace.Product", "Product")
+                        .WithMany("Images")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_product_images_products_product_id");
+
+                    b.Navigation("File");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.ProductVariant", b =>
+                {
+                    b.HasOne("FitHub.Domain.Marketplace.Product", "Product")
+                        .WithMany("Variants")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_product_variants_products_product_id");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.ProductVariantAttribute", b =>
+                {
+                    b.HasOne("FitHub.Domain.Marketplace.AttributeDefinition", "AttributeDefinition")
+                        .WithMany()
+                        .HasForeignKey("AttributeDefinitionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_product_variant_attributes_attribute_definitions_attribute_");
+
+                    b.HasOne("FitHub.Domain.Marketplace.AttributeOption", "AttributeOption")
+                        .WithMany()
+                        .HasForeignKey("AttributeOptionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_product_variant_attributes_attribute_options_attribute_opti");
+
+                    b.HasOne("FitHub.Domain.Marketplace.ProductVariant", "ProductVariant")
+                        .WithMany("Attributes")
+                        .HasForeignKey("ProductVariantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_product_variant_attributes_product_variants_product_variant");
+
+                    b.Navigation("AttributeDefinition");
+
+                    b.Navigation("AttributeOption");
+
+                    b.Navigation("ProductVariant");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.ProductVariantInventory", b =>
+                {
+                    b.HasOne("FitHub.Domain.Marketplace.ProductVariant", "ProductVariant")
+                        .WithOne("Inventory")
+                        .HasForeignKey("FitHub.Domain.Marketplace.ProductVariantInventory", "ProductVariantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_product_variant_inventories_product_variants_product_varian");
+
+                    b.Navigation("ProductVariant");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.StockReservation", b =>
+                {
+                    b.HasOne("FitHub.Authentication.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_stock_reservations_user_created_by_user_id");
+
+                    b.HasOne("FitHub.Domain.Marketplace.ProductVariant", "ProductVariant")
+                        .WithMany()
+                        .HasForeignKey("ProductVariantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_stock_reservations_product_variants_product_variant_id");
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("ProductVariant");
+                });
+
             modelBuilder.Entity("FitHub.Domain.Messaging.ChatParticipant", b =>
                 {
                     b.HasOne("FitHub.Domain.Messaging.Chat", "Chat")
@@ -1982,6 +3234,39 @@ namespace FitHub.Data.Migrations
                     b.Navigation("GymEquipments");
 
                     b.Navigation("Visitors");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.AttributeDefinition", b =>
+                {
+                    b.Navigation("Options");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.Delivery", b =>
+                {
+                    b.Navigation("Events");
+
+                    b.Navigation("TrackingPoints");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.MarketplaceOrder", b =>
+                {
+                    b.Navigation("Items");
+
+                    b.Navigation("StatusHistory");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.Product", b =>
+                {
+                    b.Navigation("Images");
+
+                    b.Navigation("Variants");
+                });
+
+            modelBuilder.Entity("FitHub.Domain.Marketplace.ProductVariant", b =>
+                {
+                    b.Navigation("Attributes");
+
+                    b.Navigation("Inventory");
                 });
 
             modelBuilder.Entity("FitHub.Domain.Messaging.Chat", b =>

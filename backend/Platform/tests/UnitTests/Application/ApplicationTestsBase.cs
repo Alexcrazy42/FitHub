@@ -4,7 +4,7 @@ using FitHub.Application.Messaging;
 using FitHub.Application.Users;
 using FitHub.Authentication;
 using FitHub.Common.Entities.Storage;
-using FitHub.TestsCommon;
+using FitHub.Common.TestsCommon;
 using Moq;
 
 namespace FitHub.UnitTests.Application;

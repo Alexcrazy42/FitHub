@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>$(CompanyName).BankManager.$(MSBuildProjectName)</AssemblyName>
+    <RootNamespace>$(CompanyName).BankManager.$(MSBuildProjectName)</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Common\RabbitMQ.Contracts\RabbitMQ.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

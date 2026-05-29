@@ -3,7 +3,7 @@ using AutoFixture.AutoMoq;
 using FitHub.Authentication;
 using FitHub.Clients.Chats;
 using FitHub.Clients.Messages;
-using FitHub.TestsCommon;
+using FitHub.Common.TestsCommon;
 using Moq;
 using Xunit;
 

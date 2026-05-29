@@ -9,4 +9,12 @@ public sealed class ConcurrencyException : UnexpectedException
         : base(message, innerException)
     {
     }
+
+    public ConcurrencyException(Exception ex)
+    {
+    }
+
+    public ConcurrencyException()
+    {
+    }
 }

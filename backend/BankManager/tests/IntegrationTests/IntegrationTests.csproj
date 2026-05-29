@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>$(CompanyName).BankManager.$(MSBuildProjectName)</AssemblyName>
+    <RootNamespace>$(CompanyName).BankManager.$(MSBuildProjectName)</RootNamespace>
+  </PropertyGroup>
+
+</Project>

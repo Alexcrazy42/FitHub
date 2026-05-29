@@ -1,4 +1,4 @@
-﻿namespace FitHub.TestsCommon;
+﻿namespace FitHub.Common.TestsCommon;
 
 public static class EnumerableExtensions
 {

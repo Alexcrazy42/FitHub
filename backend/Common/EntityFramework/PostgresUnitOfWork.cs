@@ -24,7 +24,7 @@ internal sealed class PostgresUnitOfWork<TContext> : IUnitOfWork
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            throw new ConcurrencyException("Данные были изменены другим пользователем. Обновите страницу.", ex);
+            throw new ConcurrencyException(ex);
         }
         catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx && pgEx.SqlState == "23505")
         {

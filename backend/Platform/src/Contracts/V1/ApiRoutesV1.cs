@@ -287,6 +287,52 @@ public class ApiRoutesV1
 
     #endregion
 
+    #region Marketplace
+
+    public const string Marketplace = Root + "/marketplace";
+
+    public const string MarketplaceCatalogProducts = Marketplace + "/catalog/products";
+
+    public const string MarketplaceCatalogProductsSearch = MarketplaceCatalogProducts + "/search";
+
+    public const string MarketplaceCatalogProductById = MarketplaceCatalogProducts + "/{id}";
+
+    public const string MarketplaceCheckout = Marketplace + "/checkout";
+
+    public const string MarketplaceCheckoutReservations = MarketplaceCheckout + "/reservations";
+
+    public const string MarketplaceCheckoutReservationById = MarketplaceCheckoutReservations + "/{id}";
+
+    public const string MarketplaceCheckoutReservationPaymentIntent = MarketplaceCheckoutReservationById + "/payment-intent";
+
+    public const string MarketplaceOrders = Marketplace + "/orders";
+
+    public const string MarketplaceMyOrders = MarketplaceOrders + "/my";
+
+    public const string MarketplaceOrderById = MarketplaceOrders + "/{id}";
+
+    public const string MarketplaceOrderDelivery = MarketplaceOrders + "/{orderId}/delivery";
+
+    public const string MarketplaceDeliveries = Marketplace + "/deliveries";
+
+    public const string MarketplaceDeliveryById = MarketplaceDeliveries + "/{id}";
+
+    public const string MarketplaceJobs = Marketplace + "/jobs";
+
+    public const string MarketplaceJobsReleaseExpiredReservations = MarketplaceJobs + "/stock-reservations/release-expired";
+
+    public const string MarketplaceJobsApplyBankPaymentStatus = MarketplaceJobs + "/payments/apply-bank-status";
+
+    public const string MarketplaceJobsPublishOutbox = MarketplaceJobs + "/outbox/publish";
+
+    public const string MarketplaceJobsAutoAssignDeliveries = MarketplaceJobs + "/deliveries/auto-assign";
+
+    public const string MarketplaceJobsEnsureCouriers = MarketplaceJobs + "/deliveries/couriers/ensure";
+
+    public const string MarketplaceJobsCourierAssignmentDecision = MarketplaceJobs + "/deliveries/assignment-decision";
+
+    #endregion
+
 
     private static string ReplaceUrlSegment(string urlTemplate, string name, string value)
     {

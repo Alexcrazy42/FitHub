@@ -12,4 +12,6 @@ public interface IBasicProducer<TOptions>
     /// Опубликовать сообщение
     /// </summary>
     Task BasicPublishAsync(string exchangeName, object message, string routingKey, CancellationToken ct = default);
+
+    Task BasicPublishRawJsonAsync(string exchangeName, string payload, string routingKey, CancellationToken ct = default);
 }

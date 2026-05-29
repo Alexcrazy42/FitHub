@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Common\RabbitMQ\RabbitMQ.csproj" />
+    <ProjectReference Include="..\..\..\Common\RabbitMQ.Contracts\RabbitMQ.Contracts.csproj" />
+    <ProjectReference Include="..\Clients\Clients.csproj" />
+    <ProjectReference Include="..\Rabbit.Contracts\Rabbit.Contracts.csproj" />
+  </ItemGroup>
+</Project>

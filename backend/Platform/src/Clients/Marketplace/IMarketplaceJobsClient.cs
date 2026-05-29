@@ -1,0 +1,18 @@
+﻿using FitHub.Contracts.V1.Marketplace;
+
+namespace FitHub.Clients.Marketplace;
+
+public interface IMarketplaceJobsClient
+{
+    Task<ReleaseExpiredStockReservationsResponse> ReleaseExpiredReservationsAsync(CancellationToken ct);
+
+    Task ApplyBankPaymentStatusAsync(ApplyBankPaymentStatusRequest request, CancellationToken ct);
+
+    Task<PublishOutboxMessagesResponse> PublishOutboxAsync(CancellationToken ct);
+
+    Task<AutoAssignDeliveriesResponse> AutoAssignDeliveriesAsync(CancellationToken ct);
+
+    Task<EnsureCouriersResponse> EnsureCouriersAsync(EnsureCouriersRequest request, CancellationToken ct);
+
+    Task<CourierAssignmentDecisionResponse> ApplyCourierAssignmentDecisionAsync(CourierAssignmentDecisionRequest request, CancellationToken ct);
+}

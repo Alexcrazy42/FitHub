@@ -32,6 +32,7 @@ public sealed class Startup
         services.AddExceptionAsProblemDetails();
 
         services.AddRabbitMq<RabbitMqClusterOptions>();
+        services.AddBasicProducer<RabbitMqClusterOptions>();
         services.AddProducer<VideoEncodingMessage, VideoEncodingProducer, RabbitMqClusterOptions>();
 
         services.AddEndpointsApiExplorer();
