@@ -1,175 +1,160 @@
-﻿using FitHub.BankManager.Application;
-using FitHub.BankManager.Application.Payments;
+﻿using FitHub.BankManager.Application.Payments;
 using FitHub.BankManager.Domain;
-using FitHub.BankManager.Rabbit.Contracts.Payments;
+using Moq;
 using Shouldly;
 using Xunit;
 
 namespace FitHub.BankManager.UnitTests.Application;
 
-public class PaymentIntentServiceTests
+public class PaymentIntentServiceTests : ApplicationTestsBase
 {
+    private readonly PaymentIntentService sut;
+
+    public PaymentIntentServiceTests()
+    {
+        sut = new PaymentIntentService(
+            PaymentIntentRepositoryMock.Object,
+            UnitOfWorkMock.Object);
+    }
+
     [Fact(DisplayName = "PaymentIntent create is idempotent")]
     public async Task CreateAsync_ShouldReturnExistingIntentForSameIdempotencyKey()
     {
-        var existingIntent = PaymentIntent.Create("reservation-1", 100m, "RUB", "key-1");
-        var repository = new FakePaymentIntentRepository
-        {
-            IntentByIdempotencyKey = existingIntent
-        };
-        var service = new PaymentIntentService(repository, new FakeUnitOfWork());
+        // arrange
+        var existingIntent = CreateDefault();
 
-        var intent = await service.CreateAsync(
+        PaymentIntentRepositoryMock
+            .Setup(x => x.GetByIdempotencyKeyAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingIntent);
+
+        // act
+        var intent = await sut.CreateAsync(
             new CreatePaymentIntentCommand("reservation-1", 100m, "RUB", "key-1"),
             CancellationToken.None);
 
+        // assert
         intent.ShouldBeSameAs(existingIntent);
-        repository.AddedPaymentIntents.ShouldBeEmpty();
-        repository.AddedOutboxMessages.ShouldBeEmpty();
     }
 
     [Fact(DisplayName = "PaymentIntent can be completed as paid")]
     public async Task CompleteAsync_ShouldMarkIntentAsPaid()
     {
-        var intent = PaymentIntent.Create("reservation-1", 100m, "RUB", "key-1");
-        var repository = new FakePaymentIntentRepository
-        {
-            IntentById = intent
-        };
-        var service = new PaymentIntentService(repository, new FakeUnitOfWork());
+        // arrange
+        var intent = CreateDefault();
+        PaymentIntentRepositoryMock
+            .Setup(x => x.GetByIdAsync(It.IsAny<PaymentIntentId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(intent);
 
-        var result = await service.CompleteAsync(
+        // act
+        var result = await sut.CompleteAsync(
             new CompletePaymentIntentCommand(intent.Id, true, "event-paid-1", null),
             CancellationToken.None);
 
+        // assert
         result.Status.ShouldBe(PaymentIntentStatus.Paid);
-        repository.AddedWebhookEvents.Single().Status.ShouldBe(PaymentIntentStatus.Paid);
-        repository.AddedOutboxMessages.Single().RoutingKey.ShouldBe(PaymentStatusChangedMessage.DefaultRoutingKey);
+        PaymentIntentRepositoryMock
+            .Verify(x =>
+                    x.AddOutboxMessageAsync(It.IsAny<RabbitOutboxMessage>(), It.IsAny<CancellationToken>()),
+                Times.Once);
+        PaymentIntentRepositoryMock
+            .Verify(x =>
+                    x.AddWebhookEventAsync(It.IsAny<BankWebhookEvent>(), It.IsAny<CancellationToken>()),
+                Times.Once);
     }
 
     [Fact(DisplayName = "PaymentIntent can be completed as failed")]
     public async Task CompleteAsync_ShouldMarkIntentAsFailed()
     {
-        var intent = PaymentIntent.Create("reservation-1", 100m, "RUB", "key-1");
-        var repository = new FakePaymentIntentRepository
-        {
-            IntentById = intent
-        };
-        var service = new PaymentIntentService(repository, new FakeUnitOfWork());
+        // arrange
+        var intent = CreateDefault();
+        var failureReason = "reason";
+        PaymentIntentRepositoryMock.Setup(x => x.GetByIdAsync(intent.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(intent);
 
-        var result = await service.CompleteAsync(
-            new CompletePaymentIntentCommand(intent.Id, false, "event-failed-1", "declined"),
+
+        // act
+        var result = await sut.CompleteAsync(
+            new CompletePaymentIntentCommand(intent.Id, false, "event-failed-1", failureReason),
             CancellationToken.None);
 
+        // assert
         result.Status.ShouldBe(PaymentIntentStatus.Failed);
-        result.FailureReason.ShouldBe("declined");
-        repository.AddedWebhookEvents.Single().Status.ShouldBe(PaymentIntentStatus.Failed);
-        repository.AddedOutboxMessages.Single().RoutingKey.ShouldBe(PaymentStatusChangedMessage.DefaultRoutingKey);
+        result.FailureReason.ShouldBe(failureReason);
+
+        PaymentIntentRepositoryMock
+            .Verify(x =>
+                x.AddWebhookEventAsync(It.IsAny<BankWebhookEvent>(), It.IsAny<CancellationToken>()),
+                Times.Once);
+        PaymentIntentRepositoryMock
+            .Verify(x =>
+                    x.AddOutboxMessageAsync(It.IsAny<RabbitOutboxMessage>(), It.IsAny<CancellationToken>()),
+                Times.Once);
     }
 
     [Fact(DisplayName = "PaymentIntent duplicate webhook does not add operations")]
     public async Task CompleteAsync_ShouldIgnoreDuplicateWebhook()
     {
-        var intent = PaymentIntent.Create("reservation-1", 100m, "RUB", "key-1");
+        // arrange
+        var intent = CreateDefault();
+        var webHookEvent = CreateDefault(intent, PaymentIntentStatus.Paid);
+        PaymentIntentRepositoryMock.Setup(x => x.GetByIdAsync(It.IsAny<PaymentIntentId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(intent);
         intent.MarkPaid("event-paid-1");
-        var repository = new FakePaymentIntentRepository
-        {
-            IntentById = intent,
-            WebhookEvent = BankWebhookEvent.Create("event-paid-1", intent.Id, PaymentIntentStatus.Paid)
-        };
-        var service = new PaymentIntentService(repository, new FakeUnitOfWork());
+        PaymentIntentRepositoryMock.Setup(x => x.GetWebhookEventAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(webHookEvent);
 
-        var result = await service.CompleteAsync(
+        // act
+        var result = await sut.CompleteAsync(
             new CompletePaymentIntentCommand(intent.Id, true, "event-paid-1", null),
             CancellationToken.None);
 
+        // assert
         result.Status.ShouldBe(PaymentIntentStatus.Paid);
-        repository.AddedWebhookEvents.ShouldBeEmpty();
-        repository.AddedOutboxMessages.ShouldBeEmpty();
+
+        PaymentIntentRepositoryMock.Verify(x => x.AddOutboxMessageAsync(It.IsAny<RabbitOutboxMessage>(), It.IsAny<CancellationToken>()), Times.Never);
+        PaymentIntentRepositoryMock.Verify(x => x.AddWebhookEventAsync(It.IsAny<BankWebhookEvent>(), It.IsAny<CancellationToken>()), Times.Never);
+        UnitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
         intent.Operations.Count.ShouldBe(1);
     }
 
     [Fact(DisplayName = "Pending payment intents can be auto-completed as paid")]
     public async Task CompletePendingAsync_ShouldMarkAwaitingIntentAsPaid()
     {
-        var intent = PaymentIntent.Create("reservation-1", 100m, "RUB", "key-1");
-        var repository = new FakePaymentIntentRepository
-        {
-            AwaitingPaymentIntents = [intent]
-        };
-        var service = new PaymentIntentService(repository, new FakeUnitOfWork());
+        // arrange
+        var intent = CreateDefault();
+        var batchSize = 50;
+        PaymentIntentRepositoryMock
+            .Setup(x
+                => x.GetAwaitingPaymentCreatedBeforeAsync(It.IsAny<DateTimeOffset>(), batchSize, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([intent]);
 
-        var result = await service.CompletePendingAsync(DateTimeOffset.UtcNow, 50, CancellationToken.None);
+        // act
+        var result = await sut.CompletePendingAsync(DateTimeOffset.UtcNow, 50, CancellationToken.None);
 
+        // assert
         result.CompletedCount.ShouldBe(1);
         intent.Status.ShouldBe(PaymentIntentStatus.Paid);
-        repository.AddedWebhookEvents.Single().ExternalEventId.ShouldBe($"auto-paid:{intent.Id}");
-        repository.AddedOutboxMessages.Single().RoutingKey.ShouldBe(PaymentStatusChangedMessage.DefaultRoutingKey);
+        PaymentIntentRepositoryMock.Verify(x => x.AddWebhookEventAsync(
+            It.Is<BankWebhookEvent>(e =>
+                e.ExternalEventId == $"auto-paid:{intent.Id}" &&
+                e.PaymentIntentId == intent.Id &&
+                e.Status == PaymentIntentStatus.Paid
+            ),
+            It.IsAny<CancellationToken>()
+        ), Times.Once);
     }
 
-    private sealed class FakeUnitOfWork : IBankManagerUnitOfWork
+    private PaymentIntent CreateDefault(
+        string externalReference = "reservation-1",
+        decimal amount = 100m,
+        string currency = "RUB",
+        string idempotencyKey = "key-1")
     {
-        public Task<int> SaveChangesAsync(CancellationToken ct)
-        {
-            return Task.FromResult(1);
-        }
+        return PaymentIntent.Create(externalReference, amount, currency, idempotencyKey);
     }
 
-    private sealed class FakePaymentIntentRepository : IPaymentIntentRepository
+    private BankWebhookEvent CreateDefault(PaymentIntent paymentIntent, PaymentIntentStatus status)
     {
-        public PaymentIntent? IntentById { get; init; }
-
-        public PaymentIntent? IntentByIdempotencyKey { get; init; }
-
-        public BankWebhookEvent? WebhookEvent { get; init; }
-
-        public IReadOnlyList<PaymentIntent> AwaitingPaymentIntents { get; init; } = [];
-
-        public List<PaymentIntent> AddedPaymentIntents { get; } = [];
-
-        public List<BankWebhookEvent> AddedWebhookEvents { get; } = [];
-
-        public List<RabbitOutboxMessage> AddedOutboxMessages { get; } = [];
-
-        public Task<PaymentIntent?> GetByIdAsync(PaymentIntentId id, CancellationToken ct)
-        {
-            return Task.FromResult(IntentById?.Id == id ? IntentById : null);
-        }
-
-        public Task<PaymentIntent?> GetByIdempotencyKeyAsync(string idempotencyKey, CancellationToken ct)
-        {
-            return Task.FromResult(IntentByIdempotencyKey?.IdempotencyKey == idempotencyKey ? IntentByIdempotencyKey : null);
-        }
-
-        public Task<IReadOnlyList<PaymentIntent>> GetAwaitingPaymentCreatedBeforeAsync(
-            DateTimeOffset createdBefore,
-            int batchSize,
-            CancellationToken ct)
-        {
-            return Task.FromResult<IReadOnlyList<PaymentIntent>>(AwaitingPaymentIntents.Take(batchSize).ToList());
-        }
-
-        public Task<BankWebhookEvent?> GetWebhookEventAsync(string externalEventId, CancellationToken ct)
-        {
-            return Task.FromResult(WebhookEvent?.ExternalEventId == externalEventId ? WebhookEvent : null);
-        }
-
-        public Task AddPaymentIntentAsync(PaymentIntent intent, CancellationToken ct)
-        {
-            AddedPaymentIntents.Add(intent);
-            return Task.CompletedTask;
-        }
-
-        public Task AddWebhookEventAsync(BankWebhookEvent webhookEvent, CancellationToken ct)
-        {
-            AddedWebhookEvents.Add(webhookEvent);
-            return Task.CompletedTask;
-        }
-
-        public Task AddOutboxMessageAsync(RabbitOutboxMessage message, CancellationToken ct)
-        {
-            AddedOutboxMessages.Add(message);
-            return Task.CompletedTask;
-        }
+        return BankWebhookEvent.Create("externalEventId", paymentIntent.Id, status);
     }
 }

@@ -27,6 +27,7 @@ public class ContainerFixture : WebApplicationFactory<IApiMarker>
         })
         .ConfigureTestServices(services =>
         {
+
             // Мокируем HttpContextAccessor, ибо в тестовом окружении не существует HttpContext
             var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
             var mockHttpContext = new DefaultHttpContext();
