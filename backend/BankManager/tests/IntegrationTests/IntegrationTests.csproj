@@ -1,8 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <AssemblyName>$(CompanyName).BankManager.$(MSBuildProjectName)</AssemblyName>
     <RootNamespace>$(CompanyName).BankManager.$(MSBuildProjectName)</RootNamespace>
   </PropertyGroup>
-
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Common\Authentication\Authentication.csproj" />
+    <ProjectReference Include="..\..\..\Common\Testing\Testing.csproj" />
+    <ProjectReference Include="..\..\..\Common\TestsCommon\TestsCommon.csproj" />
+    <ProjectReference Include="..\..\src\Clients\Clients.csproj" />
+    <ProjectReference Include="..\..\src\Data\Data.csproj" />
+    <ProjectReference Include="..\..\src\Host\Host.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Testcontainers.PostgreSql" />
+  </ItemGroup>
 </Project>

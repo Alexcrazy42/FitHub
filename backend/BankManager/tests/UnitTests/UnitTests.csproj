@@ -4,7 +4,7 @@
     <RootNamespace>$(CompanyName).BankManager.$(MSBuildProjectName)</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Platform\tests\TestsCommon\TestsCommon.csproj" />
+    <ProjectReference Include="..\..\..\Common\TestsCommon\TestsCommon.csproj" />
     <ProjectReference Include="..\..\src\Application\Application.csproj" />
     <ProjectReference Include="..\..\src\Domain\Domain.csproj" />
     <ProjectReference Include="..\..\src\Host\Host.csproj" />

@@ -69,7 +69,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Authentication", "Common\Au
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Json", "Common\Json\Json.csproj", "{F1461568-89CF-4F53-9624-7147D1BF085D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestsCommon", "Platform\tests\TestsCommon\TestsCommon.csproj", "{264A615E-14EA-49E1-9485-54BC83EDC570}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestsCommon", "Common\TestsCommon\TestsCommon.csproj", "{264A615E-14EA-49E1-9485-54BC83EDC570}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing", "Common\Testing\Testing.csproj", "{70B4121D-F4D8-41CD-9124-97BA7CCAB2DE}"
 EndProject

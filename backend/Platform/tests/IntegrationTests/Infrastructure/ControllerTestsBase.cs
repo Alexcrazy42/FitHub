@@ -11,11 +11,10 @@ namespace FitHub.IntegrationTests.Infrastructure;
 
 [Trait("Category", IntegrationTestCollection.Category)]
 [Collection(IntegrationTestCollection.Name)]
-public abstract class ControllerTestsBase
+public abstract class ControllerTestsBase : IDisposable
 {
     protected readonly IFixture AutoFixture = new Fixture().Customize(new AutoMoqCustomization());
 
-    protected readonly DataSeed DataSeed;
     protected readonly CurrentUserProvider CurrentUserProvider;
 
     // Клиенты апи
@@ -29,7 +28,6 @@ public abstract class ControllerTestsBase
     {
         AutoFixture.Behaviors.Add(new OmitOnRecursionBehavior(recursionDepth: 1));
 
-        DataSeed = serverFixture.DataSeed;
         CurrentUserProvider = serverFixture.CurrentUserProvider;
 
         ChatClient = serverFixture.ChatClient;
@@ -43,5 +41,11 @@ public abstract class ControllerTestsBase
     public void CustomizeEntities()
     {
         AutoFixture.ResidueCollectors.Add(new NonPublicConstructorBuilder());
+    }
+
+    public void Dispose()
+    {
+        // здесь добавляем Reset моков, чтобы разные тесты друг-друга не аффектили
+        IdentityUserServiceMock.Reset();
     }
 }
