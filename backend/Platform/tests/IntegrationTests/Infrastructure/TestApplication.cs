@@ -34,16 +34,6 @@ public sealed class TestApplication : WebApplicationFactory<Startup>, IAsyncLife
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         var dbConnectionStringEnvName = $"{ConnectionOptions.SectionName}:{nameof(ConnectionOptions.ConnectionString)}";
-        var databaseProviderEnvName = $"{ConnectionOptions.SectionName}:{nameof(ConnectionOptions.DatabaseProvider)}";
-
-        Environment.SetEnvironmentVariable(
-            dbConnectionStringEnvName,
-            dbContainer.GetConnectionString(),
-            EnvironmentVariableTarget.Process);
-        Environment.SetEnvironmentVariable(
-            databaseProviderEnvName,
-            nameof(DatabaseProvider.PostgreSql),
-            EnvironmentVariableTarget.Process);
 
         var configurationValues = new Dictionary<string, string?>
         {

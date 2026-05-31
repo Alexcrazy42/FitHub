@@ -32,13 +32,6 @@ public interface IChatHub
     Task UserOffline(string userId, DateTimeOffset endOnlineAt);
 }
 
-public class UserConnectedDto
-{
-    public string? UserId { get; set; }
-
-    public string? UserName { get; set; }
-}
-
 [Authorize]
 public class ChatHub : Hub<IChatHub>
 {
@@ -59,7 +52,7 @@ public class ChatHub : Hub<IChatHub>
 
         var userId = user.Required().GetParsedUserId();
 
-        await userService.StartOnlineAt(userId, Context.ConnectionAborted);
+        await userService.SetOnlineAsync(userId, Context.ConnectionAborted);
 
         var userChats = await chatService.GetUserChatsAsync(userId, Context.ConnectionAborted);
 
@@ -108,6 +101,7 @@ public class ChatHub : Hub<IChatHub>
     {
         var userId = Context.User?.GetUserId();
         var userName = Context.User?.GetUsername();
+        // TODO: проверка доступа к чату
         await Clients.OthersInGroup(chatId.GetChatGroupName()).UserTyping(userId.Required(), userName.Required(), chatId);
     }
 
@@ -115,6 +109,7 @@ public class ChatHub : Hub<IChatHub>
     {
         var userId = Context.User?.GetUserId();
         var userName = Context.User?.GetUsername();
+        // TODO: проверка доступа к чату
         await Clients.OthersInGroup(chatId.GetChatGroupName()).UserStopTyping(userId.Required(), userName.Required(), chatId);
     }
 
@@ -127,12 +122,10 @@ public class ChatHub : Hub<IChatHub>
     public async Task Heartbeat()
     {
         var userId = Context.User.Required().GetParsedUserId();
-        // TODO: Добавить здесь логику по выставлению статуса в бд (онлайн + когда в последний раз отмечался онлайн)
-        // TODO: добавить фоновую джобу на отключение (> 1 минуты не делал Heartbeat - оффлайн)
         // TODO: по каждой записи userId -> connectionId обновляешь время последнего heartbeat
         // TODO: добавить фоновую джобу на отключение connectionId (удаление из бд + исключений из групп) для тех кто не делал heartbeat давно
 
-        await userService.StartOnlineAt(userId, Context.ConnectionAborted);
+        await userService.SetOnlineAsync(userId, Context.ConnectionAborted);
 
         await Task.Delay(100);
     }

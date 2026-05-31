@@ -9,4 +9,3 @@ public sealed class IntegrationTestCollection : ICollectionFixture<ServerFixture
 
     public const string Category = "IntegrationTests";
 }
-

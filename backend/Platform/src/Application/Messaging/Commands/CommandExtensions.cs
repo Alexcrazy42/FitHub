@@ -20,12 +20,12 @@ public static class CommandExtensions
         return new CreateMessageCommand(chatId, messageText)
         {
             ReplyMessageId = request.ReplyMessageId != null ? MessageId.Parse(request.ReplyMessageId) : null,
-            Links = request.Links.Select(CommandExtensions.FromRequest).ToList(),
-            Tags = request.Tags.Select(CommandExtensions.FromRequest).ToList(),
+            Links = request.Links.Select(FromRequest).ToList(),
+            Tags = request.Tags.Select(FromRequest).ToList(),
             Photos = request.Photos.Select(x => FileId.Parse(x.FileId)).ToList(),
-            Stickers = request.Stickers.Select(CommandExtensions.FromRequest).ToList(),
-            Documents = request.Documents.Select(CommandExtensions.FromRequest).ToList(),
-            Voices = request.Voices.Select(CommandExtensions.FromRequest).ToList(),
+            Stickers = request.Stickers.Select(FromRequest).ToList(),
+            Documents = request.Documents.Select(FromRequest).ToList(),
+            Voices = request.Voices.Select(FromRequest).ToList(),
         };
     }
 

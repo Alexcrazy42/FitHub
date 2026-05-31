@@ -23,7 +23,8 @@ public class ContainerFixture : WebApplicationFactory<IApiMarker>
                 {
                     { "SkipMigration", "true" },
                     { "Database:ConnectionString", "_" },
-                    { "Database:DatabaseProvider", "PostgreSql" }
+                    { "Database:DatabaseProvider", "PostgreSql" },
+                    { "RabbitMQ:Nodes", "[\"123\"]"}
                 });
             })
             .ConfigureTestServices(services =>
