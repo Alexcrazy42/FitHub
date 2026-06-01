@@ -1,4 +1,5 @@
 ﻿using FitHub.BankManager.Clients.Payment;
+using FitHub.BankManager.Clients.Tests;
 using FitHub.Common.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,6 +11,7 @@ public static class ServiceRegistry
     {
         services.AddBindedOptions<BankManagerClientOptions>();
         services.AddHttpClient<IBankManagerPaymentClient, BankManagerPaymentClient>();
+        services.AddHttpClient<ITestClient, TestClient>();
         return services;
     }
 }

@@ -16,15 +16,12 @@ public class BankManagerPaymentClient : IBankManagerPaymentClient
     }
 
     public async Task<BankManagerPaymentIntentResult> CreatePaymentIntentAsync(
-        string externalReference,
-        decimal amount,
-        string currency,
-        string idempotencyKey,
+        CreatePaymentIntentRequest request,
         CancellationToken ct)
     {
         var response = await client.PostAsJsonAsync<CreatePaymentIntentRequest, PaymentIntentResponse>(
             new Uri(baseUri, "/api/v1/bank/payment-intents"),
-            new CreatePaymentIntentRequest(externalReference, amount, currency, idempotencyKey),
+            request,
             ct);
 
         return ToResult(response);

@@ -1,6 +1,9 @@
 ﻿using FitHub.Authentication;
+using FitHub.BankManager.Application.Mocks;
 using FitHub.BankManager.Clients;
 using FitHub.BankManager.Clients.Payment;
+using FitHub.BankManager.Clients.Tests;
+using FitHub.BankManager.Data;
 using FitHub.Common.Testing;
 using FitHub.Common.Utilities.System;
 using Microsoft.Extensions.Configuration;
@@ -20,11 +23,15 @@ public sealed class ServerFixture : IAsyncLifetime
 
     private IServiceProvider ServiceProvider => serviceProvider.Required();
 
+    // нужные сервис из TestApplication
+    public BankManagerDataContext DataContext => TestApplication.Services.GetRequiredService<BankManagerDataContext>();
+
     // Клиенты нашей апишки
     public IBankManagerPaymentClient PaymentClient => ServiceProvider.GetRequiredService<IBankManagerPaymentClient>();
+    public ITestClient TestClient => ServiceProvider.GetRequiredService<ITestClient>();
 
     // Здесь мокаем зависимости сервиса
-    public readonly Mock<IIdentityUserService> IdentityUserServiceMock = new();
+    public Mock<IMockTestService> MockTestService = new Mock<IMockTestService>();
 
     public ServerFixture()
     {
@@ -57,7 +64,9 @@ public sealed class ServerFixture : IAsyncLifetime
                 TestApplication.ClientOptions.BaseAddress.ToString()
             }
         };
-        var configuration = new ConfigurationBuilder().AddInMemoryCollection(settings).Build();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(settings)
+            .Build();
 
         var services = new ServiceCollection();
 
@@ -66,14 +75,11 @@ public sealed class ServerFixture : IAsyncLifetime
         services.AddTransient<IConfiguration>(_ => configuration);
         services.AddBankManagerClients();
 
-        services.MockIdentityHttpClients();
-
         return services.BuildServiceProvider();
     }
 
     private void ConfigureTestServices(IServiceCollection services)
     {
-        services.AddTransient(_ => IdentityUserServiceMock.Object);
-        services.MockAuthentication();
+        services.AddScoped(_ => MockTestService.Object);
     }
 }

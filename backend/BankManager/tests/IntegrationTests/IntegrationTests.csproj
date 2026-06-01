@@ -3,9 +3,8 @@
     <AssemblyName>$(CompanyName).BankManager.$(MSBuildProjectName)</AssemblyName>
     <RootNamespace>$(CompanyName).BankManager.$(MSBuildProjectName)</RootNamespace>
   </PropertyGroup>
-  
+
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Common\Authentication\Authentication.csproj" />
     <ProjectReference Include="..\..\..\Common\Testing\Testing.csproj" />
     <ProjectReference Include="..\..\..\Common\TestsCommon\TestsCommon.csproj" />
     <ProjectReference Include="..\..\src\Clients\Clients.csproj" />
