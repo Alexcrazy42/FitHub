@@ -1,6 +1,6 @@
 ﻿using AutoFixture;
-using AutoFixture.AutoMoq;
 using FitHub.BankManager.Application.Payments;
+using FitHub.BankManager.Clients.Payment;
 using FitHub.Common.TestsCommon;
 using FitHub.RabbitMQ.Configuration;
 using FitHub.RabbitMQ.Producers;
@@ -17,6 +17,7 @@ public class ApplicationTestsBase
     protected readonly Mock<IPaymentIntentRepository> PaymentIntentRepositoryMock;
     protected readonly Mock<IBankManagerOutboxRepository> OutboxRepositoryMock;
     protected readonly Mock<IBasicProducer<RabbitMqClusterOptions>> RmqBasicProducerMock;
+    protected readonly Mock<IBankManagerPaymentClient> BankManagerPaymentClientMock;
 
     protected ApplicationTestsBase()
     {
@@ -25,7 +26,7 @@ public class ApplicationTestsBase
         PaymentIntentRepositoryMock = new Mock<IPaymentIntentRepository>();
         OutboxRepositoryMock = new Mock<IBankManagerOutboxRepository>();
         RmqBasicProducerMock = new Mock<IBasicProducer<RabbitMqClusterOptions>>();
-
+        BankManagerPaymentClientMock = new Mock<IBankManagerPaymentClient>();
     }
 
     protected void SetupUnitOfWorkFailure<TException>(TException exception)

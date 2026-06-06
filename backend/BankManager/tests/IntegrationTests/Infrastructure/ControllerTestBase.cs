@@ -4,7 +4,7 @@ using FitHub.BankManager.Application.Mocks;
 using FitHub.BankManager.Clients.Payment;
 using FitHub.BankManager.Clients.Tests;
 using FitHub.BankManager.Data;
-using FitHub.BankManager.Web.Contracts;
+using FitHub.BankManager.Domain;
 using FitHub.Common.TestsCommon;
 using Microsoft.EntityFrameworkCore;
 using Moq;
@@ -50,7 +50,12 @@ public class ControllerTestsBase : IAsyncLifetime
     {
         var outboxMessages = await dataContext
             .RabbitOutboxMessages
-            .Where(x => x.ExchangeName == exchangeName && x.RoutingKey == routingKey)
+            .Where(x =>
+                x.ExchangeName == exchangeName
+                && x.RoutingKey == routingKey
+                && x.Status == OutboxMessageStatus.Pending
+                && x.PublishedAt == null
+                && x.Error == null)
             .ToListAsync(ct);
 
         if (outboxMessages.Count != messageCount)
