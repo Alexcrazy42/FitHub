@@ -2,6 +2,10 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
+ARG MY_API_URL
+
+ENV VITE_API_URL=$MY_API_URL
+
 # Копируем файлы зависимостей
 COPY package*.json ./
 COPY yarn.lock* ./

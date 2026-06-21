@@ -1,15 +1,17 @@
 ﻿version: '3.8'
 
-services:
+# TODO: Minio local Url
 
+services:
   frontend:
     build:
       context: frontend
       dockerfile: Dockerfile
+      args:
+        - MY_API_URL=http://localhost:5001
     ports:
-      - "80:80"
-    environment:
-      - VITE_API_URL=http://platform-api
+      - "5173:80"
+    
     restart: unless-stopped
 
   # Platform Backend
@@ -71,6 +73,33 @@ services:
     networks:
       - app-net
 
+  platform-jobs:
+    build:
+      context: backend
+      dockerfile: ./Platform/Dockerfile.jobs
+    container_name: platform-jobs
+    depends_on:
+      - platform-postgres
+    environment:
+      # Base
+      DOTNET_ENVIRONMENT: Development
+
+      # DB
+      Database__ConnectionString: "User ID=platform;Password=platform;Host=platform-postgres;Port=5432;Database=platform;Pooling=true;MinPoolSize=0;MaxPoolSize=100;Connection Idle Lifetime=60;"
+      Database__DatabaseProvider: PostgreSql
+
+      # Rmq
+      RabbitMQ__Nodes__0: rabbitmq
+      RabbitMQ__Username: rabbitmq
+      RabbitMQ__Password: rabbitmq123
+      RabbitMQ__VirtualHost: /
+      RabbitMQ__NeedToPrepare: true
+
+      # External Api
+      FitHub__ServerUrl: "http://platform-api"
+    networks:
+      - app-net
+
 
 # Bank Manager Backend
   bank-manager-postgres:
@@ -87,6 +116,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - app-net
 
   bank-manager-api:
     build:
@@ -115,8 +146,30 @@ services:
     networks:
       - app-net
 
+  bank-manager-jobs:
+    build:
+      context: backend
+      dockerfile: ./BankManager/Dockerfile.jobs
+    container_name: bank-manager-jobs
+    depends_on:
+      - bank-manager-postgres
+    environment:
+      # Base
+      DOTNET_ENVIRONMENT: Development
 
-# TODO Frontend, Jobs
+      # Rmq
+      RabbitMQ__Nodes__0: rabbitmq
+      RabbitMQ__Username: rabbitmq
+      RabbitMQ__Password: rabbitmq123
+      RabbitMQ__VirtualHost: /
+      RabbitMQ__NeedToPrepare: true
+
+      # External Api
+      BankManager__ServerUrl: "http://bank-manager-api"
+    networks:
+      - app-net
+
+# Shared Infra
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -150,27 +203,6 @@ services:
     command: server /data --console-address ":9001"
     networks:
       - app-net
-
-
-  # postgres-db-old:
-  #   image: postgres:16
-  #   container_name: postgres-db
-  #   restart: unless-stopped
-  #   environment:
-  #     POSTGRES_USER: postgres
-  #     POSTGRES_PASSWORD: postgres
-  #     POSTGRES_DB: fit_hub
-  #   ports:
-  #     - "5432:5432"
-  #   volumes:
-  #     - postgres-data:/var/lib/postgresql/data
-  #   networks:
-  #     - app-net
-  #   healthcheck:
-  #     test: [ "CMD-SHELL", "pg_isready -U postgres" ]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
 
 
 networks:
