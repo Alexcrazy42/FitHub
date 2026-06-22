@@ -3,25 +3,38 @@ using Amazon.S3.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace FitHub.Application.Files;
 
 public class S3FileService : IS3FileService
 {
-    private readonly IAmazonS3 s3Client;
+    private readonly IAmazonS3 internalS3Client;
+    private readonly IAmazonS3 publicS3Client;
     private readonly string bucketName;
     private readonly bool needToEnsureBucketExists;
     private readonly ILogger<S3FileService> logger;
+    private readonly string serviceUrl;
+    private readonly string publicUrl;
 
-    public S3FileService(IAmazonS3 s3Client, IConfiguration configuration, ILogger<S3FileService> logger)
+    public S3FileService(
+        [FromKeyedServices("internal")] IAmazonS3 internalS3Client,
+        [FromKeyedServices("public")] IAmazonS3 publicS3Client,
+        IConfiguration configuration,
+        ILogger<S3FileService> logger)
     {
-        this.s3Client = s3Client;
+        this.internalS3Client = internalS3Client;
+        this.publicS3Client = publicS3Client;
         this.logger = logger;
         bucketName = configuration["AWS:BucketName"]
                      ?? throw new ArgumentException("BucketName is not configured.");
 
-        needToEnsureBucketExists = Boolean.Parse(configuration["AWS:NeedToEnsureBucketExists"] ?? throw new Exception("AWS:NeedToEnsureBucketExists is null"));
+        needToEnsureBucketExists =
+            Boolean.Parse(configuration["AWS:NeedToEnsureBucketExists"] ?? throw new Exception("AWS:NeedToEnsureBucketExists is null"));
+
+        serviceUrl = configuration["AWS:ServiceUrl"] ?? throw new ArgumentException("ServiceUrl is not configured.");
+        publicUrl = configuration["AWS:PublicURL"] ?? throw new ArgumentException("AWS:PublicUrl is not configured.");
     }
 
     public async Task EnsureBucketExistsAsync()
@@ -30,22 +43,16 @@ public class S3FileService : IS3FileService
         {
             return;
         }
+
         try
         {
-            var request = new GetBucketLocationRequest
-            {
-                BucketName = bucketName
-            };
-            await s3Client.GetBucketLocationAsync(request);
+            var request = new GetBucketLocationRequest { BucketName = bucketName };
+            await internalS3Client.GetBucketLocationAsync(request);
         }
         catch (AmazonS3Exception ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
-            var bucketRequest = new PutBucketRequest
-            {
-                BucketName = bucketName,
-                UseClientRegion = true
-            };
-            await s3Client.PutBucketAsync(bucketRequest);
+            var bucketRequest = new PutBucketRequest { BucketName = bucketName, UseClientRegion = true };
+            await internalS3Client.PutBucketAsync(bucketRequest);
             logger.LogDebug("Bucket {BucketName} created", bucketName);
         }
         catch (Exception ex)
@@ -65,14 +72,9 @@ public class S3FileService : IS3FileService
             Expires = DateTime.UtcNow.AddMinutes(15),
             Protocol = Protocol.HTTP
         };
-        var url = await s3Client.GetPreSignedURLAsync(presignRequest);
+        var url = await publicS3Client.GetPreSignedURLAsync(presignRequest);
 
-        return new PresignedUrlResult
-        {
-            Url = url,
-            FileId = fileId,
-            ObjectKey = s3Key
-        };
+        return new PresignedUrlResult { Url = url, FileId = fileId, ObjectKey = s3Key };
     }
 
     public async Task<string> GetPresignedDownloadUrlAsync(string s3Key, TimeSpan expiry)
@@ -85,21 +87,16 @@ public class S3FileService : IS3FileService
             Expires = DateTime.UtcNow.Add(expiry),
             Protocol = Protocol.HTTP
         };
-        return await s3Client.GetPreSignedURLAsync(presignRequest);
+        var url = await publicS3Client.GetPreSignedURLAsync(presignRequest);
+        return url;
     }
 
     public async Task<string> UploadFileAsync(string key, Stream fileStream, string contentType)
     {
         await EnsureBucketExistsAsync();
-        var request = new PutObjectRequest
-        {
-            BucketName = bucketName,
-            Key = key,
-            InputStream = fileStream,
-            ContentType = contentType
-        };
+        var request = new PutObjectRequest { BucketName = bucketName, Key = key, InputStream = fileStream, ContentType = contentType };
 
-        var response = await s3Client.PutObjectAsync(request);
+        var response = await internalS3Client.PutObjectAsync(request);
         if (response.HttpStatusCode == System.Net.HttpStatusCode.OK)
         {
             return key;
@@ -116,13 +113,9 @@ public class S3FileService : IS3FileService
             throw new FileNotFoundException($"File with key '{key}' not found.");
         }
 
-        var request = new GetObjectRequest
-        {
-            BucketName = bucketName,
-            Key = key
-        };
+        var request = new GetObjectRequest { BucketName = bucketName, Key = key };
 
-        var response = await s3Client.GetObjectAsync(request);
+        var response = await internalS3Client.GetObjectAsync(request);
         return response.ResponseStream;
     }
 
@@ -134,13 +127,9 @@ public class S3FileService : IS3FileService
             return false;
         }
 
-        var request = new DeleteObjectRequest
-        {
-            BucketName = bucketName,
-            Key = key
-        };
+        var request = new DeleteObjectRequest { BucketName = bucketName, Key = key };
 
-        var response = await s3Client.DeleteObjectAsync(request);
+        var response = await internalS3Client.DeleteObjectAsync(request);
         return response.HttpStatusCode == System.Net.HttpStatusCode.NoContent;
     }
 
@@ -149,12 +138,8 @@ public class S3FileService : IS3FileService
         await EnsureBucketExistsAsync();
         try
         {
-            var request = new GetObjectMetadataRequest
-            {
-                BucketName = bucketName,
-                Key = key
-            };
-            await s3Client.GetObjectMetadataAsync(request);
+            var request = new GetObjectMetadataRequest { BucketName = bucketName, Key = key };
+            await internalS3Client.GetObjectMetadataAsync(request);
             return true;
         }
         catch (AmazonS3Exception ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -165,13 +150,9 @@ public class S3FileService : IS3FileService
 
     public async Task<string> InitiateMultipartUploadAsync(string s3Key, string contentType)
     {
-        var request = new InitiateMultipartUploadRequest
-        {
-            BucketName = bucketName,
-            Key = s3Key,
-            ContentType = contentType,
-        };
-        var response = await s3Client.InitiateMultipartUploadAsync(request);
+        await EnsureBucketExistsAsync();
+        var request = new InitiateMultipartUploadRequest { BucketName = bucketName, Key = s3Key, ContentType = contentType, };
+        var response = await internalS3Client.InitiateMultipartUploadAsync(request);
         return response.UploadId;
     }
 
@@ -187,7 +168,7 @@ public class S3FileService : IS3FileService
             UploadId = uploadId,
             PartNumber = partNumber,
         };
-        return s3Client.GetPreSignedURLAsync(presignRequest);
+        return publicS3Client.GetPreSignedURLAsync(presignRequest);
     }
 
     public async Task CompleteMultipartUploadAsync(string s3Key, string uploadId, IReadOnlyList<S3MultipartPart> parts)
@@ -199,30 +180,12 @@ public class S3FileService : IS3FileService
             UploadId = uploadId,
             PartETags = parts.Select(p => new PartETag(p.PartNumber, p.ETag.Trim('"'))).ToList(),
         };
-        await s3Client.CompleteMultipartUploadAsync(request);
+        await internalS3Client.CompleteMultipartUploadAsync(request);
     }
 
     public async Task AbortMultipartUploadAsync(string s3Key, string uploadId)
     {
-        var request = new AbortMultipartUploadRequest
-        {
-            BucketName = bucketName,
-            Key = s3Key,
-            UploadId = uploadId,
-        };
-        await s3Client.AbortMultipartUploadAsync(request);
-    }
-
-    private string GetMimeType(IFormFile file)
-    {
-        var provider = new FileExtensionContentTypeProvider();
-
-        if (!provider.TryGetContentType(file.FileName, out var contentType))
-        {
-            // fallback если расширение неизвестно
-            contentType = "application/octet-stream";
-        }
-
-        return contentType;
+        var request = new AbortMultipartUploadRequest { BucketName = bucketName, Key = s3Key, UploadId = uploadId, };
+        await internalS3Client.AbortMultipartUploadAsync(request);
     }
 }

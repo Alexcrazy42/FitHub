@@ -61,6 +61,7 @@ services:
       # AWS
       AWS__Region: "us-east-1"
       AWS__ServiceURL: "http://minio:9000/"
+      AWS__PublicURL: "http://localhost:9000/"
       AWS__AccessKey: minio
       AWS__SecretKey: minio123
       AWS__BucketName: files
@@ -80,6 +81,8 @@ services:
     container_name: platform-jobs
     depends_on:
       - platform-postgres
+      - platform-api
+      - rabbitmq
     environment:
       # Base
       DOTNET_ENVIRONMENT: Development
@@ -126,6 +129,7 @@ services:
     container_name: bank-manager-api
     depends_on:
       - bank-manager-postgres
+      - rabbitmq
     environment:
       # Base
       ASPNETCORE_URLS: http://+:80
@@ -153,6 +157,7 @@ services:
     container_name: bank-manager-jobs
     depends_on:
       - bank-manager-postgres
+      - rabbitmq
     environment:
       # Base
       DOTNET_ENVIRONMENT: Development
@@ -196,8 +201,10 @@ services:
       - "9000:9000"   # S3 API
       - "9001:9001"   # Web UI
     environment:
-        MINIO_ROOT_USER: minio     # ← Измените здесь
-        MINIO_ROOT_PASSWORD: minio123  # ← И здесь
+        MINIO_ROOT_USER: minio
+        MINIO_ROOT_PASSWORD: minio123
+        MINIO_DOMAIN: localhost:9000
+        MINIO_PUBLIC_URL: http://localhost:9000
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"

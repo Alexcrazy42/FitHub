@@ -7,6 +7,7 @@ using FitHub.Common.Entities.Storage;
 using FitHub.Domain.Files;
 using FitHub.Domain.Videos;
 using FitHub.Shared.Common;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace FitHub.Application.Videos;
@@ -32,6 +33,9 @@ public class VideoService : IVideoService
     private readonly IVideoEncodingQueue videoQueue;
     private readonly IUnitOfWork unitOfWork;
     private readonly ILogger<VideoService> logger;
+    private readonly string serviceUrl;
+    private readonly string publicUrl;
+    private readonly IConfiguration configuration;
 
     public VideoService(
         IVideoRepository videoRepository,
@@ -39,7 +43,8 @@ public class VideoService : IVideoService
         IS3FileService s3FileService,
         IVideoEncodingQueue videoQueue,
         IUnitOfWork unitOfWork,
-        ILogger<VideoService> logger)
+        ILogger<VideoService> logger,
+        IConfiguration configuration)
     {
         this.videoRepository = videoRepository;
         this.fileRepository = fileRepository;
@@ -47,6 +52,10 @@ public class VideoService : IVideoService
         this.videoQueue = videoQueue;
         this.unitOfWork = unitOfWork;
         this.logger = logger;
+        this.configuration = configuration;
+
+        serviceUrl = configuration["AWS:ServiceUrl"] ?? throw new ArgumentException("ServiceUrl is not configured.");
+        publicUrl = configuration["AWS:PublicURL"] ?? throw new ArgumentException("AWS:PublicUrl is not configured.");
     }
 
     private static string GetVideoContentType(string ext) => ext.ToLowerInvariant() switch
