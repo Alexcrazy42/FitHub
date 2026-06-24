@@ -39,6 +39,7 @@ services:
     container_name: platform-api
     depends_on:
       - platform-postgres
+      - rabbitmq
     environment:
       # Base
       ASPNETCORE_URLS: http://+:80\
