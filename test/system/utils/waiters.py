@@ -11,7 +11,21 @@ def wait_until(
     message: str = "Condition not met",
     raise_on_timeout: bool = True
 ) -> bool:
-    """Ожидает, что condition() вернёт True в течение timeout"""
+    """Ожидает условие в течении таймаута
+
+    Args:
+        condition (Callable[[], bool]): условие
+        timeout (float, optional): Величина таймаута в секундах. Defaults to 10.0.
+        period (float, optional): Период опроса. Defaults to 0.5.
+        message (str, optional): Сообщение при таймауте. Defaults to "Condition not met".
+        raise_on_timeout (bool, optional): Кидаем ли исключение при таймауте. Defaults to True.
+
+    Raises:
+        TimeoutError:
+
+    Returns:
+        bool: дождались ли события
+    """
     deadline = time.time() + timeout
     while time.time() < deadline:
         if condition():

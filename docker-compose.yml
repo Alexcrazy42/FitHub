@@ -1,7 +1,5 @@
 ﻿version: '3.8'
 
-# TODO: Minio local Url
-
 services:
   frontend:
     build:
@@ -129,7 +127,7 @@ services:
       dockerfile: ./BankManager/Dockerfile
     container_name: bank-manager-api
     depends_on:
-      - bank-manager-postgres
+      - bank-manager-postgres 
       - rabbitmq
     environment:
       # Base
