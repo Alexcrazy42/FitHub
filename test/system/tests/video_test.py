@@ -2,7 +2,12 @@
 from typing import List
 import clients.video_client as videoClient
 from utils.waiters import wait_until
+import allure
 
+@allure.epic("Видео")
+@allure.feature("Управление видео")
+@allure.story("Создание видео")
+@allure.severity(allure.severity_level.CRITICAL)
 def test_create_video():
     file_title = "vlastelin-koshachih-kolec.mp4"
     file_path = Path(__file__).parent / "images" / file_title

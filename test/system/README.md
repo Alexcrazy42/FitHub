@@ -34,10 +34,8 @@ Idempotency:
 Отправить два одинаковых запроса с одним Idempotency-Key → убедиться, что обработался только один, а второй вернул 200 с кешированным ответом
 
 TODO:
-1. загнать все сервисы и инфру в docker-compose (подумать над тем, чтобы не напрямую подключаться к папке с сервисами, а как-то по другому)
-2. накидать первичные тесты для rest (вошел, добавил, обновил и тд). генерация данных (faker, uuid), фикстуры с автоочисткой
-3. тест чата через websocket
-4. разобраться и подключить отчеты (allure, allure-pytest)
+1. тест чата через websocket
+2. разобраться и подключить отчеты (allure, allure-pytest)
 
 Docker-compose с сервисами, инфрой, моками (WireMock), тестовой БД.
 Конфигурация окружений (dev/staging) через env.
@@ -51,11 +49,11 @@ CI/CD пайплайн (запуск, артефакты, уведомления
 Параллельный запуск (pytest-xdist).
 
 
-
 https://habr.com/ru/companies/ru_mts/articles/720692
 ```txt
 pytest --alluredir=allure-results
 allure generate allure-results -o allure-report
+allure open allure-report/
 wget https://github.com/qa-guru/allure-notifications/releases/download/4.2.1/allure-notifications-4.2.1.jar
 java "-DconfigFile=config.json" -jar allure-notifications-4.2.1.jar
 ```

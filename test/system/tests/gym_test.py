@@ -1,11 +1,21 @@
 ﻿from pathlib import Path
+
+import allure
 from clients.gym_client import get_gyms, create_gym, get_gym, delete_gym, update_gym, GymUpdate
 from clients.files_client import get_presigned_url, upload_file_s3, confirm_file_upload, make_files_active, MakeFilesActiveRequest
 
+@allure.epic("Спортзалы")
+@allure.feature("Управление спортзалами")
+@allure.story("Полученив залов")
+@allure.severity(allure.severity_level.BLOCKER)
 def test_get_gyms():
     gyms = get_gyms(1, 10)
     assert len(gyms['items']) != 0
     
+@allure.epic("Спортзалы")
+@allure.feature("Управление спортзалами")
+@allure.story("Создание зала")
+@allure.severity(allure.severity_level.BLOCKER)
 def test_create_gym():
     test_name = 'test_name'
     test_desc = 'test_desc'
@@ -16,6 +26,10 @@ def test_create_gym():
     delete_gym(gym['id'])
 
 
+@allure.epic("Спортзалы")
+@allure.feature("Управление спортзалами")
+@allure.story("Получение зала")
+@allure.severity(allure.severity_level.BLOCKER)
 def test_get_gym():
     test_name = 'test_name'
     test_desc = 'test_desc'
@@ -29,6 +43,10 @@ def test_get_gym():
     assert new_gym['description'] == gym['description']
     delete_gym(gym['id'])
 
+@allure.epic("Спортзалы")
+@allure.feature("Управление спортзалами")
+@allure.story("Обновление зала")
+@allure.severity(allure.severity_level.BLOCKER)
 def test_update_gym():
     test_name = 'test_name'
     test_desc = 'test_desc'
@@ -53,6 +71,10 @@ def test_update_gym():
 
 
 
+@allure.epic("Спортзалы")
+@allure.feature("Управление спортзалами")
+@allure.story("Удаление зала")
+@allure.severity(allure.severity_level.BLOCKER)
 def test_delete_gym():
     test_name = 'test_name'
     test_desc = 'test_desc'
@@ -66,6 +88,10 @@ def test_delete_gym():
     assert possible_gym is None
 
 
+@allure.epic("Спортзалы")
+@allure.feature("Управление спортзалами")
+@allure.story("Добавление фото")
+@allure.severity(allure.severity_level.BLOCKER)
 def test_upload_gym_photo():
     entity_type = 'Gym'
     test_name = 'test_name_for_file_upload'

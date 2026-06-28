@@ -1,13 +1,23 @@
 ﻿from pathlib import Path
+
+import allure
 import clients.equipment_client as client
 import clients.entities_client as entityClient
 from clients.files_client import MakeFilesActiveRequest, confirm_file_upload, get_presigned_url, make_files_active, upload_file_s3
 
+@allure.epic("Оборудование")
+@allure.feature("Управление оборудованием")
+@allure.story("Получение списка оборудований")
+@allure.severity(allure.severity_level.BLOCKER)
 def test_get_equipments():
     response = client.get_equipments(1, 10)
 
     assert len(response.items) > 0
 
+@allure.epic("Оборудование")
+@allure.feature("Управление оборудованием")
+@allure.story("Создание оборудования")
+@allure.severity(allure.severity_level.BLOCKER)
 def test_create_equipment():
     request = client.CreateEquipmentRequest(
         brandId=client.BASE_BRAND_ID,
@@ -30,6 +40,10 @@ def test_create_equipment():
     client.delete_equipment(equipment.id)
 
 
+@allure.epic("Оборудование")
+@allure.feature("Управление оборудованием")
+@allure.story("Прикрепление фотографии")
+@allure.severity(allure.severity_level.BLOCKER)
 def test_upload_photo():
     entity_type = 'Equipment'
     maxFileCount = entityClient.get_max_file_count(entity_type)
@@ -72,6 +86,11 @@ def test_upload_photo():
     assert len(files.items) > 0
     assert files.items[0].id == file_id
 
+
+@allure.epic("Оборудование")
+@allure.feature("Управление оборудованием")
+@allure.story("Прикрепление двух фотографий")
+@allure.severity(allure.severity_level.BLOCKER)
 def test_double_file_upload():
     entity_type = 'Equipment'
     maxFileCount = entityClient.get_max_file_count(entity_type)
