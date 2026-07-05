@@ -1,6 +1,6 @@
 # Системные тесты
 
-Другие названия: подсистемные, компонентные тесты. В основном пишутся командой QA, тестирование через апи, как в интеграционных тестах. Внешние интеграции либо через тестовые стенды, либо моки через WireMock/Postman Mock Server
+Другие названия: подсистемные, компонентные тесты. В основном пишутся командой QA, тестирование через апи, как в интеграционных тестах. Внешние интеграции либо через тестовые стенды, либо моки через WireMock/Postman Mock Server (из общения с коллегами - на тестовых стендах это обеспечивают разработчики)
 
 ## Инструменты и окружение
 
@@ -9,9 +9,9 @@
 Сами тесты могут писать в ELK, чтобы после можно было в этом разобраться
 Формирование отчетов: Xray (Jira), Allure Report, Report Portal
 
-## Что проверяем
+## Примеры, что проверяем
 
-Сценарии, которые проходят через несколько ваших сервисов (например: order-service → payment-service → notification-service).
+Сценарии, которые проходят через несколько ваших сервисов (например: order-service → payment-service → notification-service)
 
 Бизнес-процессы (создание заказа → оплата → получение статуса).
 
@@ -33,23 +33,20 @@ Happy path:
 Idempotency:
 Отправить два одинаковых запроса с одним Idempotency-Key → убедиться, что обработался только один, а второй вернул 200 с кешированным ответом
 
-TODO:
 
-1. дебаг тестов
-2. тест чата через websocket
-3. разобраться и подключить отчеты (allure, allure-pytest)
+## Allure
 
-Docker-compose с сервисами, инфрой, моками (WireMock), тестовой БД.
-Базовые REST-тесты (CRUD) с генерацией уникальных данных и очисткой.
-Тесты WebSocket с асинхронным клиентом.
-Прямые проверки в БД (через psycopg2) для верификации состояния.
-Отчёты Allure + уведомления (Telegram/Slack).
-CI/CD пайплайн (запуск, артефакты, уведомления).
-Логирование и correlation-id для отладки.
-Параллельный запуск (pytest-xdist).
 
+Референсы:
 
 https://habr.com/ru/companies/ru_mts/articles/720692
+https://habr.com/ru/companies/clevertec/articles/822583/
+
+
+![](./images/1_allure_overview.png)
+
+![](./images/2_allure_behaviors.png)
+
 ```txt
 pytest --alluredir=allure-results
 allure generate allure-results -o allure-report
@@ -57,3 +54,14 @@ allure open allure-report/
 wget https://github.com/qa-guru/allure-notifications/releases/download/4.2.1/allure-notifications-4.2.1.jar
 java "-DconfigFile=config.json" -jar allure-notifications-4.2.1.jar
 ```
+
+## Сводка
+
+Docker-compose с сервисами, инфрой, моками (WireMock), тестовой БД.
+Базовые REST-тесты (CRUD) с генерацией уникальных данных и очисткой
+Тесты WebSocket с асинхронным клиентом
+Прямые проверки в БД (через psycopg2) для верификации состояния
+Отчёты Allure + уведомления (Telegram/Slack)
+CI/CD пайплайн (запуск, артефакты, уведомления)
+Логирование и correlation-id для отладки
+Параллельный запуск (pytest-xdist)

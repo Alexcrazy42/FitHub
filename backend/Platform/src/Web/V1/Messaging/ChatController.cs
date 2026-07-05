@@ -71,10 +71,10 @@ public class ChatController : ControllerBase
 
         var response = message.ToResponse();
 
+        var groupName = message.ChatId.ToString().GetChatGroupName();
+
         _ = Task.Run(async () =>
         {
-            var groupName = message.ChatId.ToString().GetChatGroupName();
-
             await chatHubContext.Clients.Group(groupName)
                 .CreateMessage(response);
         }, ct);
