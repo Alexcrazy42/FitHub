@@ -3,8 +3,13 @@
   "version": "1.0.0",
   "description": "@testla/screenplay",
   "main": "index.js",
+  
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npx playwright test",
+    "test:headed": "npx playwright test --headed",
+    "test:debug": "npx playwright test --debug",
+    "test:google": "npx playwright test google.spec.ts --headed",
+    "test:ui": "npx playwright test --ui"
   },
   "keywords": [],
   "author": "",
