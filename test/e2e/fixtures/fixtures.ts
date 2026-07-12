@@ -1,12 +1,10 @@
 ﻿import { test as base, Browser, BrowserContext, Page } from '@playwright/test';
 import { FitHubCreds } from '../config/testUsers';
-import { App, APP_URLS, POST_LOGIN_URL, UserRole } from './sites';
-
+import { App, APP_URLS, POST_LOGIN_URL, UserRole } from '../config/sites';
+import { LoginPage } from '../pages/FitHubLoginPage';
 
 
 const storageCache = new Map<string, any>();
-
-
 
 async function createFitHubAuthenticatedContext(
   browser: Browser,
@@ -16,33 +14,24 @@ async function createFitHubAuthenticatedContext(
   const cacheKey = `${userRole}_${app}`;
 
   if (storageCache.has(cacheKey)) {
-    console.log(`♻️ [Cache hit] Использую кэш для ${cacheKey}`);
     return await browser.newContext({ 
       storageState: storageCache.get(cacheKey) 
     });
   }
-
-  console.log(`🐢 [Cache miss] Выполняю логин для ${cacheKey}`);
   
   const context = await browser.newContext();
   const page = await context.newPage();
 
-  const baseUrl = APP_URLS[app];
-
-  await page.goto(`${baseUrl}/login`);
-
   const creds = FitHubCreds[userRole];
 
-  await page.getByPlaceholder('Введите ваш email').fill(creds.login);
-  await page.getByPlaceholder('Введите ваш пароль').fill(creds.password);
-  await page.getByRole('button', { name: 'Войти' }).click();
-
-  const postLogin = POST_LOGIN_URL[userRole];
-
-  await page.waitForURL(`${baseUrl}/${postLogin}`, { timeout: 10000 });
+  const loginPage = new LoginPage(page);
+  await loginPage.open();
+  await loginPage.login(creds);
 
   const storageState = await context.storageState();
   storageCache.set(cacheKey, storageState);
+
+  await page.close();
 
   return context;
 }
@@ -94,6 +83,12 @@ export const test = base.extend<AuthFixtures, WorkerFixtures>({
   cmsAdminPage: async ({ cmsAdminContext }, use) => {
     console.log('📄 СОЗДАЮ cmsAdminPage (test-scoped)');
     const page = await cmsAdminContext.newPage();
+
+    const url = APP_URLS['fithub'];
+    const cmsUrl = `${url}/${POST_LOGIN_URL['cmsAdmin']}`;
+
+    await page.goto(cmsUrl);
+
     await use(page);
     console.log('📄 ЗАКРЫВАЮ cmsAdminPage (test-scoped)');
     // Страница закроется автоматически при закрытии контекста
@@ -103,7 +98,14 @@ export const test = base.extend<AuthFixtures, WorkerFixtures>({
   // 📄 Test-scoped: страницы создаются из worker-scoped контекстов
   gymAdminPage: async ({ gymAdminContext }, use) => {
     console.log('📄 СОЗДАЮ gymAdminPage (test-scoped)');
+    
     const page = await gymAdminContext.newPage();
+
+    const url = APP_URLS['fithub'];
+    const gymUrl = `${url}/${POST_LOGIN_URL['gymAdmin']}`;
+
+    await page.goto(gymUrl);
+
     await use(page);
     console.log('📄 ЗАКРЫВАЮ gymAdminPage (test-scoped)');
     page.close()

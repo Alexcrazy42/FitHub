@@ -1,6 +1,21 @@
-﻿import { UserRole } from "../fixtures/fixtures"
+﻿import { UserRole } from "./sites";
 
-export const FitHubCreds : Record<UserRole, {login: string, password: string}> = {
-    'cmsAdmin' : {login: 'alexcrazy42@mail.ru', password: 'alexcrazy42'},
-    'gymAdmin' : {login: 'alexcrazy421@mail.ru', password: 'alexcrazy42'}
+export interface Credentials {
+  login: string;
+  password: string;
+  userRole: UserRole;
+}
+
+
+export const FitHubCreds : Record<UserRole, Credentials> = {
+    'cmsAdmin' : { 
+        login: 'alexcrazy42@mail.ru', 
+        password: 'alexcrazy42', 
+        userRole: 'cmsAdmin' 
+    },
+    'gymAdmin' : { 
+        login: 'alexcrazy421@mail.ru', 
+        password: 'alexcrazy42',
+        userRole: 'gymAdmin' 
+    }
 }

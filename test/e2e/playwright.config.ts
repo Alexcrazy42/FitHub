@@ -2,10 +2,9 @@
 import dotenv from 'dotenv';
 import path from 'path';
 
-// dotenv.config({ path: '.env.test' });
+//dotenv.config({ path: '.env.test' });
 
 export default defineConfig({
-  // Тесты ищет в папке specs
   testDir: './tests',
   
   // Таймауты (жесткие)
@@ -15,7 +14,7 @@ export default defineConfig({
   // Параллелизация
   fullyParallel: true,
   workers: 1, //process.env.CI ? 4 : undefined,
-  //retries: process.env.CI ? 2 : 0,
+  retries: 0,
   
   // Репортеры
   reporter: [
@@ -29,7 +28,6 @@ export default defineConfig({
   // globalTeardown: path.join(__dirname, 'hooks/globalTeardown.ts'),
   
   use: {
-    // Базовый URL (берем из окружения)
     baseURL: process.env.BASE_URL || 'http://localhost:3000',
     
     // Артефакты
@@ -44,9 +42,8 @@ export default defineConfig({
     
     // Дополнительные опции
     viewport: { width: 1280, height: 720 },
-    ignoreHTTPSErrors: true,
+    ignoreHTTPSErrors: false,
     
-    // Переменные для тестов
     testIdAttribute: 'data-testid'
   },
 
