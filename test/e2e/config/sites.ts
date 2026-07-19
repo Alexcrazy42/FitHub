@@ -2,7 +2,11 @@
 export type App = 'fithub';
 
 export const APP_URLS : Record<App, string> = {
-  'fithub': 'http://localhost:5173' // TODO: config
+  'fithub': 'http://localhost:5173'
+}
+
+export const BACKEND_URLS : Record<App, string> = {
+  'fithub': 'http://localhost:5001'
 }
 
 export const POST_LOGIN_URL : Record<UserRole, string> = {
