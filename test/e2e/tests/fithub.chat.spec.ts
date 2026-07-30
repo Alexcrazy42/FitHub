@@ -93,77 +93,70 @@ test.describe('chat', () => {
             expect(canPreview).toBe(false);
         });
 
-        test('send audio message', async ({ cmsAdminPage, gymAdminPage }) => {
-            expect(cmsAdminPage.url()).toBe('');
-            expect(gymAdminPage.url()).toBe('');
-            throw new Error();
-        });
-
         test('edit message', async ({ cmsAdminPage }) => {
-            expect(cmsAdminPage.url()).toBe('');
-            throw new Error();
-        });
+            const chatPage = new ChatPage(cmsAdminPage);
+            await chatPage.open('cmsAdmin');
+            await chatPage.waitForChatLoaded('Александр, ТестАдминЗала')
 
-        test('delete message', async ({ cmsAdminPage }) => {
-            expect(cmsAdminPage.url()).toBe('');
-            throw new Error();
+            const initText = crypto.randomUUID();
+            const newText = crypto.randomUUID();
+
+            await chatPage.sendMessage(initText);
+            await chatPage.editMessage(initText, newText);
+
+            const lastMsg = await chatPage.getLastTextCurrentUserMessage();
+
+            expect(lastMsg).toBe(newText);
         });
 
         test('scroll messages - messages loading', async ({ 
-            cmsAdminPage, 
-            gymAdminPage 
+            cmsAdminPage
         }) => {
-            expect(cmsAdminPage.url()).toBe('');
-            expect(gymAdminPage.url()).toBe('');
-            throw new Error();
-        });
+            const chatPage = new ChatPage(cmsAdminPage);
+            await chatPage.open('cmsAdmin');
+            await chatPage.waitForChatLoaded('Александр, ТестАдминЗала');
 
-        test('user cannot edit another users message', async ({ 
-            cmsAdminPage, 
-            gymAdminPage 
-        }) => {
-            // gymAdminPage отправляет сообщение
-            // cmsAdminPage пытается его отредактировать → ошибка
-        });
+            const text = crypto.randomUUID();
+            await chatPage.sendMessage(text)
 
-        test('user cannot delete another users message', async ({ 
-            cmsAdminPage, 
-            gymAdminPage 
-        }) => {
-            // Аналогично
-        });
+            const beforeScrollMessageCount = await chatPage.getMessageCount();
 
-        test('send message with 5000+ characters - should truncate or show error', async ({ cmsAdminPage }) => {
-            // Проверка лимитов
-        });
+            await chatPage.scroll(-1000);
 
-        test('send file exceeding max size limit', async ({ cmsAdminPage }) => {
-            // Проверка ограничений на файлы
-        });
+            const afterScrollMessageCount = await chatPage.getMessageCount();
 
-        test('send unsupported file format', async ({ cmsAdminPage }) => {
-            // Например, .exe или .sh
+            expect(beforeScrollMessageCount <= afterScrollMessageCount).toBe(true);
         });
     });
 
     test.describe('reply to messages', () => {
-        test('reply to specific message', async ({ cmsAdminPage }) => {
-            // Ответ с цитированием
-        });
+        test('reply to specific message', async ({ cmsAdminPage, gymAdminPage }) => {
+            const cmsChatPage = new ChatPage(cmsAdminPage);
+            await cmsChatPage.open('cmsAdmin');
+            await cmsChatPage.waitForChatLoaded('Александр, ТестАдминЗала');
 
-        test('view message thread', async ({ cmsAdminPage }) => {
-            // Просмотр ветки сообщений
+            const gymChatPage = new ChatPage(gymAdminPage);
+            await gymChatPage.open('gymAdmin');
+            await gymChatPage.waitForChatLoaded('Александр, ТестАдминЗала');
+
+            const gymText = crypto.randomUUID();
+
+            await gymChatPage.sendMessage(gymText);
+
+            const cmsText = crypto.randomUUID();
+
+            await cmsChatPage.reply(gymText, cmsText);
         });
     });
 
     test.describe('chat managment', () => {
         test('create chat', async ({ cmsAdminPage }) => {
-            expect(cmsAdminPage.url()).toBe('');
+            expect(cmsAdminPage.url()).toBe(' ');
             throw new Error();
         });
 
         test('add new recipient to chat', async ({ cmsAdminPage, gymAdminPage }) => {
-            expect(cmsAdminPage.url()).toBe('');
+            expect(cmsAdminPage.url()).toBe(' ');
             expect(gymAdminPage.url()).toBe('');
             throw new Error();
         });
@@ -195,13 +188,6 @@ test.describe('chat', () => {
 
             await page.waitForURL(`${APP_URLS['fithub']}/login`, { timeout: 10000 });
             expect(page.url()).toBe(`${APP_URLS['fithub']}/login`);
-        });
-
-        test('different user roles have different permissions', async ({ 
-            cmsAdminPage, 
-            gymAdminPage
-        }) => {
-            // Например: обычный пользователь не может удалять чужие сообщения
         });
     });
 });

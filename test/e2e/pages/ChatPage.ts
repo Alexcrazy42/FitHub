@@ -13,6 +13,7 @@ export class ChatPage extends BasePage {
     public readonly sendBtn : Locator;
     public readonly testStickerId : string = '019f90b1-5fe6-75af-ba8c-9ede2bc5b9e5';
     private messageContainer: Locator;
+    private scrollMessageContainer: Locator;
     private stickerAddBtn: Locator;
     private attachFileInput: Locator;
     private pendingSendFileContainer : Locator;
@@ -27,6 +28,10 @@ export class ChatPage extends BasePage {
         this.messageContainer = page.locator(
             '#root > div > div > main > div > div > main > div > div.flex-1.overflow-hidden.bg-gray-50.min-h-0 > div > div > div'
         );
+
+        this.scrollMessageContainer = page.locator(
+            '#root > div > div > main > div > div > main > div > div.flex-1.overflow-hidden.bg-gray-50.min-h-0 > div > div > div.px-4.py-4.space-y-3'
+        )
         this.stickerAddBtn = page.locator('#root > div > div > main > div > div > main > div > div:nth-child(3) > div > div > button:nth-child(4)')
         this.attachFileInput = page.locator('input[type=file]');
         this.pendingSendFileContainer = page.locator('#root > div > div > main > div > div > main > div > div:nth-child(3) > div > div.px-4.py-2.flex.flex-wrap.gap-2.bg-gray-50.border-b.border-gray-200')
@@ -60,6 +65,79 @@ export class ChatPage extends BasePage {
         await expect(this.sendBtn).toBeEnabled({ timeout: 10000 });
         
         await expect(this.textInput).toHaveValue('', { timeout: 5000 });
+    }
+
+    async reply(replyTo: string, text: string) : Promise<void> {
+        const msgElement = await this.getIncomingMessageByText(replyTo);
+
+        await msgElement.dblclick();
+
+        await this.sendMessage(text);
+    }
+
+    async editMessage(editMessageText : string, text: string) : Promise<void> {
+        const msg = await this.getSendedMessageByText(editMessageText);
+
+        await msg.click({ button: 'right' });
+
+        const editMenuItem = this.page.locator('text=Редактировать');
+
+        await expect(editMenuItem).toBeVisible();
+        await editMenuItem.click();
+
+        await this.sendMessage(text);
+    }
+
+    private async getIncomingMessageByText(text: string) : Promise<Locator> {
+        const messages = await this.messageContainer.locator('> div').all();
+
+        for (let i = messages.length - 1; i >= 0; i--) {
+            const message = messages[i];
+            const incomingMessageElement = message.locator('> div > div.flex-1.max-w-2xl.items-start');
+            const isIncoingMessage = await incomingMessageElement.count() > 0;
+            
+            if (isIncoingMessage) {
+                const textElement = incomingMessageElement.locator('> div > div > div.break-words.whitespace-pre-wrap');
+
+                const messageText = await textElement.textContent() || '';
+
+                if (messageText.includes(text))
+                {
+                    return message;
+                }
+            }
+        }
+        
+        throw new Error('No my messages found in chat');
+    }
+
+    private async getSendedMessageByText(text: string) : Promise<Locator> {
+        const messages = await this.messageContainer.locator('> div').all();
+
+        for (let i = messages.length - 1; i >= 0; i--) {
+            const message = messages[i];
+            const incomingMessageElement = message.locator('> div > div.flex-1.max-w-2xl.items-end');
+            const isSended = await incomingMessageElement.count() > 0;
+            
+            if (isSended) {
+                const textElement = incomingMessageElement.locator('> div > div > div.break-words.whitespace-pre-wrap');
+
+                const messageText = await textElement.textContent() || '';
+
+                if (messageText.includes(text))
+                {
+                    return message;
+                }
+            }
+        }
+        
+        throw new Error('No my messages found in chat');
+    }
+
+    async getMessageCount() : Promise<number> {
+        const messages = await this.messageContainer.locator('> div').all();
+
+        return messages.length;
     }
 
     async clickSendMessage() : Promise<void> {
@@ -270,37 +348,12 @@ export class ChatPage extends BasePage {
         return false;
     }
 
-    // ========== Редактирование и удаление ==========
-    async editMessage(messageId: string, newText: string): Promise<void> {
-        throw new Error('not implemented');
-    }
-
-    async deleteMessage(messageId: string): Promise<void> {
-        throw new Error('not implemented');
-    }
-
-    async waitForMessageDeleted(messageId: string): Promise<void> {
-        throw new Error('not implemented');
-    }
-
     // ========== Права доступа ==========
-    async canEditMessage(messageId: string): Promise<boolean> {
+    async canEditMessage(messageText: string): Promise<boolean> {
         throw new Error('not implemented');
     }
 
-    async canDeleteMessage(messageId: string): Promise<boolean> {
-        throw new Error('not implemented');
-    }
-
-    async getMessageActions(messageId: string): Promise<{
-        canEdit: boolean;
-        canDelete: boolean;
-        canReply: boolean;
-    }> {
-        throw new Error('not implemented');
-    }
-
-    async getCurrentUserRole(): Promise<UserRole> {
+    async canDeleteMessage(messageText: string): Promise<boolean> {
         throw new Error('not implemented');
     }
 
@@ -353,107 +406,10 @@ export class ChatPage extends BasePage {
         throw new Error('not implemented');
     }
 
-    // ========== Ответы и ветки ==========
-    async replyToMessage(messageId: string, replyText: string): Promise<void> {
-        throw new Error('not implemented');
-    }
-
-    async getRepliesToMessage(messageId: string): Promise<string[]> {
-        throw new Error('not implemented');
-    }
-
-    async viewMessageThread(messageId: string): Promise<void> {
-        throw new Error('not implemented');
-    }
-
     // ========== Скролл и загрузка ==========
-    async scrollToTop(): Promise<void> {
-        throw new Error('not implemented');
-    }
-
-    async scrollToBottom(): Promise<void> {
-        throw new Error('not implemented');
-    }
-
-    async waitForMessagesLoading(): Promise<void> {
-        throw new Error('not implemented');
-    }
-
-    async isLoadingMessages(): Promise<boolean> {
-        throw new Error('not implemented');
-    }
-
-    async waitForNewMessages(count: number): Promise<void> {
-        throw new Error('not implemented');
-    }
-
-    // ========== Ошибки и валидация ==========
-    async getErrorMessage(): Promise<string> {
-        throw new Error('not implemented');
-    }
-
-    async isErrorVisible(): Promise<boolean> {
-        throw new Error('not implemented');
-    }
-
-    async getErrorType(): Promise<'validation' | 'network' | 'permission'> {
-        throw new Error('not implemented');
-    }
-
-    // ========== Состояние UI ==========
-    async isMessageInputEnabled(): Promise<boolean> {
-        throw new Error('not implemented');
-    }
-
-    async isSendButtonEnabled(): Promise<boolean> {
-        throw new Error('not implemented');
-    }
-
-    async getMessageInputValue(): Promise<string> {
-        throw new Error('not implemented');
-    }
-
-    async clearMessageInput(): Promise<void> {
-        throw new Error('not implemented');
-    }
-
-    async isTypingIndicatorVisible(): Promise<boolean> {
-        throw new Error('not implemented');
-    }
-
-    // ========== Файловые ограничения ==========
-    async getFileSizeLimit(): Promise<number> {
-        throw new Error('not implemented');
-    }
-
-    async getAllowedFileTypes(): Promise<string[]> {
-        throw new Error('not implemented');
-    }
-
-    async getMaxFileSize(): Promise<number> {
-        throw new Error('not implemented');
-    }
-
-    // ========== Состояние соединения ==========
-    async getConnectionStatus(): Promise<'connected' | 'disconnected' | 'reconnecting'> {
-        throw new Error('not implemented');
-    }
-
-    async simulateConnectionLoss(): Promise<void> {
-        throw new Error('not implemented');
-    }
-
-    async waitForConnectionRestored(): Promise<void> {
-        throw new Error('not implemented');
-    }
-
-    // ========== Участники ==========
-    async getUnreadMessageCount(chatName: string): Promise<number> {
-        throw new Error('not implemented');
-    }
-
-    // ========== Хелперы ==========
-    async waitForMessageDelivered(messageId: string): Promise<void> {
-        throw new Error('not implemented');
+    async scroll(px: number): Promise<void> {
+        await this.scrollMessageContainer.evaluate((el, scrollOffset) => {
+            el.scrollTop += scrollOffset;
+        }, px); // <-- передаем px как аргумент
     }
 }

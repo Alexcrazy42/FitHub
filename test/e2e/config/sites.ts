@@ -16,5 +16,5 @@ export const POST_LOGIN_URL : Record<UserRole, string> = {
 
 export const PREFIX_URL : Record<UserRole, string> = {
   'cmsAdmin': 'admin',
-  'gymAdmin': 'gymAdmin'
+  'gymAdmin': 'gym-Admin'
 }
