@@ -1,0 +1,33 @@
+﻿namespace FitHub.Contracts.V1.Videos;
+
+public record InitVideoUploadResponse(string VideoId, string PresignedPutUrl);
+
+public record InitVideoMultipartUploadResponse(string VideoId, IReadOnlyList<MultipartPartUrlResponse> Parts);
+
+public record MultipartPartUrlResponse(int PartNumber, string Url);
+
+public record VideoResponse(
+    string Id,
+    string Title,
+    string Status,
+    int? DurationSeconds,
+    string? PosterUrl,
+    string? FailureReason,
+    DateTimeOffset CreatedAt,
+    IReadOnlyList<VideoResolutionResponse> Resolutions);
+
+public record VideoResolutionResponse(
+    string Quality,
+    int QualityLabel,
+    int WidthPx,
+    int HeightPx,
+    int BitrateKbps,
+    long FileSizeBytes);
+
+public record VideoResolutionUrlResponse(
+    string Quality,
+    int QualityLabel,
+    int WidthPx,
+    int HeightPx,
+    int BitrateKbps,
+    string Url);
