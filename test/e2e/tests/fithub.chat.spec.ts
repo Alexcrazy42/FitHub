@@ -151,33 +151,63 @@ test.describe('chat', () => {
 
     test.describe('chat managment', () => {
         test('create chat', async ({ cmsAdminPage }) => {
-            expect(cmsAdminPage.url()).toBe(' ');
-            throw new Error();
+            
+            // нажать на кнопку создание чата
+            // заполнить всех людей и нажать кнопку "создать" - api should be success
+            // получить инфо о чате - состав людей, дата добавления каждого = текущей
         });
 
-        test('add new recipient to chat', async ({ cmsAdminPage, gymAdminPage }) => {
-            expect(cmsAdminPage.url()).toBe(' ');
-            expect(gymAdminPage.url()).toBe('');
-            throw new Error();
+        test('add new recipient to chat', async ({ cmsAdminPage }) => {
+            
+            // ОТ АДМИНА
+            // перейти в чат
+            // нажать на кнопку админки
+            // нажать на кнопку добавления человека
+            // ввод человека и нажать кнопку "добавить" - api should be success
+            // получить инфо о чате - состав людей, дата добавления этого пользователя = текущая
+
+            // ОТ ТОГО КОГО ДОБАВИЛИ:
+            // перешел в чат
+            // посмотрел сообщения - только те, что с момента добавления (если не настроено другое)
+            // попробовал отправить сообщение - успех
         });
 
         test('exclude from chat, user sees old messages, but not sees new', async ({ cmsAdminPage }) => {
-            expect(cmsAdminPage.url()).toBe('');
-            throw new Error();
+            
+            // ОТ АДМИНА
+            // перейти в чат
+            // нажать на кнопку админки
+            // нажать на кнопку удаления человека
+            // проверить состав участников - его нет больше
+
+            // ОТ ЧЕЛОВЕКА
+            // перейти в чат
+            // посмотреть что больше недоступна инфа о чате + не видно новых сообщений (от админа отправляем сообщение и смотрим, что не появилось)
         });
 
 
         test('leave from chat', async ({ cmsAdminPage }) => {
-            expect(cmsAdminPage.url()).toBe('');
-            throw new Error();
+            // ОТ ЧЕЛОВЕКА ЧТО ВЫХОДИТ
+            // нажать на кнопку "выйти"
+            // посмотреть что больше недоступна инфа о чате + не видно новых сообщений (от админа отправляем сообщение и смотрим, что не появилось)
+            // посмотреть что есть возможность нажать на кнопку "вернуться"
+
+            // ОТ ДРУГОГО ЧЕЛОВЕКА
+            // посмотреть что видно сообщение что человек вышел
+            // получить инфо о составе - его больше нет там
         });
     })
 
     test.describe('resilience', () => {
-        test('connection failed, - show status and retry', async ({ cmsAdminPage, gymAdminPage }) => {
-            expect(cmsAdminPage.url()).toBe('');
-            expect(gymAdminPage.url()).toBe('');
-            throw new Error();
+        test('connection failed, - show status and retry', async ({ cmsAdminPage, cmsAdminContext  }) => {
+            const cmsChatPage = new ChatPage(cmsAdminPage);
+            await cmsChatPage.open('cmsAdmin');
+            await cmsChatPage.waitForChatLoaded('Александр, ТестАдминЗала');
+
+
+            await cmsAdminContext.setOffline(true);
+
+            await expect(cmsAdminPage.locator('text=Подключение...')).toBeVisible({ timeout: 40000 });
         });
     })
 
