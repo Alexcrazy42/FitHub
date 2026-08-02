@@ -15,6 +15,7 @@ public static class ServiceRegistry
     public static void AddServicesForBackground(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddRabbitMq<RabbitMqClusterOptions>();
+
         services.AddConsumerAsBackgroundService<VideoEncodingMessage, VideoEncodingConsumer, RabbitMqClusterOptions>();
         services.AddConsumerAsBackgroundService<PaymentStatusChangedMessage, PaymentStatusChangedConsumer, RabbitMqClusterOptions>();
         services.AddHostedService<StockReservationReleaseWorker>();

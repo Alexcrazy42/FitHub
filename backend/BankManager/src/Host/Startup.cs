@@ -3,6 +3,7 @@ using FitHub.BankManager.Data;
 using FitHub.BankManager.Web;
 using FitHub.Common.AspNetCore;
 using FitHub.Common.Logging;
+using FitHub.Common.Telemetry.Extensions;
 using FitHub.RabbitMQ;
 using FitHub.RabbitMQ.Configuration;
 
@@ -22,6 +23,8 @@ public class Startup
         services.AddBankManagerData(configuration);
         services.AddBankManagerApplication();
         services.AddBankManagerWeb();
+
+        services.AddCommonTelemetry<BankManagerDataContext>(configuration);
 
         services.AddExceptionAsProblemDetails();
 
@@ -61,6 +64,7 @@ public class Startup
 
         app.UseEndpoints(configure =>
         {
+            configure.UseCommonTelemetry();
             configure.MapControllers();
         });
     }

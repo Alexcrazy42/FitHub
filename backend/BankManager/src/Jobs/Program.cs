@@ -7,6 +7,7 @@ using FitHub.RabbitMQ.Configuration;
 
 // TODO: добавить логгирование
 var builder = Host.CreateApplicationBuilder(args);
+
 builder.Services.AddBankManagerClients();
 builder.Services.AddRabbitMq<RabbitMqClusterOptions>();
 builder.Services.AddConsumerAsBackgroundService<PaymentIntentRequestedMessage, PaymentIntentRequestedConsumer, RabbitMqClusterOptions>();
