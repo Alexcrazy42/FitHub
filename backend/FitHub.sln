@@ -8,7 +8,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{3ED30721-C
 		Directory.Build.props = Directory.Build.props
 		Directory.Packages.props = Directory.Packages.props
 		NuGet.config = NuGet.config
-		README.md = README.md
+		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{52ACBFAA-6DE2-4E64-987B-4298C56509A1}"
@@ -69,7 +69,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Authentication", "Common\Au
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Json", "Common\Json\Json.csproj", "{F1461568-89CF-4F53-9624-7147D1BF085D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestsCommon", "Platform\tests\TestsCommon\TestsCommon.csproj", "{264A615E-14EA-49E1-9485-54BC83EDC570}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestsCommon", "Common\TestsCommon\TestsCommon.csproj", "{264A615E-14EA-49E1-9485-54BC83EDC570}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing", "Common\Testing\Testing.csproj", "{70B4121D-F4D8-41CD-9124-97BA7CCAB2DE}"
 EndProject

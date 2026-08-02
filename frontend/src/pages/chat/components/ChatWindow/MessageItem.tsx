@@ -116,7 +116,9 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = true })
   if (stickerAttachment) {
     return (
       <>
-        <div className={`flex gap-3 ${isMyMessage ? 'flex-row-reverse' : 'flex-row'}`}>
+        <div className={`flex gap-3 
+          ${isMyMessage ? 'flex-row-reverse' : 'flex-row'}`}
+        >
           <div className="flex-shrink-0">
             {showAvatar ? (
               <Avatar

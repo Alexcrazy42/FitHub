@@ -3,6 +3,8 @@ using AutoFixture.AutoMoq;
 using FitHub.Application.Messaging;
 using FitHub.Application.Users;
 using FitHub.Authentication;
+using FitHub.Common.Entities;
+using FitHub.Common.Entities.Identity;
 using FitHub.Common.Entities.Storage;
 using FitHub.Common.TestsCommon;
 using Moq;
@@ -47,6 +49,30 @@ public abstract class ApplicationTestsBase
     {
         // Регаем билдера для создания сущностей без публичного конструктора (подразумевает наличие оного в принципе)
         AutoFixture.ResidueCollectors.Add(new NonPublicConstructorBuilder());
+    }
 
+    protected void SetupUnitOfWorkSuccess()
+    {
+        UnitOfWorkMock
+            .Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+    }
+
+    protected void SetupUnitOfWorkThrowException<TException>()
+        where TException : CommonException, new()
+    {
+        UnitOfWorkMock
+            .Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .Throws<TException>();
+    }
+
+    protected void SetupPendingAddEntity<TEntity, TId, TRepository>(Mock<TRepository> repoMock)
+        where TEntity : class, IEntity<TId>
+        where TId : IIdentifier
+        where TRepository : class, IPendingRepository<TEntity, TId>
+    {
+        repoMock
+            .Setup(r => r.PendingAddAsync(It.IsAny<TEntity>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
     }
 }

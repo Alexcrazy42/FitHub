@@ -21,6 +21,11 @@ public class BankAccount : IEntity<BankAccountId>
 
     public void Deactivate()
     {
+        if (!IsActive)
+        {
+            throw new LogicViolationException("Банковский аккаунт неактивен!");
+        }
+
         IsActive = false;
     }
 

@@ -385,7 +385,7 @@ public class IdentityUserService : IIdentityUserService, IUserService, IAuthenti
         return userRepository.GetPagedUsersAsync(query, pagedQuery, ct);
     }
 
-    public async Task StartOnlineAt(IdentityUserId userId, CancellationToken ct)
+    public async Task SetOnlineAsync(IdentityUserId userId, CancellationToken ct)
     {
         var user = await GetUserAsync(userId, ct);
 

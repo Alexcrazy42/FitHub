@@ -43,9 +43,9 @@ public class BankManagerOutboxPublisherService : IBankManagerOutboxPublisherServ
                 failedCount++;
                 logger.LogError(ex, "Failed to publish BankManager outbox message {MessageId}.", message.Id);
             }
-
-            await unitOfWork.SaveChangesAsync(ct);
         }
+
+        await unitOfWork.SaveChangesAsync(ct);
 
         return new BankManagerOutboxPublishResult(publishedCount, failedCount);
     }

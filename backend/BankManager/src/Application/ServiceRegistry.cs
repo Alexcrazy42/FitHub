@@ -1,4 +1,5 @@
-﻿using FitHub.BankManager.Application.Payments;
+﻿using FitHub.BankManager.Application.Mocks;
+using FitHub.BankManager.Application.Payments;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FitHub.BankManager.Application;
@@ -9,6 +10,8 @@ public static class ServiceRegistry
     {
         services.AddScoped<IPaymentIntentService, PaymentIntentService>();
         services.AddScoped<IBankManagerOutboxPublisherService, BankManagerOutboxPublisherService>();
+
+        services.AddScoped<IMockTestService, MockTestService>();
         return services;
     }
 }

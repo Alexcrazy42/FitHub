@@ -30,7 +30,7 @@ public sealed class ServerFixture : IAsyncLifetime
     public IMessageClient MessageClient => ServiceProvider.GetRequiredService<IMessageClient>();
 
     // Здесь мокаем зависимости сервиса
-    public readonly Mock<IIdentityUserService> IdentityUserServiceMock = new Mock<IIdentityUserService>();
+    public readonly Mock<IIdentityUserService> IdentityUserServiceMock = new();
 
     public ServerFixture()
     {
@@ -51,7 +51,7 @@ public sealed class ServerFixture : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        if (testApplication == null)
+        if (testApplication is null)
         {
             return;
         }

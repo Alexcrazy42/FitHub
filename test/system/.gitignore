@@ -1,0 +1,120 @@
+﻿# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.~*
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.user
+
+# Jupyter Notebook (если используешь для отладки)
+.ipynb_checkpoints/
+
+# Pytest
+.pytest_cache/
+.pytest_failure/
+.pytest_results/
+
+# Allure reports (генерируемые отчёты — не храним в репозитории)
+allure-results/
+allure-report/
+allure-results.zip
+
+# Coverage reports (если меряем покрытие тестов)
+.coverage
+.coverage.*
+htmlcov/
+.coverage-report/
+.xmlcoverage
+
+# Logs and database dumps
+*.log
+*.pid
+*.sql
+*.dump
+*.db
+*.sqlite
+*.sqlite3
+
+# Configuration with secrets
+*.local.*
+*.secret.*
+.env.*
+!.env.example
+secrets.yaml
+credentials.json
+*.key
+*.pem
+*.cert
+
+# Docker (игнорируем временные артефакты)
+docker-compose.override.yml
+.dockerignore
+*.tar.gz
+*.dockercontext
+
+# Python package management
+pip-log.txt
+pip-delete-this-directory.txt
+pip-wheel-metadata/
+share/python-wheels/
+MANIFEST
+dist/
+build/
+*.egg-info/
+*.egg
+
+# Temporary files for data generation
+temp_data/
+test_data/
+generated/
+*.tmp
+*.bak
+
+# OS specific
+Thumbs.db
+desktop.ini
+ehthumbs.db
+
+# Test outputs (если тесты пишут файлы)
+test_output/
+output/
+screenshots/
+videos/
+
+# Local configurations (например, кастомные конфиги для окружений)
+local_config.ini
+config.override.yaml
+
+# Python tools
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.pytype/
+
+# VS Code Python test discovery
+.python-version
+
+# Any local secrets or credentials for test environments
+test_secrets.json
+test_credentials.ini

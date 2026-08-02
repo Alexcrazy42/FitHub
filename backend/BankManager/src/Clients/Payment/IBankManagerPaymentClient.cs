@@ -1,12 +1,11 @@
-﻿namespace FitHub.BankManager.Clients.Payment;
+﻿using FitHub.BankManager.Web.Contracts;
+
+namespace FitHub.BankManager.Clients.Payment;
 
 public interface IBankManagerPaymentClient
 {
     Task<BankManagerPaymentIntentResult> CreatePaymentIntentAsync(
-        string externalReference,
-        decimal amount,
-        string currency,
-        string idempotencyKey,
+        CreatePaymentIntentRequest request,
         CancellationToken ct);
 
     Task<BankManagerPaymentIntentResult> CompletePaymentIntentAsync(

@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using FitHub.Application.Messaging;
 using FitHub.Application.Messaging.Commands;
 using FitHub.Authentication;
@@ -121,7 +120,7 @@ public sealed class ChatServiceTests : ApplicationTestsBase
         SetupChatNotExists();
         SetupCurrentUser(FirstUserId);
         SetupUsers(users);
-        SetupPendingAddChat();
+        SetupPendingAddEntity<Chat, ChatId, IChatRepository>(ChatRepositoryMock);
         SetupUnitOfWorkSuccess();
 
         var command = new CreateChatCommand(ChatType.OneToOne, [FirstUserId, SecondUserId]);
@@ -152,7 +151,7 @@ public sealed class ChatServiceTests : ApplicationTestsBase
         SetupChatNotExists();
         SetupCurrentUser(FirstUserId);
         SetupUsers(users);
-        SetupPendingAddChat();
+        SetupPendingAddEntity<Chat, ChatId, IChatRepository>(ChatRepositoryMock);
         SetupUnitOfWorkSuccess();
 
         var command = new CreateChatCommand(ChatType.Group, [FirstUserId, SecondUserId]);
@@ -192,7 +191,7 @@ public sealed class ChatServiceTests : ApplicationTestsBase
         SetupChatNotExists();
         SetupCurrentUser(FirstUserId);
         SetupUsers(users);
-        SetupPendingAddChat();
+        SetupPendingAddEntity<Chat, ChatId, IChatRepository>(ChatRepositoryMock);
         SetupUnitOfWorkSuccess();
 
         var command = new CreateChatCommand(ChatType.Group, [FirstUserId, SecondUserId, ThirdUserId]);
@@ -246,51 +245,25 @@ public sealed class ChatServiceTests : ApplicationTestsBase
         return chat;
     }
 
-    private List<User> CreateUsers(int? count = null)
+    private List<User> CreateUsers(int count)
     {
-        List<User> users =
-        [
-            User.Create(
-                FirstUserId,
-                "surname1",
-                "name1",
-                "",
-                "",
-                IdentityUserType.CmsAdmin,
-                DateTimeOffset.UtcNow,
-                DateTimeOffset.UtcNow,
-                DateTimeOffset.UtcNow
-            ),
-            User.Create(
-                SecondUserId,
-                "surname2",
-                "name2",
-                "",
-                "",
-                IdentityUserType.GymAdmin,
-                DateTimeOffset.UtcNow,
-                DateTimeOffset.UtcNow,
-                DateTimeOffset.UtcNow
-            ),
-            User.Create(
-                ThirdUserId,
-                "surname3",
-                "name3",
-                "",
-                "",
-                IdentityUserType.GymAdmin,
-                DateTimeOffset.UtcNow,
-                DateTimeOffset.UtcNow,
-                DateTimeOffset.UtcNow
-            )
-        ];
+        List<IdentityUserId> userIds = [FirstUserId, SecondUserId, ThirdUserId];
 
-        if (count is null)
+        var users = new List<User>();
+        for (var i = 1; i <= count; i++)
         {
-            return users.ToList();
+            var userId = i < 3 ? userIds[i] : throw new Exception("Нельзя запросить больше 3 пользователей");
+            users.Add(User.Create(
+                userId,
+                $"surname{i}",
+                $"name{i}",
+                "", "", IdentityUserType.GymAdmin,
+                DateTimeOffset.UtcNow,
+                DateTimeOffset.UtcNow,
+                DateTimeOffset.UtcNow
+            ));
         }
-
-        return users.Take(count.Value).ToList();
+        return users;
     }
 
     private List<ChatParticipant> CreateChatParticipants(Chat chat, int count)
@@ -331,19 +304,5 @@ public sealed class ChatServiceTests : ApplicationTestsBase
                 It.IsAny<List<IdentityUserId>>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(users);
-    }
-
-    private void SetupPendingAddChat()
-    {
-        ChatRepositoryMock
-            .Setup(r => r.PendingAddAsync(It.IsAny<Chat>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
-    }
-
-    private void SetupUnitOfWorkSuccess()
-    {
-        UnitOfWorkMock
-            .Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(1);
     }
 }

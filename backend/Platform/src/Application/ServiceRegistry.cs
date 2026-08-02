@@ -59,17 +59,40 @@ public static class ServiceRegistry
     private static void AddFiles(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<IS3FileService, S3FileService>();
-        services.AddSingleton<IAmazonS3>(sp => new AmazonS3Client(
-            new BasicAWSCredentials(configuration["AWS:AccessKey"], configuration["AWS:SecretKey"]),
-            new AmazonS3Config
-            {
-                ServiceURL = configuration["AWS:ServiceURL"],
-                ForcePathStyle = true,
-                UseHttp = true,
-                Timeout = TimeSpan.FromSeconds(20),
-                MaxErrorRetry = 3,
-                AuthenticationRegion = "us-east-1",
-            }
-        ));
+        services.AddKeyedSingleton<IAmazonS3>("internal", (sp, key) =>
+            new AmazonS3Client(
+                new BasicAWSCredentials(
+                    configuration["AWS:AccessKey"],
+                    configuration["AWS:SecretKey"]
+                ),
+                new AmazonS3Config
+                {
+                    ServiceURL = configuration["AWS:ServiceURL"],
+                    ForcePathStyle = true,
+                    UseHttp = true,
+                    Timeout = TimeSpan.FromSeconds(20),
+                    MaxErrorRetry = 3,
+                    AuthenticationRegion = "us-east-1",
+                }
+            )
+        );
+
+        services.AddKeyedSingleton<IAmazonS3>("public", (sp, key) =>
+            new AmazonS3Client(
+                new BasicAWSCredentials(
+                    configuration["AWS:AccessKey"],
+                    configuration["AWS:SecretKey"]
+                ),
+                new AmazonS3Config
+                {
+                    ServiceURL = configuration["AWS:PublicURL"],
+                    ForcePathStyle = true,
+                    UseHttp = true,
+                    Timeout = TimeSpan.FromSeconds(20),
+                    MaxErrorRetry = 3,
+                    AuthenticationRegion = "us-east-1",
+                }
+            )
+        );
     }
 }

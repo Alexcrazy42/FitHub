@@ -70,7 +70,7 @@ public interface IUserService
 
     Task<PagedResult<User>> GetUsersAsync(GetUserQuery query, PagedQuery pagedQuery, CancellationToken ct = default);
 
-    Task StartOnlineAt(IdentityUserId userId, CancellationToken ct);
+    Task SetOnlineAsync(IdentityUserId userId, CancellationToken ct);
 
     Task<DateTimeOffset> EndOnlineAt(IdentityUserId userId, CancellationToken ct);
 
