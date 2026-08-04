@@ -9,8 +9,10 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Common\Logging\Logging.csproj" />
     <ProjectReference Include="..\..\..\Common\RabbitMQ\RabbitMQ.csproj" />
     <ProjectReference Include="..\..\..\Common\RabbitMQ.Contracts\RabbitMQ.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Common\Telemetry\Telemetry.csproj" />
     <ProjectReference Include="..\Clients\Clients.csproj" />
     <ProjectReference Include="..\Rabbit.Contracts\Rabbit.Contracts.csproj" />
   </ItemGroup>

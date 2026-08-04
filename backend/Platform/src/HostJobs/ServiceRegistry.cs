@@ -1,5 +1,6 @@
 ﻿using FitHub.BankManager.Rabbit.Contracts.Payments;
 using FitHub.Clients;
+using FitHub.Common.Telemetry.Extensions;
 using FitHub.HostJobs.Consumers.Marketplace;
 using FitHub.HostJobs.Consumers.Videos;
 using FitHub.HostJobs.Workers.Marketplace;
@@ -21,6 +22,8 @@ public static class ServiceRegistry
         services.AddHostedService<StockReservationReleaseWorker>();
         services.AddHostedService<DeliveryAutoAssignmentWorker>();
         services.AddHostedService<RabbitOutboxPublisherWorker>();
+
+        services.AddCommonTelemetry(configuration);
 
         services.AddFitHubClients();
     }
