@@ -1,7 +1,5 @@
 # S3 WebApi
 
-
-
 # Собрать и запустить в фоне
 docker compose up --build -d
 

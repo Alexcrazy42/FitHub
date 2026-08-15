@@ -13,6 +13,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Sdk = OpenTelemetry.Sdk;
 using FitHub.Common.Extensions.Configuration;
+using OpenTelemetry.Logs;
 
 namespace FitHub.Common.Telemetry.Extensions;
 
@@ -103,14 +104,26 @@ public static class OpenTelemetryExtensions
                     tracing.AddEntityFrameworkCoreInstrumentation();
                 }
 
-                tracing.AddSqlClientInstrumentation();
+                if (options.EnableSqlClient)
+                {
+                    tracing.AddSqlClientInstrumentation();
+                }
 
                 if (options.EnableRabbitMq)
                 {
                     tracing.AddRabbitMQInstrumentation();
                 }
 
-                options.ConfigureExporters?.Invoke(tracing);
+                if (options.Endpoint is not null)
+                {
+                    tracing.AddOtlpExporter(exporterOptions =>
+                    {
+                        exporterOptions.Endpoint = options.Endpoint.Required();
+                        exporterOptions.Protocol = options.Protocol.Required();
+                    });
+                }
+
+                options.ConfigureCollectors?.Invoke(tracing);
             })
             .WithMetrics(metrics =>
             {
