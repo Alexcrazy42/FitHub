@@ -3,6 +3,7 @@ using FitHub.Application.Videos;
 using FitHub.Common.AspNetCore;
 using FitHub.Common.Extensions.Configuration;
 using FitHub.Common.Logging;
+using FitHub.Common.Telemetry.Extensions;
 using FitHub.Data;
 using FitHub.Host.Videos;
 using FitHub.Queue.Contracts.Videos;
@@ -28,6 +29,8 @@ public sealed class Startup
         services.AddData(configuration);
         services.AddApplication(configuration);
         services.AddWeb(configuration);
+
+        services.AddCommonTelemetry<DataContext>(configuration);
 
         services.AddExceptionAsProblemDetails();
 
@@ -81,9 +84,9 @@ public sealed class Startup
         }
 
 
-
         app.UseEndpoints(configure =>
         {
+            configure.UseCommonTelemetry();
             configure.MapHub<ChatHub>("/chatHub");
             configure.MapControllers().RequireAuthorization();
         });

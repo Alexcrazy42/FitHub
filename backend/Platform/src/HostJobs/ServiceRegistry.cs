@@ -1,5 +1,6 @@
 ﻿using FitHub.BankManager.Rabbit.Contracts.Payments;
 using FitHub.Clients;
+using FitHub.Common.Telemetry.Extensions;
 using FitHub.HostJobs.Consumers.Marketplace;
 using FitHub.HostJobs.Consumers.Videos;
 using FitHub.HostJobs.Workers.Marketplace;
@@ -15,11 +16,14 @@ public static class ServiceRegistry
     public static void AddServicesForBackground(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddRabbitMq<RabbitMqClusterOptions>();
+
         services.AddConsumerAsBackgroundService<VideoEncodingMessage, VideoEncodingConsumer, RabbitMqClusterOptions>();
         services.AddConsumerAsBackgroundService<PaymentStatusChangedMessage, PaymentStatusChangedConsumer, RabbitMqClusterOptions>();
         services.AddHostedService<StockReservationReleaseWorker>();
         services.AddHostedService<DeliveryAutoAssignmentWorker>();
         services.AddHostedService<RabbitOutboxPublisherWorker>();
+
+        services.AddCommonTelemetry(configuration);
 
         services.AddFitHubClients();
     }

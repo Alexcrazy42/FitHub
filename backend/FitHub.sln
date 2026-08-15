@@ -117,6 +117,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Simulation", "Simulation", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CourierSimulationJobs", "Platform\src\Simulation\CourierSimulationJobs\CourierSimulationJobs.csproj", "{3CB06418-809B-46D1-A0FD-D70FEC88D94E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Telemetry", "Common\Telemetry\Telemetry.csproj", "{53BAA05D-E31F-4FB8-A5DA-9A9D8E5A443B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -171,6 +173,7 @@ Global
 		{857C640B-714E-455B-99C9-D27D29AAABCD} = {44AF0372-B0F2-4F1B-855B-0AEB7BFB9C58}
 		{F9D93673-B0E3-497F-82BD-5A7F8A928A16} = {52ACBFAA-6DE2-4E64-987B-4298C56509A1}
 		{3CB06418-809B-46D1-A0FD-D70FEC88D94E} = {F9D93673-B0E3-497F-82BD-5A7F8A928A16}
+		{53BAA05D-E31F-4FB8-A5DA-9A9D8E5A443B} = {EA165AFF-733F-453C-9A8B-8CB136D59E2F}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{2F976AA6-F651-4D41-AB35-D7ACF151BF23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -340,5 +343,9 @@ Global
 		{3CB06418-809B-46D1-A0FD-D70FEC88D94E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3CB06418-809B-46D1-A0FD-D70FEC88D94E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3CB06418-809B-46D1-A0FD-D70FEC88D94E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53BAA05D-E31F-4FB8-A5DA-9A9D8E5A443B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53BAA05D-E31F-4FB8-A5DA-9A9D8E5A443B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53BAA05D-E31F-4FB8-A5DA-9A9D8E5A443B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53BAA05D-E31F-4FB8-A5DA-9A9D8E5A443B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
