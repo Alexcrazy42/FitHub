@@ -17,6 +17,7 @@
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilization" />
     <PackageReference Include="OpenTelemetry" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
     <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
     <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />

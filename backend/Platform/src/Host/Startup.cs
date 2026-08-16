@@ -11,6 +11,9 @@ using FitHub.RabbitMQ;
 using FitHub.RabbitMQ.Configuration;
 using FitHub.Web;
 using FitHub.Web.V1;
+using Microsoft.Extensions.Options;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Trace;
 
 namespace FitHub.Host;
 

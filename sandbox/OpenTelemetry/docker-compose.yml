@@ -1,23 +1,74 @@
 version: '3.8'
 
 services:
-  jaeger:
-    image: jaegertracing/all-in-one:latest
-    container_name: jaeger
+  # jaeger:
+  #   image: jaegertracing/all-in-one:latest
+  #   container_name: jaeger
+  #   restart: always
+  #   ports:
+  #     - 4317:4317
+  #     - 4318:4318
+  #     - 16686:16686
+  #     - 16685:16685
+  #   environment:
+  #     - COLLECTOR_OTLP_ENABLED=true
+  #   healthcheck:
+  #     test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:16686"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #     start_period: 30s
+  #   networks:
+  #     - app-network
+
+  # OTLP Collector - принимает данные от приложений
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: otel-collector
+    restart: always
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"   # gRPC OTLP
+      - "4318:4318"   # HTTP OTLP
+      - "8888:8888"   # Prometheus metrics (опционально)
+    depends_on:
+      - tempo
+    networks:
+      - app-network
+
+  # Grafana Tempo - хранилище трейсов
+  tempo:
+    image: grafana/tempo:2.4.2
+    container_name: tempo
+    restart: always
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes:
+      - ./tempo-config.yaml:/etc/tempo.yaml
+      - tempo-data:/tmp/tempo
+    ports:
+      - "3200:3200"
+    networks:
+      - app-network
+
+  # Grafana - для визуализации трейсов
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
     restart: always
     ports:
-      - 4317:4317
-      - 4318:4318
-      - 16686:16686
-      - 16685:16685
+      - "3000:3000"
     environment:
-      - COLLECTOR_OTLP_ENABLED=true
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:16686"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+    depends_on:
+      - tempo
     networks:
       - app-network
 
@@ -113,13 +164,13 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      jaeger:
-        condition: service_healthy
+      # jaeger:
+      #   condition: service_healthy
     environment:
       - ConnectionStrings__DefaultConnection=Host=postgres-a;Database=servicea_db;Username=user;Password=password
       - Cache__Redis=redis:6379
       - Kafka__BootstrapServers=kafka:9092
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317   # ← ИСПРАВЛЕНО!
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_SERVICE_NAME=service-a
       - OTEL_LOG_LEVEL=debug
     networks:
@@ -136,12 +187,12 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      jaeger:
-        condition: service_healthy
+      # jaeger:
+      #   condition: service_healthy
     environment:
       - ConnectionStrings__DefaultConnection=Host=postgres-b;Database=serviceb_db;Username=user;Password=password
       - Kafka__BootstrapServers=kafka:9092
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317   # ← ИСПРАВЛЕНО!
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_SERVICE_NAME=service-b
       - OTEL_LOG_LEVEL=debug
     networks:
@@ -150,6 +201,8 @@ services:
 volumes:
   postgres_a_data:
   postgres_b_data:
+  tempo-data:
+  grafana-data:
 
 networks:
   app-network:
