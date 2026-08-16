@@ -32,6 +32,9 @@
     - PostgreSQL: реляционная модель, индексы, jsonb, read-models денормализация для perfomance
 - RabbitMQ
     - Базовая библиотека production-readiness: producer, consumer, DLQ, routing
+- Observability
+    - Serilog: structured logs, async sinks, durableHttpUsingFileSizeRolledBuffer
+    - OpenTelemetry: distributed logs and traces, metrics, healthCheaks
 - Minio S3
     - upload via presigned urls
     - multipart upload video
